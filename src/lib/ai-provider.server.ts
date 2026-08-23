@@ -73,6 +73,9 @@ const DEFAULTS = {
   },
   openai: {
     // Рег.облако (Reg.ru Cloud AI) — OpenAI-совместимый шлюз.
+    // Пустое значение намеренно: resolveAi требует OPENAI_BASE_URL и никогда
+    // не использует прямой адрес OpenAI.
+    baseUrl: "",
     model: "deepseek-v4-flash",
     visionModel: "gemini-3.5-flash",
   },

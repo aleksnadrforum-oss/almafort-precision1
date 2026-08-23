@@ -144,7 +144,7 @@ function OrderPage() {
                           <p className="mt-1 text-xs text-muted-foreground">
                             {event.note ?? event.title} ·{" "}
                             {new Date(event.created_at).toLocaleString("ru-RU")}
-                            {event.source !== "almafort" ? ` · ${event.source.toUpperCase()}` : ""}
+                            {event.source && event.source !== "almafort" ? ` · ${event.source.toUpperCase()}` : ""}
                           </p>
                         )}
                         {s.id === "shipped" && data.order.tracking_number && (

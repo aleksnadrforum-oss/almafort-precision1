@@ -40,14 +40,14 @@ export const Route = createFileRoute("/api/auth/otp-request")({
           return Response.json({ ok: true, ttl: result.ttl });
         } catch (e) {
           console.error("[otp] не удалось отправить код", e);
-          // Возвращаем реальную причину SMTP-сбоя: без неё на VPS не понять,
+          // Возвращаем реальную причину сбоя отправки: без неё на VPS не понять,
           // что именно не так (пустой .env, неверный пароль приложения, порт).
           const err = e as { code?: string; responseCode?: number; message?: string };
           const detail = [err?.code, err?.responseCode, err?.message]
             .filter(Boolean)
             .join(" · ");
           return Response.json(
-            { error: `Почта не отправлена: ${detail || "SMTP недоступен"}` },
+            { error: `Почта не отправлена: ${detail || "сервис почты недоступен"}` },
             { status: 502 },
           );
         }

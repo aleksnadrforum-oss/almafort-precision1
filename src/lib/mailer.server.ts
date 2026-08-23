@@ -1,8 +1,8 @@
 /**
- * ALMAFORT — собственный SMTP-мейлер (аналог классического PHP mail()-скрипта).
- * Никакой облачной почты: письма уходят с корпоративного SMTP,
- * реквизиты берутся строго из .env (SMTP_HOST/SMTP_PORT/SMTP_USER/SMTP_PASS).
+ * ALMAFORT — отправка писем через HTTPS API Resend (порт 443).
+ * SMTP не используется: провайдер VPS блокирует порты 465/587.
  */
+import { Resend } from "resend";
 
 export type MailPayload = {
   to: string;
@@ -12,183 +12,54 @@ export type MailPayload = {
   replyTo?: string;
 };
 
-type Transporter = {
-  sendMail: (options: Record<string, unknown>) => Promise<{ messageId?: string }>;
-};
+/** Sandbox-режим Resend: единственный разрешённый отправитель. */
+const FROM_ADDRESS = "onboarding@resend.dev";
 
-let transporterPromise: Promise<Transporter> | null = null;
+let client: Resend | null = null;
+
+function getResend(): Resend {
+  if (!client) {
+    const apiKey = (process.env["RESEND_API_KEY"] ?? "").trim();
+    if (!apiKey) throw new Error("RESEND_API_KEY не задан в переменных окружения");
+    client = new Resend(apiKey);
+  }
+  return client;
+}
 
 export function siteUrl(): string {
   const raw = process.env["PUBLIC_SITE_URL"] || process.env["SITE_URL"] || "https://almafort.ru";
   return raw.replace(/\/+$/, "");
 }
 
-function requireEnv(name: string): string {
-  const value = (process.env[name] ?? "").trim();
-  if (!value) {
-    // Точная подсказка для VPS: пустой .env или pm2 без --update-env.
-    throw new Error(
-      `SMTP не настроен: пустая переменная ${name}. Заполните SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS в /var/www/almafort/.env и перезапустите: pm2 restart almafort --update-env`,
-    );
-  }
-  return value;
-}
-
-type NodemailerModule = {
-  default?: { createTransport: (o: unknown) => Transporter };
-  createTransport?: (o: unknown) => Transporter;
-};
-
-/** Грузим nodemailer в обход бандлера: сначала CommonJS require, затем import(). */
-async function loadNodemailer(): Promise<{ createTransport: (o: unknown) => Transporter }> {
-  try {
-    const moduleSpecifier = "node:module";
-    const { createRequire } = (await import(/* @vite-ignore */ moduleSpecifier)) as {
-      createRequire: (path: string) => (id: string) => NodemailerModule;
-    };
-    const mod = createRequire(import.meta.url)("nodemailer");
-    const nm = mod.default ?? mod;
-    if (nm.createTransport) return nm as { createTransport: (o: unknown) => Transporter };
-  } catch (e) {
-    console.error("[mailer] require('nodemailer') не сработал:", (e as Error)?.message);
-  }
-  const specifier = "nodemailer";
-  const mod = (await import(/* @vite-ignore */ specifier)) as NodemailerModule;
-  const nm = mod.default ?? mod;
-  if (!nm.createTransport) throw new Error("nodemailer не установлен на сервере (npm i nodemailer)");
-  return nm as { createTransport: (o: unknown) => Transporter };
-}
-
-export function smtpConfig() {
-  const port = Number(process.env["SMTP_PORT"] ?? 587);
-  // 587 — STARTTLS (Gmail, большинство хостингов), 465 — implicit SSL/TLS.
-  // Порт 465 часто блокируется хостингом; по умолчанию используем 587.
-  const secure = (process.env["SMTP_SECURE"] ?? "").trim()
-    ? /^(1|true|yes)$/i.test(process.env["SMTP_SECURE"]!)
-    : port === 465;
-  return {
-    // По умолчанию — Gmail (пароль приложения из 16 символов в SMTP_PASS).
-    host: process.env["SMTP_HOST"] || "smtp.gmail.com",
-    port,
-    secure,
-    requireTLS: !secure && port === 587,
-    auth: { user: requireEnv("SMTP_USER"), pass: requireEnv("SMTP_PASS") },
-    pool: true,
-    maxConnections: 3,
-    // Форсируем IPv4: на VPS с частичным IPv6-стеком Node иначе падает с ENETUNREACH.
-    family: 4 as const,
-    // Без явных таймаутов зависший SMTP держит запрос до таймаута nginx.
-    connectionTimeout: 15_000,
-    greetingTimeout: 10_000,
-    socketTimeout: 20_000,
-    tls: { minVersion: "TLSv1.2" as const },
-    logger: process.env["SMTP_DEBUG"] === "1",
-    debug: process.env["SMTP_DEBUG"] === "1",
-  };
-}
-
-async function getTransporter(): Promise<Transporter> {
-  if (!transporterPromise) {
-    transporterPromise = (async () => {
-      const nodemailer = await loadNodemailer();
-      const cfg = smtpConfig();
-      console.info(
-        `[mailer] SMTP ${cfg.host}:${cfg.port} secure=${cfg.secure} user=${cfg.auth.user.replace(/(.{2}).*(@.*)/, "$1***$2")}`,
-      );
-      return nodemailer.createTransport(cfg);
-    })().catch((e) => {
-      transporterPromise = null; // повторная попытка на следующем запросе
-      throw e;
-    });
-  }
-  return transporterPromise;
-}
-
-function mailFrom(): string {
-  const fromEmail =
-    process.env["RESEND_FROM"] || process.env["SMTP_FROM"] || process.env["SMTP_USER"] || "onboarding@resend.dev";
-  const fromName = process.env["SMTP_FROM_NAME"] || "ALMAFORT";
-  return `${fromName} <${fromEmail}>`;
-}
-
-/** Отправка через HTTPS API Resend (порт 443) — работает там, где хостинг блокирует SMTP. */
-async function sendViaResend(payload: MailPayload, apiKey: string): Promise<{ messageId?: string }> {
-  const res = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-    body: JSON.stringify({
-      from: mailFrom(),
-      to: [payload.to],
-      subject: payload.subject,
-      html: payload.html,
-      text: payload.text ?? stripHtml(payload.html),
-      ...(payload.replyTo ? { reply_to: payload.replyTo } : {}),
-    }),
-  });
-  const body = await res.text();
-  if (!res.ok) {
-    console.error("[mailer] RESEND ОШИБКА", res.status, body);
-    throw new Error(`Resend API ${res.status}: ${body}`);
-  }
-  let id: string | undefined;
-  try {
-    id = (JSON.parse(body) as { id?: string }).id;
-  } catch {
-    /* ignore */
-  }
-  console.info(`[mailer] Resend отправлено -> ${payload.to} (${id ?? "no-id"})`);
-  return { ...(id ? { messageId: id } : {}) };
-}
-
 export async function sendMail(payload: MailPayload): Promise<{ messageId?: string }> {
-  const resendKey = (process.env["RESEND_API_KEY"] ?? "").trim();
-  if (resendKey) return sendViaResend(payload, resendKey);
-
   try {
-    const transporter = await getTransporter();
-    const info = await transporter.sendMail({
-      from: mailFrom(),
+    const { data, error } = await getResend().emails.send({
+      from: FROM_ADDRESS,
       to: payload.to,
       subject: payload.subject,
       html: payload.html,
       text: payload.text ?? stripHtml(payload.html),
       ...(payload.replyTo ? { replyTo: payload.replyTo } : {}),
-      headers: { "X-Mailer": "ALMAFORT" },
     });
-    console.info(`[mailer] отправлено -> ${payload.to} (${info?.messageId ?? "no-id"})`);
-    return info;
+    if (error) {
+      console.error("[mailer] Resend ошибка:", error.name, error.message);
+      throw new Error(`Не удалось отправить письмо: ${error.message}`);
+    }
+    console.info(`[mailer] отправлено -> ${payload.to} (${data?.id ?? "no-id"})`);
+    return { ...(data?.id ? { messageId: data.id } : {}) };
   } catch (e) {
-    const err = e as NodeJS.ErrnoException & { command?: string; responseCode?: number; response?: string };
-    console.error(
-      "[mailer] ОШИБКА ОТПРАВКИ",
-      JSON.stringify({
-        to: payload.to,
-        host: process.env["SMTP_HOST"] ?? null,
-        port: process.env["SMTP_PORT"] ?? null,
-        code: err?.code ?? null,
-        command: err?.command ?? null,
-        responseCode: err?.responseCode ?? null,
-        response: err?.response ?? null,
-        message: err?.message ?? String(e),
-      }),
-    );
-    throw e;
+    const message = e instanceof Error ? e.message : String(e);
+    console.error("[mailer] ОШИБКА ОТПРАВКИ", JSON.stringify({ to: payload.to, message }));
+    throw new Error(message);
   }
 }
 
-/** Диагностика канала отправки: Resend API или SMTP-соединение. */
+/** Диагностика канала отправки (Resend API доступен и ключ валиден). */
 export async function verifySmtp(): Promise<void> {
-  const resendKey = (process.env["RESEND_API_KEY"] ?? "").trim();
-  if (resendKey) {
-    const res = await fetch("https://api.resend.com/domains", {
-      headers: { Authorization: `Bearer ${resendKey}` },
-    });
-    if (!res.ok) throw new Error(`Resend API ${res.status}: ${await res.text()}`);
-    return;
-  }
-  const transporter = (await getTransporter()) as Transporter & { verify?: () => Promise<boolean> };
-  if (transporter.verify) await transporter.verify();
+  const { error } = await getResend().domains.list();
+  if (error) throw new Error(`Resend API: ${error.message}`);
 }
+
 
 
 function stripHtml(html: string): string {

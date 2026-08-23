@@ -48,6 +48,6 @@ const seoGuardMiddleware = createMiddleware().server(async ({ next, request }) =
 });
 
 export const startInstance = createStart(() => ({
-  functionMiddleware: [attachSupabaseAuth, attachAuth],
+  functionMiddleware: [attachAuth],
   requestMiddleware: [wsMiddleware, errorMiddleware, csrfMiddleware, seoGuardMiddleware],
 }));

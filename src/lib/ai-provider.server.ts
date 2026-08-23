@@ -73,8 +73,9 @@ const DEFAULTS = {
   },
   openai: {
     // Рег.облако (Reg.ru Cloud AI) — OpenAI-совместимый шлюз.
-    // Точка входа задаётся OPENAI_BASE_URL, значение ниже — только запасное.
-    baseUrl: "https://api.openai.com/v1",
+    // Пустое значение намеренно: resolveAi требует OPENAI_BASE_URL и никогда
+    // не использует прямой адрес OpenAI.
+    baseUrl: "",
     model: "deepseek-v4-flash",
     visionModel: "gemini-3.5-flash",
   },
@@ -115,11 +116,15 @@ export async function resolveAi(task: AiTask): Promise<Resolved> {
 
   if (provider === "openai") {
     const apiKey = await secretValue("OPENAI_API_KEY");
-    if (!apiKey) throw new AiUnavailableError();
+    const baseUrl = env("OPENAI_BASE_URL");
+    // Прямой fallback к провайдеру запрещён: с российского VPS он отвечает
+    // unsupported_country_region_territory. Оба AI-сценария
+    // (конфигуратор и сканер) обязаны идти через настроенный шлюз.
+    if (!apiKey || !baseUrl) throw new AiUnavailableError();
     return {
       provider,
       apiKey,
-      baseUrl: trimSlash(env("OPENAI_BASE_URL") ?? d.baseUrl),
+      baseUrl: trimSlash(baseUrl),
       model: (isVision ? env("OPENAI_VISION_MODEL") : null) ?? env("OPENAI_MODEL") ??
         (isVision ? d.visionModel : d.model),
     };

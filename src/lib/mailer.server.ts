@@ -55,7 +55,7 @@ export async function sendMail(payload: MailPayload): Promise<{ messageId?: stri
 }
 
 /** Диагностика канала отправки (Resend API доступен и ключ валиден). */
-export async function verifySmtp(): Promise<void> {
+export async function verifyResend(): Promise<void> {
   const { error } = await getResend().domains.list();
   if (error) throw new Error(`Resend API: ${error.message}`);
 }

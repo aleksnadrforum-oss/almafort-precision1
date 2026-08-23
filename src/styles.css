@@ -1,0 +1,704 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Design system definition.
+ *
+ * The @theme inline block maps CSS custom properties to Tailwind utility
+ * classes (e.g. --color-primary -> bg-primary, text-primary).
+ *
+ * The :root and .dark blocks define the actual color values using oklch.
+ * All colors MUST use oklch format.
+ *
+ * To add a new semantic color:
+ * 1. Add the variable to :root (light value) and .dark (dark value)
+ * 2. Register it in @theme inline as --color-<name>: var(--<name>)
+ */
+
+@theme inline {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --color-surface: var(--surface);
+  --color-surface-hover: var(--surface-hover);
+  --color-dashed: var(--dashed);
+  --color-placeholder: var(--placeholder);
+  --color-placeholder-foreground: var(--placeholder-foreground);
+  --color-disabled: var(--disabled);
+  --color-disabled-foreground: var(--disabled-foreground);
+  --radius-sm: calc(var(--radius) - 4px);
+
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-ring-offset-background: var(--background);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+:root {
+  --radius: 0.25rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.204 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.204 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.204 0 0);
+  --primary: oklch(0.573 0.221 27.5);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.984 0.002 247.9);
+  --secondary-foreground: oklch(0.204 0 0);
+  --muted: oklch(0.984 0.002 247.9);
+  --muted-foreground: oklch(0.469 0 0);
+  --accent: oklch(0.968 0.003 247.9);
+  --accent-foreground: oklch(0.204 0 0);
+  --destructive: oklch(0.573 0.221 27.5);
+  --destructive-foreground: oklch(1 0 0);
+  --border: oklch(0.936 0.003 247.9);
+  --input: oklch(0.936 0.003 247.9);
+  /* Нейтральный фокус: красная обводка на вводе текста воспринимается как ошибка. */
+  --ring: oklch(0.62 0.02 255);
+  --surface: oklch(0.984 0.002 247.9);
+  --dashed: oklch(0.872 0.008 264);
+  --placeholder: oklch(0.919 0.004 264);
+  --placeholder-foreground: oklch(0.711 0.014 264);
+  --disabled: oklch(0.919 0.004 264);
+  --disabled-foreground: oklch(0.711 0.014 264);
+  --surface-hover: oklch(0.962 0.003 247.9);
+  --primary-soft: oklch(0.573 0.221 27.5 / 0.1);
+  --shadow-header: 0 1px 3px oklch(0.204 0 0 / 0.07), 0 8px 24px oklch(0.204 0 0 / 0.04);
+  --chart-1: oklch(0.573 0.221 27.5);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --sidebar: oklch(0.984 0.002 247.9);
+  --sidebar-foreground: oklch(0.204 0 0);
+  --sidebar-primary: oklch(0.573 0.221 27.5);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.968 0.003 247.9);
+  --sidebar-accent-foreground: oklch(0.204 0 0);
+  --sidebar-border: oklch(0.936 0.003 247.9);
+  --sidebar-ring: oklch(0.573 0.221 27.5);
+}
+
+
+.dark {
+  --background: oklch(0.129 0.042 264.695);
+  --foreground: oklch(0.984 0.003 247.858);
+  --card: oklch(0.208 0.042 265.755);
+  --card-foreground: oklch(0.984 0.003 247.858);
+  --popover: oklch(0.208 0.042 265.755);
+  --popover-foreground: oklch(0.984 0.003 247.858);
+  --primary: oklch(0.929 0.013 255.508);
+  --primary-foreground: oklch(0.208 0.042 265.755);
+  --secondary: oklch(0.279 0.041 260.031);
+  --secondary-foreground: oklch(0.984 0.003 247.858);
+  --muted: oklch(0.279 0.041 260.031);
+  --muted-foreground: oklch(0.704 0.04 256.788);
+  --accent: oklch(0.279 0.041 260.031);
+  --accent-foreground: oklch(0.984 0.003 247.858);
+  --destructive: oklch(0.704 0.191 22.216);
+  --destructive-foreground: oklch(0.984 0.003 247.858);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.551 0.027 264.364);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.208 0.042 265.755);
+  --sidebar-foreground: oklch(0.984 0.003 247.858);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
+  --sidebar-accent: oklch(0.279 0.041 260.031);
+  --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.551 0.027 264.364);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  html,
+  body {
+    max-width: 100vw;
+    /* clip, а не hidden: hidden делает body scroll-контейнером и ломает sticky */
+    overflow-x: clip;
+  }
+
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+  }
+}
+
+@layer base {
+  html {
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  a, button {
+    transition: all 0.2s ease-in-out;
+  }
+  /* Длинные технические названия («Реверс-инжиниринг…») не рвут сетку */
+  h1, h2, h3, h4, p, li, td, th, label, span, a {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+}
+
+/* Единственный элемент с правом на горизонтальный скролл — таблица каталога.
+   Скролл включается только когда сетка реально не помещается: иначе контейнер
+   становится scroll-портом и ломает viewport-sticky у шапки. */
+@utility table-container {
+  width: 100%;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+}
+
+@media (max-width: 1120px) {
+  .table-container {
+    overflow-x: auto;
+  }
+}
+
+
+/* Единая монолитная сетка каталога: шапка и строки подчиняются одному шаблону.
+   Все колонки, кроме названия, зафиксированы в px — расхождения невозможны. */
+@utility catalog-grid-parent {
+  display: grid;
+  grid-template-columns:
+    40px 60px minmax(220px, 3fr) 120px 130px 110px 110px 110px 110px 150px;
+  width: 100%;
+  min-width: 1080px;
+}
+
+/* Шапка вынесена отдельным элементом только ради position: sticky
+   (grid-item не может «выехать» за пределы своей полосы), шаблон — тот же. */
+@utility catalog-grid-header {
+  display: grid;
+  grid-template-columns:
+    40px 60px minmax(220px, 3fr) 120px 130px 110px 110px 110px 110px 150px;
+  width: 100%;
+  min-width: 1080px;
+}
+
+@utility catalog-row {
+  display: contents;
+}
+
+
+@utility catalog-cell {
+  min-width: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  padding: 12px 8px;
+}
+
+
+
+
+@utility no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@keyframes levitate {
+  0%, 100% { transform: translateY(-10px); }
+  50% { transform: translateY(10px); }
+}
+
+@utility animate-levitate {
+  animation: levitate 6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-levitate { animation: none; }
+}
+
+@keyframes scan-sweep {
+  0% { transform: translateY(-8px); }
+  100% { transform: translateY(256px); }
+}
+
+.scan-beam {
+  position: absolute;
+  inset-inline: 0;
+  height: 3px;
+  background: oklch(1 0 0);
+  box-shadow: 0 0 18px 4px oklch(0.573 0.221 27.5 / 0.6);
+  animation: scan-sweep 1.1s ease-in-out infinite alternate;
+}
+
+/* Выезд bottom sheet результатов ИИ-распознавания */
+@keyframes slide-in-bottom {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* --- Навигация и мобильная адаптация --------------------------------- */
+
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+
+/* Якоря не уезжают под липкую шапку */
+:target,
+section[id] {
+  scroll-margin-top: 96px;
+}
+
+/* Длинные слова («Реверс-инжиниринг») переносятся, а не ломают вьюпорт */
+h1,
+h2,
+h3,
+h4,
+p,
+li,
+dt,
+dd,
+label,
+summary,
+blockquote {
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+/* --- MOBILE-FIRST ПРОТОКОЛ ------------------------------------------- */
+
+/* iOS рисует собственные скругления/тени на полях и кнопках — отключаем. */
+input,
+textarea,
+select,
+button {
+  -webkit-appearance: none;
+  appearance: none;
+  border-radius: 0;
+}
+input[type="checkbox"],
+input[type="radio"] {
+  -webkit-appearance: auto;
+  appearance: auto;
+}
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (max-width: 767px) {
+  /* < 16px в поле ввода = принудительный зум Safari iOS */
+  input,
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+
+  /* Палец, а не курсор: зона касания 44×44 у всей интерактивной мелочи */
+  button,
+  a[role="button"],
+  [role="radio"],
+  summary {
+    min-height: 44px;
+  }
+  button.tap-sm,
+  a.tap-sm {
+    min-height: 0;
+  }
+
+  /* Нижняя панель Safari не должна съедать липкие CTA */
+  .safe-bottom {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+}
+
+/* Двойной тап по «+/−» не выделяет текст вокруг */
+.no-select {
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+/* Горизонтальная карусель фото со снапом и свайпом */
+@utility swipe-track {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+}
+
+@utility swipe-slide {
+  flex: 0 0 100%;
+  scroll-snap-align: center;
+}
+
+/* На смартфоне hover-состояний нет: гасим их, оставляя active */
+@media (hover: none) {
+  /* Тач-экран: hover не должен «залипать» после тапа при скролле */
+  a:hover,
+  button:hover,
+  [role="button"]:hover,
+  .group:hover {
+    transform: none;
+  }
+  a:hover,
+  button:hover {
+    box-shadow: none;
+  }
+}
+
+/* Двойной тап по интерактиву не зумит экран */
+a,
+button,
+[role="button"],
+label,
+summary {
+  touch-action: manipulation;
+}
+
+/* Скролл внутри списков не «протекает» на всю страницу */
+.scroll-isolate {
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+
+/* --- PWA / BOTTOM TAB BAR -------------------------------------------- */
+
+:root {
+  --tabbar-h: 4rem;
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  /* Полная высота нижней навигации вместе с safe-area — единый источник правды */
+  --tabbar-total: calc(var(--tabbar-h) + var(--safe-b));
+  /* Высота липкой панели «Итого» на странице корзины (без safe-area) */
+  --cart-total-h: 5rem;
+}
+
+/* На десктопе таббара нет — обнуляем отступы */
+@media (min-width: 768px) {
+  :root {
+    --tabbar-total: 0px;
+  }
+}
+
+/* Контент не должен прятаться под нижней панелью навигации */
+@media (max-width: 767px) {
+  body {
+    padding-bottom: calc(var(--tabbar-total) + 4rem);
+  }
+  /* Липкие блоки внутри страниц приклеены строго НАД панелью */
+  .above-tabbar {
+    bottom: var(--tabbar-total);
+  }
+}
+
+/* Виртуальная клавиатура: таббар прячется, липкий CTA садится на низ вьюпорта */
+body.kb-open .mobile-tabbar {
+  transform: translateY(110%);
+  pointer-events: none;
+}
+body.kb-open .above-tabbar {
+  bottom: 0;
+}
+.mobile-tabbar {
+  transition: transform 0.18s ease-out;
+}
+
+/* Учитываем «чёлку» / Dynamic Island у липкой шапки */
+.safe-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+/* Скелетные загрузчики: удерживают каркас и гасят CLS */
+@utility skeleton {
+  animation: pulse 1.6s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  background-color: var(--placeholder);
+  border-radius: var(--radius-md);
+}
+
+/* Три прыгающие точки «ИИ печатает» */
+@keyframes typing-bounce {
+  0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+  40% { transform: translateY(-4px); opacity: 1; }
+}
+.typing-dot {
+  animation: typing-bounce 1.2s infinite ease-in-out;
+}
+.typing-dot:nth-child(2) { animation-delay: 0.15s; }
+.typing-dot:nth-child(3) { animation-delay: 0.3s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .typing-dot { animation: none; }
+}
+
+/* Свайп-удаление: карточка едет влево, под ней открывается красная зона */
+.swipe-row {
+  position: relative;
+  overflow: hidden;
+  touch-action: pan-y;
+}
+.swipe-row-content {
+  position: relative;
+  background-color: var(--card);
+  will-change: transform;
+}
+
+/* Защита от авто-зума iOS Safari: поля ввода никогда не мельче 16px */
+@media (max-width: 767px) {
+  input,
+  textarea,
+  select {
+    font-size: 16px;
+  }
+}
+
+
+/* --- QA-ПРОТОКОЛ: ГЕОМЕТРИЯ, КЛАВИАТУРА, ЛИПКИЕ КОЛОНКИ ---------------- */
+
+/* 100vh-баг мобильных браузеров: панель Safari/Chrome прячется на скролле
+   и экран «прыгает». Динамическая единица держит высоту стабильной. */
+@supports (height: 100dvh) {
+  .min-h-screen {
+    min-height: 100dvh;
+  }
+}
+
+/* Клавиатура не должна закрывать активное поле и кнопку отправки */
+input:focus,
+textarea:focus,
+select:focus {
+  scroll-margin-top: 96px;
+  scroll-margin-bottom: 180px;
+}
+
+/* Липкая колонка названия в B2B-таблице: при горизонтальном скролле
+   клиент всегда видит, какую строку он смотрит. */
+@media (max-width: 1120px) {
+  .catalog-grid-header > *:nth-child(-n + 3),
+  .catalog-row > *:nth-child(-n + 3) {
+    position: sticky;
+    z-index: 6;
+    background-color: var(--card);
+  }
+  .catalog-grid-header > *:nth-child(1),
+  .catalog-row > *:nth-child(1) {
+    left: 0;
+  }
+  .catalog-grid-header > *:nth-child(2),
+  .catalog-row > *:nth-child(2) {
+    left: 40px;
+  }
+  .catalog-grid-header > *:nth-child(3),
+  .catalog-row > *:nth-child(3) {
+    left: 100px;
+    box-shadow: 8px 0 12px -10px oklch(0 0 0 / 0.35);
+  }
+}
+
+/* Ландшафт на телефоне: шторки не выше экрана и всегда прокручиваются */
+@media (max-height: 520px) {
+  [data-bottom-sheet] {
+    max-height: 100dvh;
+    overflow-y: auto;
+  }
+}
+
+/* Ручка шторки — явная цель для свайпа вниз */
+.sheet-grabber {
+  display: grid;
+  place-items: center;
+  padding: 10px 0 6px;
+  cursor: grab;
+  touch-action: none;
+}
+.sheet-grabber::before {
+  content: "";
+  width: 44px;
+  height: 4px;
+  border-radius: 9999px;
+  background-color: var(--placeholder);
+}
+
+/* --- QA-ПРОТОКОЛ ДЕСКТОПА: КУРСОР И HOVER-ОТКЛИК -------------------- */
+
+/* Клиент должен видеть кликабельность до нажатия */
+@media (hover: hover) and (pointer: fine) {
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  a[href],
+  summary,
+  label:has(input[type="checkbox"]),
+  label:has(input[type="radio"]),
+  select {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  [aria-disabled="true"] {
+    cursor: not-allowed;
+  }
+
+  /* Подсветка строки каталога под курсором — видно, где находится глаз */
+  .catalog-row:hover > * {
+    background-color: color-mix(in oklab, var(--surface) 70%, transparent);
+  }
+}
+
+/* Видимый фокус для клавиатурной навигации по всему сайту */
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+/* В полях ввода обводка нейтральная и не мигает при наборе текста. */
+input:focus,
+input:focus-visible,
+textarea:focus,
+textarea:focus-visible,
+select:focus,
+select:focus-visible,
+[contenteditable="true"]:focus,
+[contenteditable="true"]:focus-visible {
+  outline: none;
+  border-color: var(--ring);
+  box-shadow: 0 0 0 1px var(--ring);
+}
+
+
+/* ── Аффорданс: интерактивные элементы отвечают на мышь ─────────────── */
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]),
+[role="switch"],
+[role="tab"],
+summary,
+label[for],
+select,
+a[href] {
+  cursor: pointer;
+}
+
+button:disabled,
+[aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  a[href] {
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease,
+      border-color 0.2s ease,
+      box-shadow 0.2s ease,
+      opacity 0.2s ease,
+      transform 0.2s ease;
+  }
+  button:not(:disabled):hover,
+  [role="button"]:not([aria-disabled="true"]):hover {
+    filter: brightness(0.97);
+  }
+}
+
+/* Тумблеры: нативная «пилюля» iOS/Android, без прямых углов */
+[role="switch"] {
+  border-radius: 9999px !important;
+}
+[role="switch"] > span {
+  border-radius: 9999px !important;
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 0.25),
+    inset 0 -1px 1px rgb(0 0 0 / 0.08);
+}
+
+/* ============================================================
+   Единая сетка таблицы корзины / оформления заказа.
+   Шапка и строки используют ОДИН трек-лист, поэтому колонки
+   физически не могут разъехаться. На узких экранах таблица
+   уезжает в горизонтальный скролл, а не сжимается в кашу.
+   ============================================================ */
+@media (min-width: 768px) {
+  .cart-table-grid {
+    display: grid;
+    grid-template-columns: minmax(280px, 3fr) 120px 120px 120px 40px;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .cart-table-scroll {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+  }
+
+  .cart-table-scroll > * {
+    min-width: 744px;
+  }
+}
+
+/* Плавающая «пилюля» над таббаром — с воздухом */
+.above-tabbar-float {
+  bottom: calc(var(--tabbar-total) + 0.75rem);
+}
+body.kb-open .above-tabbar-float {
+  bottom: 0.75rem;
+}
+
+/* Ошибка ввода одноразового кода: короткая тряска полей. */
+@keyframes otp-shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}

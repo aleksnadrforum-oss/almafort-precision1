@@ -192,24 +192,19 @@ export function noticeEmail(subject: string, message: string): { subject: string
   };
 }
 
-/** Одноразовый код входа: крупные цифры, адаптивная вёрстка. */
+/** Одноразовый код входа: русифицированный и стилизованный шаблон. */
 export function otpEmail(code: string): { subject: string; html: string } {
-  const digits = code
-    .split("")
-    .map(
-      (d) =>
-        `<td style="padding:0 6px;"><div style="width:56px;height:64px;line-height:64px;text-align:center;background:#f4f5f4;border:1px solid #d9ddd9;font-size:34px;font-weight:800;letter-spacing:.04em;">${escapeHtml(d)}</div></td>`,
-    )
-    .join("");
   return {
-    subject: `Ваш код доступа ${BRAND}`,
-    html: layout(
-      "Код доступа",
-      `<h1 style="margin:0 0 12px;font-size:20px;">Здравствуйте!</h1>
-       <p style="margin:0 0 18px;">Для входа в личный кабинет используйте следующий одноразовый код:</p>
-       <table role="presentation" cellpadding="0" cellspacing="0" align="center" style="margin:0 auto;"><tr>${digits}</tr></table>
-       <p style="margin:20px 0 0;font-size:13px;color:#6b706b;">Код действителен 5 минут. Если вы не запрашивали код, просто проигнорируйте это письмо.</p>`,
-    ),
+    subject: "Код для входа в систему ALMAFORT",
+    html: `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eaeaea; border-radius: 10px;">
+  <h2 style="color: #1a1a1a;">Авторизация в ALMAFORT</h2>
+  <p style="color: #4a4a4a; font-size: 16px;">Здравствуйте!</p>
+  <p style="color: #4a4a4a; font-size: 16px;">Ваш одноразовый код для входа в систему:</p>
+  <div style="background-color: #f6f8fa; padding: 15px; border-radius: 5px; text-align: center; margin: 20px 0;">
+    <span style="font-size: 24px; font-weight: bold; letter-spacing: 5px; color: #000;">${escapeHtml(code)}</span>
+  </div>
+  <p style="color: #4a4a4a; font-size: 14px;">Никому не сообщайте этот код. Если вы не запрашивали вход, просто проигнорируйте это письмо.</p>
+</div>`,
   };
 }
 

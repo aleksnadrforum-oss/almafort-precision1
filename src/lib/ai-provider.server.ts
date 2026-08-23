@@ -117,8 +117,8 @@ export async function resolveAi(task: AiTask): Promise<Resolved> {
   if (provider === "openai") {
     const apiKey = await secretValue("OPENAI_API_KEY");
     const baseUrl = env("OPENAI_BASE_URL");
-    // Прямой fallback на api.openai.com запрещён: с российского VPS он
-    // отвечает unsupported_country_region_territory. Оба AI-сценария
+    // Прямой fallback к провайдеру запрещён: с российского VPS он отвечает
+    // unsupported_country_region_territory. Оба AI-сценария
     // (конфигуратор и сканер) обязаны идти через настроенный шлюз.
     if (!apiKey || !baseUrl) throw new AiUnavailableError();
     return {

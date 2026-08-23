@@ -52,9 +52,7 @@ export const VAULT_KEYS = [
   { name: "DL_API_KEY", label: "Dellin API AppKey", group: "Логистика" },
   { name: "S3_ACCESS_KEY_ID", label: "S3 Access Key", group: "Инфраструктура и документы" },
   { name: "S3_SECRET_ACCESS_KEY", label: "S3 Secret Key", group: "Инфраструктура и документы" },
-  { name: "SMTP_HOST", label: "SMTP сервер", group: "Инфраструктура и документы" },
-  { name: "SMTP_USER", label: "SMTP логин", group: "Инфраструктура и документы" },
-  { name: "SMTP_PASSWORD", label: "SMTP пароль", group: "Инфраструктура и документы" },
+  { name: "RESEND_API_KEY", label: "Resend API Key", group: "Инфраструктура и документы" },
 ] as const satisfies ReadonlyArray<{ name: string; label: string; group: VaultGroup }>;
 
 

@@ -14,8 +14,8 @@ import {
 import { ensureServerWebSocket } from "@/lib/ws-polyfill.server";
 
 /**
- * Кастомный SMTP-шлюз ALMAFORT (аналог PHP-мейлера).
- * POST JSON -> nodemailer -> корпоративный SMTP. Никаких внешних почтовых облаков.
+ * Почтовый шлюз ALMAFORT.
+ * POST JSON -> Resend HTTPS API (порт 443).
  *
  * Публичный тип только один — `recovery` (сброс пароля): тело письма формирует
  * сервер, произвольный текст снаружи прислать нельзя => это не open relay.

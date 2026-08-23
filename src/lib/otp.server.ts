@@ -104,10 +104,11 @@ export async function requestOtp(emailRaw: string, ip: string): Promise<RequestR
   try {
     await sendMail({ to: email, subject: tpl.subject, html: tpl.html });
   } catch (e) {
-    // На стенде без SMTP код выводим в лог сервера, чтобы вход был возможен.
-    if (!process.env["SMTP_USER"] || !process.env["SMTP_PASS"]) {
-      console.warn(`[otp] SMTP не настроен, код для ${email}: ${code}`);
+    // На стенде без ключа Resend код выводим в лог сервера, чтобы вход был возможен.
+    if (!(process.env["RESEND_API_KEY"] ?? "").trim()) {
+      console.warn(`[otp] Resend не настроен, код для ${email}: ${code}`);
     } else {
+      console.error("[otp] не удалось отправить код:", (e as Error)?.message);
       throw e;
     }
   }

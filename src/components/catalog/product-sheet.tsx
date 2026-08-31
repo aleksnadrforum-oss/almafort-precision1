@@ -405,6 +405,8 @@ export function ProductSheet({
   const [calcState, setCalcState] = useState<"idle" | "loading" | "ready" | "failed">("idle");
   const assets = useAssetGroups();
   const assetGroup = product ? assets.get(product.sku) : undefined;
+  const service = product ? SERVICE_PROFILES[product.sku] : undefined;
+
   const profile = product
     ? SKU_PROFILES[product.sku] ?? PROFILES[product.category] ?? DEFAULT_PROFILE
     : DEFAULT_PROFILE;

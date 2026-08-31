@@ -45,6 +45,7 @@ import { Route as ApiCheckoutSubmitRouteImport } from './routes/api/checkout/sub
 import { Route as ApiConfiguratorSolveRouteImport } from './routes/api/configurator/solve'
 import { Route as ApiDadataCityRouteImport } from './routes/api/dadata/city'
 import { Route as ApiDadataPartyRouteImport } from './routes/api/dadata/party'
+import { Route as ApiInventoryHoldRouteImport } from './routes/api/inventory/hold'
 import { Route as ApiLeadsBulkRouteImport } from './routes/api/leads/bulk'
 import { Route as ApiParserUploadRouteImport } from './routes/api/parser/upload'
 import { Route as ApiPublicSendMailRouteImport } from './routes/api/public/send-mail'
@@ -246,6 +247,11 @@ const ApiDadataPartyRoute = ApiDadataPartyRouteImport.update({
   path: '/api/dadata/party',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiInventoryHoldRoute = ApiInventoryHoldRouteImport.update({
+  id: '/api/inventory/hold',
+  path: '/api/inventory/hold',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiLeadsBulkRoute = ApiLeadsBulkRouteImport.update({
   id: '/api/leads/bulk',
   path: '/api/leads/bulk',
@@ -344,6 +350,7 @@ export interface FileRoutesByFullPath {
   '/api/configurator/solve': typeof ApiConfiguratorSolveRoute
   '/api/dadata/city': typeof ApiDadataCityRoute
   '/api/dadata/party': typeof ApiDadataPartyRoute
+  '/api/inventory/hold': typeof ApiInventoryHoldRoute
   '/api/leads/bulk': typeof ApiLeadsBulkRoute
   '/api/parser/upload': typeof ApiParserUploadRoute
   '/api/public/send-mail': typeof ApiPublicSendMailRoute
@@ -391,6 +398,7 @@ export interface FileRoutesByTo {
   '/api/configurator/solve': typeof ApiConfiguratorSolveRoute
   '/api/dadata/city': typeof ApiDadataCityRoute
   '/api/dadata/party': typeof ApiDadataPartyRoute
+  '/api/inventory/hold': typeof ApiInventoryHoldRoute
   '/api/leads/bulk': typeof ApiLeadsBulkRoute
   '/api/parser/upload': typeof ApiParserUploadRoute
   '/api/public/send-mail': typeof ApiPublicSendMailRoute
@@ -442,6 +450,7 @@ export interface FileRoutesById {
   '/api/configurator/solve': typeof ApiConfiguratorSolveRoute
   '/api/dadata/city': typeof ApiDadataCityRoute
   '/api/dadata/party': typeof ApiDadataPartyRoute
+  '/api/inventory/hold': typeof ApiInventoryHoldRoute
   '/api/leads/bulk': typeof ApiLeadsBulkRoute
   '/api/parser/upload': typeof ApiParserUploadRoute
   '/api/public/send-mail': typeof ApiPublicSendMailRoute
@@ -493,6 +502,7 @@ export interface FileRouteTypes {
     | '/api/configurator/solve'
     | '/api/dadata/city'
     | '/api/dadata/party'
+    | '/api/inventory/hold'
     | '/api/leads/bulk'
     | '/api/parser/upload'
     | '/api/public/send-mail'
@@ -540,6 +550,7 @@ export interface FileRouteTypes {
     | '/api/configurator/solve'
     | '/api/dadata/city'
     | '/api/dadata/party'
+    | '/api/inventory/hold'
     | '/api/leads/bulk'
     | '/api/parser/upload'
     | '/api/public/send-mail'
@@ -590,6 +601,7 @@ export interface FileRouteTypes {
     | '/api/configurator/solve'
     | '/api/dadata/city'
     | '/api/dadata/party'
+    | '/api/inventory/hold'
     | '/api/leads/bulk'
     | '/api/parser/upload'
     | '/api/public/send-mail'
@@ -630,6 +642,7 @@ export interface RootRouteChildren {
   ApiConfiguratorSolveRoute: typeof ApiConfiguratorSolveRoute
   ApiDadataCityRoute: typeof ApiDadataCityRoute
   ApiDadataPartyRoute: typeof ApiDadataPartyRoute
+  ApiInventoryHoldRoute: typeof ApiInventoryHoldRoute
   ApiLeadsBulkRoute: typeof ApiLeadsBulkRoute
   ApiParserUploadRoute: typeof ApiParserUploadRoute
   ApiPublicSendMailRoute: typeof ApiPublicSendMailRoute
@@ -897,6 +910,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiDadataPartyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/inventory/hold': {
+      id: '/api/inventory/hold'
+      path: '/api/inventory/hold'
+      fullPath: '/api/inventory/hold'
+      preLoaderRoute: typeof ApiInventoryHoldRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/leads/bulk': {
       id: '/api/leads/bulk'
       path: '/api/leads/bulk'
@@ -1074,6 +1094,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiConfiguratorSolveRoute: ApiConfiguratorSolveRoute,
   ApiDadataCityRoute: ApiDadataCityRoute,
   ApiDadataPartyRoute: ApiDadataPartyRoute,
+  ApiInventoryHoldRoute: ApiInventoryHoldRoute,
   ApiLeadsBulkRoute: ApiLeadsBulkRoute,
   ApiParserUploadRoute: ApiParserUploadRoute,
   ApiPublicSendMailRoute: ApiPublicSendMailRoute,

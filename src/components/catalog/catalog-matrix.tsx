@@ -378,8 +378,9 @@ function MobileCard({
           <button
             type="button"
             onClick={() => bump(-Math.min(qty, 100) || -1)}
+            disabled={outOfStock}
             aria-label="Уменьшить количество"
-            className="grid h-11 place-items-center rounded-md border border-[#D1D5DB] bg-card text-foreground active:scale-95"
+            className="grid h-11 place-items-center rounded-md border border-[#D1D5DB] bg-card text-foreground active:scale-95 disabled:cursor-not-allowed disabled:text-gray-300"
           >
             <Minus className="size-4" strokeWidth={2} />
           </button>
@@ -387,19 +388,23 @@ function MobileCard({
             type="text"
             inputMode="numeric"
             value={qty || ""}
+            max={limited ? maxQty : undefined}
+            disabled={outOfStock}
             onChange={(e) => {
               const digits = e.target.value.replace(/[^0-9]/g, "").slice(0, 7);
               setQty(digits ? Number.parseInt(digits, 10) : 0);
             }}
+            onBlur={() => setQty((v) => clampQty(v))}
             placeholder="0"
             aria-label={`Количество ${p.sku}`}
-            className="h-11 w-full rounded-md border border-[#D1D5DB] bg-card px-3 text-center tabular-nums text-foreground outline-none focus:border-foreground"
+            className="h-11 w-full rounded-md border border-[#D1D5DB] bg-card px-3 text-center tabular-nums text-foreground outline-none focus:border-foreground disabled:cursor-not-allowed disabled:bg-[#F3F4F6] disabled:text-gray-300"
           />
           <button
             type="button"
             onClick={() => bump(100)}
+            disabled={outOfStock || atMax}
             aria-label="Увеличить количество"
-            className="grid h-11 place-items-center rounded-md border border-[#D1D5DB] bg-card text-foreground active:scale-95"
+            className="grid h-11 place-items-center rounded-md border border-[#D1D5DB] bg-card text-foreground active:scale-95 disabled:cursor-not-allowed disabled:text-gray-300"
           >
             <Plus className="size-4" strokeWidth={2} />
           </button>
@@ -409,13 +414,16 @@ function MobileCard({
       <button
         type="button"
         onClick={() => void add()}
-        disabled={state === "loading"}
-        className={`mt-3 flex h-12 w-full items-center justify-center gap-2 rounded-md text-sm font-semibold tabular-nums transition-colors active:scale-[0.99] disabled:opacity-60 ${
-          state === "done"
-            ? "bg-[#10B981] text-white"
-            : "bg-primary text-primary-foreground"
+        disabled={state === "loading" || outOfStock}
+        className={`mt-3 flex h-12 w-full items-center justify-center gap-2 rounded-md text-sm font-semibold tabular-nums transition-colors active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed ${
+          outOfStock
+            ? "bg-[#E5E7EB] text-[#9CA3AF]"
+            : state === "done"
+              ? "bg-[#10B981] text-white"
+              : "bg-primary text-primary-foreground"
         }`}
       >
+
         {state === "loading" ? (
           <Loader2 className="size-4 animate-spin" strokeWidth={1.75} />
         ) : state === "done" ? (

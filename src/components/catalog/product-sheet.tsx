@@ -470,7 +470,12 @@ export function ProductSheet({
     const idx = wanted ? (prof.palette ?? []).findIndex((s) => s.hex.toLowerCase() === wanted) : -1;
     setSwatchIndex(idx >= 0 ? idx : 0);
   }, [product?.sku, initialColorHex]);
-  const activeSwatch = profile.palette?.[swatchIndex];
+  // Позиции без палитры получают один базовый свотч — UI везде одинаковый.
+  const swatches: Swatch[] =
+    profile.palette && profile.palette.length
+      ? profile.palette
+      : [{ hex: PART_COLOR_HEX, label: profile.colorLabel }];
+  const activeSwatch = swatches[swatchIndex] ?? swatches[0];
   const partColor = activeSwatch?.hex ?? PART_COLOR_HEX;
   const partMaterial = activeSwatch
     ? {

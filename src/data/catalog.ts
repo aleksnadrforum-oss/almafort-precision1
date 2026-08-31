@@ -169,7 +169,9 @@ const SKU_SPECS: Partial<
 };
 
 export const PRODUCTS: Product[] = raw.map(
-  ([sku, name, parent, category, dims, color, price, qty, weight, volume, tier1, tier2]) => ({
+  ([sku, name, parent, category, dims, color, price, qty, weight, volume, tier1, tier2]) => {
+    const spec = SKU_SPECS[sku];
+    return {
     id: sku.toLowerCase(),
     sku,
     name,
@@ -177,9 +179,10 @@ export const PRODUCTS: Product[] = raw.map(
     category,
     dims,
     color,
-    material: "Полипропилен PP, ударопрочный",
-    gost: "ГОСТ 26996-86 / ТУ 22.29.29",
-    load: "до 240 кг статической нагрузки",
+    material: spec?.material ?? "Полипропилен PP, ударопрочный",
+    gost: spec?.gost ?? "ГОСТ 26996-86 / ТУ 22.29.29",
+    load: spec?.load ?? "до 240 кг статической нагрузки",
+    features: spec?.features,
     weight,
     volume,
     stock:

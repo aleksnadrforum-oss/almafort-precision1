@@ -82,7 +82,7 @@ async function generateInvoicePdfImpl({
     },
   });
 
-  const { goods, weight } = cartTotals(lines);
+  const { goods, weight, volume } = cartTotals(lines);
   const delivery =
     carrier === "pickup"
       ? 0
@@ -178,7 +178,7 @@ async function generateInvoicePdfImpl({
         margin: [0, 14, 0, 12],
       },
       {
-        table: { headerRows: 1, widths: [18, 70, "*", 45, 55, 60], body },
+        table: { headerRows: 1, dontBreakRows: true, keepWithHeaderRows: 1, widths: [18, 70, "*", 45, 55, 60], body },
         layout: {
           hLineWidth: () => 0.6,
           vLineWidth: () => 0.6,
@@ -196,6 +196,8 @@ async function generateInvoicePdfImpl({
             width: 260,
             stack: [
               { text: `Товары: ${money(goods)} руб.`, alignment: "right" },
+              { text: `Итого вес: ${weight.toLocaleString("ru-RU")} кг`, alignment: "right", color: "#595959" },
+              { text: `Итого объём: ${volume.toLocaleString("ru-RU")} м3`, alignment: "right", color: "#595959" },
               {
                 text: `Доставка: ${delivery ? `${money(delivery)} руб.` : "самовывоз"}`,
                 alignment: "right",

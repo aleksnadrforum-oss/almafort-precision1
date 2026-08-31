@@ -250,34 +250,60 @@ function MobileCard({
   return (
     <li className="rounded-lg border border-border bg-card p-4">
       <div className="flex gap-3">
-        <button
-          type="button"
-          onClick={() => (thumb ? setLightbox(true) : onOpenProduct(p))}
-          aria-label={`Открыть ${p.sku}`}
-          className="grid size-16 shrink-0 place-items-center overflow-hidden rounded-md border border-border bg-white p-1"
-        >
-          {thumb ? (
-            <img
-              src={thumb}
-              alt={p.name}
-              width={64}
-              height={64}
-              loading="lazy"
-              className="size-full object-contain"
-            />
-          ) : (
-            <ProductThumb src={p.image_url} alt={p.name} />
-          )}
-        </button>
-
-        <div className="min-w-0 flex-1">
+        {onRequest ? (
+          <span
+            aria-hidden
+            className="grid size-16 shrink-0 place-items-center overflow-hidden rounded-md border border-border bg-white p-1"
+          >
+            {thumb ? (
+              <img
+                src={thumb}
+                alt={p.name}
+                width={64}
+                height={64}
+                loading="lazy"
+                className="size-full object-contain"
+              />
+            ) : (
+              <ProductThumb src={p.image_url} alt={p.name} />
+            )}
+          </span>
+        ) : (
           <button
             type="button"
-            onClick={() => onOpenProduct(p, palette?.[colorIndex]?.hex)}
-            className="tap-sm block w-full break-words text-left text-[15px] font-semibold leading-tight text-foreground [overflow-wrap:anywhere]"
+            onClick={() => (thumb ? setLightbox(true) : onOpenProduct(p))}
+            aria-label={`Открыть ${p.sku}`}
+            className="grid size-16 shrink-0 place-items-center overflow-hidden rounded-md border border-border bg-white p-1"
           >
-            {p.name}
+            {thumb ? (
+              <img
+                src={thumb}
+                alt={p.name}
+                width={64}
+                height={64}
+                loading="lazy"
+                className="size-full object-contain"
+              />
+            ) : (
+              <ProductThumb src={p.image_url} alt={p.name} />
+            )}
           </button>
+        )}
+
+        <div className="min-w-0 flex-1">
+          {onRequest ? (
+            <span className="tap-sm block w-full break-words text-left text-[15px] font-semibold leading-tight text-foreground [overflow-wrap:anywhere]">
+              {p.name}
+            </span>
+          ) : (
+            <button
+              type="button"
+              onClick={() => onOpenProduct(p, palette?.[colorIndex]?.hex)}
+              className="tap-sm block w-full break-words text-left text-[15px] font-semibold leading-tight text-foreground [overflow-wrap:anywhere]"
+            >
+              {p.name}
+            </button>
+          )}
           <p className="mt-1 text-xs tabular-nums text-muted-foreground">{p.sku}</p>
           <p className="mt-1 text-xs leading-[1.35] text-muted-foreground">{p.dims}</p>
           {palette && (
@@ -472,14 +498,23 @@ function Row({
       <div
         className={`${CELL} sticky left-0 z-[5] flex-col items-start justify-center bg-card shadow-[6px_0_8px_-6px_oklch(0_0_0/0.18)] group-hover/row:bg-surface md:static md:shadow-none`}
       >
-        <button
-          type="button"
-          onClick={() => onOpenProduct(p, palette?.[colorIndex]?.hex)}
-          title={p.name}
-          className="tap-sm block w-full cursor-pointer overflow-hidden text-ellipsis whitespace-nowrap text-left text-sm font-medium text-[oklch(0.19_0.01_264)] transition-colors hover:text-primary"
-        >
-          {p.name}
-        </button>
+        {onRequest ? (
+          <span
+            title={p.name}
+            className="block w-full overflow-hidden text-ellipsis whitespace-nowrap text-sm font-medium text-[oklch(0.19_0.01_264)]"
+          >
+            {p.name}
+          </span>
+        ) : (
+          <button
+            type="button"
+            onClick={() => onOpenProduct(p, palette?.[colorIndex]?.hex)}
+            title={p.name}
+            className="tap-sm block w-full cursor-pointer overflow-hidden text-ellipsis whitespace-nowrap text-left text-sm font-medium text-[oklch(0.19_0.01_264)] transition-colors hover:text-primary"
+          >
+            {p.name}
+          </button>
+        )}
         <span className="block w-full overflow-hidden text-ellipsis whitespace-nowrap text-xs tabular-nums text-[oklch(0.55_0.01_264)]">
           {p.sku}
         </span>

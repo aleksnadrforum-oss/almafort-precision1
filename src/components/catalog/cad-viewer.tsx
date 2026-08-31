@@ -55,8 +55,18 @@ function GltfModel({
  * Параметрический прокси-меш: используется, пока в S3 нет Draco-модели артикула.
  * Геометрия строится по категории, поэтому вьювер всегда показывает узел, а не пустой холст.
  */
-function ProxyModel({ category, wire, color }: { category: string; wire: boolean; color: string }) {
-  const mat = <meshStandardMaterial {...PLASTIC} color={color} wireframe={wire} />;
+function ProxyModel({
+  category,
+  wire,
+  color,
+  material,
+}: {
+  category: string;
+  wire: boolean;
+  color: string;
+  material: PartMaterial;
+}) {
+  const mat = <meshStandardMaterial {...material} color={color} wireframe={wire} />;
 
   if (category.includes("Колпач")) {
     return (

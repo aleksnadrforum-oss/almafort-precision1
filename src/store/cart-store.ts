@@ -54,6 +54,44 @@ export const lineKey = (l: { sku: string; color?: { label: string } | null | und
 export const productBySku = (sku: string) => PRODUCTS.find((p) => p.sku === sku);
 
 /**
+ * Потолок заказа по артикулу. Склад общий для всех цветов SKU.
+ * qty = 0 при наличии срока поставки — позиция «под заказ», лимита нет.
+ */
+export const stockLimit = (sku: string): number => {
+  const p = productBySku(sku);
+  if (!p) return Number.POSITIVE_INFINITY;
+  if (p.is_service) return Number.POSITIVE_INFINITY;
+  if (p.stock.qty > 0) return p.stock.qty;
+  return p.stock.lead ? Number.POSITIVE_INFINITY : 0;
+};
+
+/** Есть ли жёсткий складской лимит у позиции. */
+export const hasStockLimit = (sku: string) => Number.isFinite(stockLimit(sku));
+
+/** Сумма всех цветов артикула в корзине (можно исключить конкретную строку). */
+export const skuInCart = (
+  lines: Array<{ sku: string; quantity: number; color?: { label: string } | null | undefined }>,
+  sku: string,
+  excludeKey?: string,
+) =>
+  lines.reduce(
+    (a, l) => (l.sku === sku && lineKey(l) !== excludeKey ? a + l.quantity : a),
+    0,
+  );
+
+/** Сколько ещё можно добавить по артикулу с учётом уже набранных цветов. */
+export const availableFor = (
+  lines: Array<{ sku: string; quantity: number; color?: { label: string } | null | undefined }>,
+  sku: string,
+  excludeKey?: string,
+) => {
+  const limit = stockLimit(sku);
+  if (!Number.isFinite(limit)) return limit;
+  return Math.max(0, limit - skuInCart(lines, sku, excludeKey));
+};
+
+
+/**
  * Чистая функция каскадных скидок.
  * minColumn — «пол» ценовой колонки от грейда лояльности: Опт 1 / Опт 2
  * закрепляются за партнёром на любой объём.

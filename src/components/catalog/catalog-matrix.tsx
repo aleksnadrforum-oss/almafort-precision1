@@ -472,14 +472,23 @@ function Row({
       <div
         className={`${CELL} sticky left-0 z-[5] flex-col items-start justify-center bg-card shadow-[6px_0_8px_-6px_oklch(0_0_0/0.18)] group-hover/row:bg-surface md:static md:shadow-none`}
       >
-        <button
-          type="button"
-          onClick={() => onOpenProduct(p, palette?.[colorIndex]?.hex)}
-          title={p.name}
-          className="tap-sm block w-full cursor-pointer overflow-hidden text-ellipsis whitespace-nowrap text-left text-sm font-medium text-[oklch(0.19_0.01_264)] transition-colors hover:text-primary"
-        >
-          {p.name}
-        </button>
+        {onRequest ? (
+          <span
+            title={p.name}
+            className="block w-full overflow-hidden text-ellipsis whitespace-nowrap text-sm font-medium text-[oklch(0.19_0.01_264)]"
+          >
+            {p.name}
+          </span>
+        ) : (
+          <button
+            type="button"
+            onClick={() => onOpenProduct(p, palette?.[colorIndex]?.hex)}
+            title={p.name}
+            className="tap-sm block w-full cursor-pointer overflow-hidden text-ellipsis whitespace-nowrap text-left text-sm font-medium text-[oklch(0.19_0.01_264)] transition-colors hover:text-primary"
+          >
+            {p.name}
+          </button>
+        )}
         <span className="block w-full overflow-hidden text-ellipsis whitespace-nowrap text-xs tabular-nums text-[oklch(0.55_0.01_264)]">
           {p.sku}
         </span>

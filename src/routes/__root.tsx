@@ -1,4 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { OrgProvider } from "@/lib/org-context";
 import {
   Outlet,
   Link,
@@ -194,6 +195,7 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <OrgProvider>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
       <MaintenanceGate />
@@ -203,6 +205,7 @@ function RootComponent() {
         </ClientOnly>
       )}
       <Toaster />
+      </OrgProvider>
     </QueryClientProvider>
   );
 }

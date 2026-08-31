@@ -350,6 +350,14 @@ export function baseColorForProduct(p: { sku: string; category: string }) {
   return { label: sw?.label ?? prof.colorLabel, hex: sw?.hex ?? PART_COLOR_HEX };
 }
 
+/** Маркетинговое описание позиции — используется в JSON-LD микроразметке. */
+export function descriptionForProduct(p: { sku: string; category: string }): string {
+  const service = SERVICE_PROFILES[p.sku];
+  if (service) return service.description;
+  const prof = SKU_PROFILES[p.sku] ?? PROFILES[p.category] ?? DEFAULT_PROFILE;
+  return prof.description;
+}
+
 
 
 type ServiceProfile = {
@@ -404,9 +412,15 @@ const loadCadViewer = createClientOnlyFn(async () => {
 export function ProductSheet({
   product,
   onClose,
+  initialColorHex,
+  onColorChange,
 }: {
   product: Product | null;
   onClose: () => void;
+  /** HEX цвета из URL (?color=...) — карточка открывается с ним предвыбранным. */
+  initialColorHex?: string | undefined;
+  /** Синхронизация выбранного цвета с адресной строкой. */
+  onColorChange?: ((color: { label: string; hex: string }) => void) | undefined;
 }) {
   const [city, setCity] = useState<CityValue>({ city: "Москва", fiasId: null });
   const [batch, setBatch] = useState(1000);
@@ -421,8 +435,12 @@ export function ProductSheet({
     : DEFAULT_PROFILE;
   const [swatchIndex, setSwatchIndex] = useState(0);
   useEffect(() => {
-    setSwatchIndex(0);
-  }, [product?.sku]);
+    if (!product) return;
+    const prof = SKU_PROFILES[product.sku] ?? PROFILES[product.category] ?? DEFAULT_PROFILE;
+    const wanted = initialColorHex?.toLowerCase();
+    const idx = wanted ? (prof.palette ?? []).findIndex((s) => s.hex.toLowerCase() === wanted) : -1;
+    setSwatchIndex(idx >= 0 ? idx : 0);
+  }, [product?.sku, initialColorHex]);
   const activeSwatch = profile.palette?.[swatchIndex];
   const partColor = activeSwatch?.hex ?? PART_COLOR_HEX;
   const partMaterial = activeSwatch
@@ -634,7 +652,10 @@ export function ProductSheet({
                                 type="button"
                                 aria-label={sw.label}
                                 aria-pressed={i === swatchIndex}
-                                onClick={() => setSwatchIndex(i)}
+                                onClick={() => {
+                                  setSwatchIndex(i);
+                                  onColorChange?.({ label: sw.label, hex: sw.hex });
+                                }}
                                 className={`size-7 rounded-full border transition ${
                                   i === swatchIndex
                                     ? "border-foreground ring-2 ring-foreground/30"

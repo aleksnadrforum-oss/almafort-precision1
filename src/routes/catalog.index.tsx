@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { FileSpreadsheet } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
@@ -8,10 +8,15 @@ import { useCart, cartTotals } from "@/store/cart-store";
 import { SearchPanel } from "@/components/catalog/search-panel";
 import { CatalogMatrix } from "@/components/catalog/catalog-matrix";
 import { formatPrice } from "@/lib/pricing";
-import { ProductSheet } from "@/components/catalog/product-sheet";
+import {
+  ProductSheet,
+  descriptionForProduct,
+  paletteForProduct,
+} from "@/components/catalog/product-sheet";
+import { JsonLd, catalogJsonLd } from "@/lib/jsonld";
 import { AiConfigurator } from "@/components/catalog/ai-configurator";
 import { ModuleErrorBoundary } from "@/components/error-boundary";
-import { type Product } from "@/data/catalog";
+import { PRODUCTS, type Product } from "@/data/catalog";
 import { CATEGORY_FACETS } from "@/lib/seo";
 import { BackLink } from "@/components/back-link";
 
@@ -39,15 +44,79 @@ export const Route = createFileRoute("/catalog/")({
   component: CatalogPage,
 });
 
+const BASE_PATH = "/catalog";
+
+/** Собирает deep-link карточки: ?product=SKU&color=HEX. */
+function productHref(sku: string, hex?: string | null) {
+  const params = new URLSearchParams({ product: sku });
+  if (hex) params.set("color", hex.replace("#", ""));
+  return `${BASE_PATH}?${params.toString()}`;
+}
+
 function CatalogPage() {
   const [query, setQuery] = useState("");
   const [scanning, setScanning] = useState(false);
   const [product, setProduct] = useState<Product | null>(null);
+  const [colorHex, setColorHex] = useState<string | undefined>(undefined);
   const [upload, setUpload] = useState(false);
   const lines = useCart((s) => s.lines);
   const parsing = useCart((s) => s.parsing);
   const addLine = useCart((s) => s.addLine);
   const cart = { lines: lines.length, total: cartTotals(lines).goods };
+
+  // Открытие карточки синхронизируется с адресной строкой: ссылкой можно
+  // поделиться со снабженцем, и он увидит тот же товар в том же цвете.
+  const openProduct = useCallback((p: Product, hex?: string) => {
+    setProduct(p);
+    setColorHex(hex);
+    if (typeof window !== "undefined") {
+      window.history.pushState({ product: p.sku }, "", productHref(p.sku, hex ?? null));
+    }
+  }, []);
+
+  const closeProduct = useCallback(() => {
+    setProduct(null);
+    setColorHex(undefined);
+    if (typeof window !== "undefined") {
+      window.history.replaceState({}, "", BASE_PATH);
+    }
+  }, []);
+
+  // Перехват параметров при первой загрузке и при навигации «назад/вперёд».
+  useEffect(() => {
+    const sync = () => {
+      const params = new URLSearchParams(window.location.search);
+      const sku = params.get("product");
+      if (!sku) {
+        setProduct(null);
+        setColorHex(undefined);
+        return;
+      }
+      const found = PRODUCTS.find((p) => p.sku.toLowerCase() === sku.toLowerCase());
+      if (!found) return;
+      const raw = params.get("color");
+      setProduct(found);
+      setColorHex(raw ? (raw.startsWith("#") ? raw : `#${raw}`) : undefined);
+    };
+    sync();
+    window.addEventListener("popstate", sync);
+    return () => window.removeEventListener("popstate", sync);
+  }, []);
+
+  const structuredData = useMemo(
+    () =>
+      catalogJsonLd(
+        PRODUCTS.slice(0, 60).map((p) => {
+          const palette = paletteForProduct(p);
+          return {
+            product: p,
+            description: descriptionForProduct(p),
+            ...(palette ? { colors: palette.map((c) => ({ label: c.label, hex: c.hex })) } : {}),
+          };
+        }),
+      ),
+    [],
+  );
 
   const add = (p: Product, qty: number, color?: { label: string; hex: string }) => {
     addLine(p.sku, qty, undefined, color);
@@ -90,7 +159,7 @@ function CatalogPage() {
         <SearchPanel
           query={query}
           onQuery={setQuery}
-          onPick={setProduct}
+          onPick={(p) => openProduct(p)}
           onScanChange={setScanning}
         />
 
@@ -115,7 +184,7 @@ function CatalogPage() {
           className={`mt-10 transition-all duration-300 ${scanning ? "blur-sm" : ""}`}
           aria-label="Матрица каталога"
         >
-          <CatalogMatrix query={query} onOpenProduct={setProduct} onAdd={add} />
+          <CatalogMatrix query={query} onOpenProduct={openProduct} onAdd={add} />
         </section>
 
         <ModuleErrorBoundary title="ИИ-конфигуратор узла" hint="Соберите спецификацию через каталог — остальные разделы работают.">
@@ -141,7 +210,22 @@ function CatalogPage() {
       )}
 
 
-      <ProductSheet product={product} onClose={() => setProduct(null)} />
+      <ProductSheet
+        product={product}
+        initialColorHex={colorHex}
+        onColorChange={(c) => {
+          setColorHex(c.hex);
+          if (product && typeof window !== "undefined") {
+            window.history.replaceState(
+              { product: product.sku },
+              "",
+              productHref(product.sku, c.hex),
+            );
+          }
+        }}
+        onClose={closeProduct}
+      />
+      <JsonLd data={structuredData} />
     </div>
   );
 }

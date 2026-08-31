@@ -112,6 +112,10 @@ export type ReviewState = {
 
 type State = {
   fileName: string | null;
+  /** ИНН организации-владельца корзины (Shared Cart). */
+  organizationId: string | null;
+  /** Сотрудник, удерживающий блокировку редактирования спецификации. */
+  lockedBy: string | null;
   parsing: boolean;
   lines: CartLine[];
   pending: PendingRow[];
@@ -126,6 +130,7 @@ type State = {
   setQuoting: (v: boolean) => void;
   setQuoteError: (e: string | null) => void;
   setParsing: (v: boolean) => void;
+  bindOrganization: (organizationId: string | null, userId: string | null) => void;
   applyParse: (payload: ParsePayload) => void;
   setReview: (r: ReviewState | null) => void;
   /** Переносит подтверждённые строки предпросмотра в корзину. */
@@ -157,6 +162,8 @@ export const useCart = create<State>()(
   persist(
     (set) => ({
   fileName: null,
+  organizationId: null,
+  lockedBy: null,
   parsing: false,
   lines: [],
   pending: [],
@@ -190,6 +197,13 @@ export const useCart = create<State>()(
   setQuoteError: (quoteError) => set({ quoteError, quotes: [] }),
 
   setParsing: (v) => set({ parsing: v }),
+
+  bindOrganization: (organizationId, userId) =>
+    set((s) => ({
+      organizationId,
+      // Блокировку держит первый вошедший сотрудник организации.
+      lockedBy: organizationId ? (s.lockedBy ?? userId) : null,
+    })),
 
   applyParse: (payload) =>
     set((s) => {
@@ -292,6 +306,8 @@ export const useCart = create<State>()(
       storage: createJSONStorage(() => localStorage),
       partialize: (s) => ({
         lines: s.lines,
+        organizationId: s.organizationId,
+        lockedBy: s.lockedBy,
         pending: s.pending,
         review: s.review,
         fileName: s.fileName,

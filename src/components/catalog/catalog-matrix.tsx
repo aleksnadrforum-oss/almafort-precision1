@@ -1,5 +1,6 @@
 import { trackAddToCart } from "@/lib/metrika";
 import { useState } from "react";
+import { useCart } from "@/store/cart-store";
 import { Check, Loader2, MessageSquareQuote, Minus, Plus, ShoppingCart } from "lucide-react";
 import { PRODUCTS, isOnRequest, tierOf, type Product } from "@/data/catalog";
 import { formatPrice, lineTotal } from "@/lib/pricing";
@@ -18,7 +19,7 @@ import {
 
 type Props = {
   query: string;
-  onOpenProduct: (p: Product) => void;
+  onOpenProduct: (p: Product, colorHex?: string) => void;
   onAdd: (p: Product, qty: number, color?: { label: string; hex: string }) => void;
 };
 
@@ -72,6 +73,34 @@ function MicroSwatches({
 }
 
 
+/** Персистентный маркер «позиция уже в спецификации» с микро-кружком цвета. */
+function InCartBadge({
+  quantity,
+  color,
+  className = "",
+}: {
+  quantity: number;
+  color?: { label: string; hex: string } | null;
+  className?: string;
+}) {
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-md border border-gray-300 bg-gray-100 px-2 py-1 text-xs text-gray-700 ${className}`}
+      title={color ? `В корзине · ${color.label}` : "В корзине"}
+    >
+      {color && (
+        <span
+          aria-hidden
+          className="size-3 shrink-0 rounded-full border border-gray-400"
+          style={{ backgroundColor: color.hex }}
+        />
+      )}
+      <span className="whitespace-nowrap tabular-nums">
+        В корзине: {quantity.toLocaleString("ru-RU")} шт
+      </span>
+    </span>
+  );
+}
 
 // Общая база ячейки: границы и hover-подсветка живут на ячейках,
 // т.к. сама строка — display: contents и не рисует бокс.
@@ -83,7 +112,11 @@ const CELL =
 function useRowState(p: Product, onAdd: Props["onAdd"]) {
   const [qty, setQty] = useState(0);
   const [state, setState] = useState<"idle" | "loading" | "done">("idle");
-  const [inCart, setInCart] = useState(0);
+  // Персистентный статус строки: берём из корзины, а не из локального счётчика,
+  // чтобы после перезагрузки снабженец видел, что позиция уже в спецификации.
+  const cartLine = useCart((s) => s.lines.find((l) => l.sku === p.sku));
+  const inCart = cartLine?.quantity ?? 0;
+  const cartColor = cartLine?.color ?? null;
   const [quote, setQuote] = useState(false);
   const onRequest = isOnRequest(p);
   const tier = tierOf(qty, p);
@@ -116,7 +149,6 @@ function useRowState(p: Product, onAdd: Props["onAdd"]) {
       const data = (await res.json()) as { quantity: number };
       onAdd(p, data.quantity, color);
       trackAddToCart({ sku: p.sku, name: p.name, price: p.price, quantity: data.quantity });
-      setInCart((v) => v + data.quantity);
       setState("done");
       window.setTimeout(() => setState("idle"), 2000);
     } catch {
@@ -139,6 +171,8 @@ function useRowState(p: Product, onAdd: Props["onAdd"]) {
   return {
     qty,
     setQty,
+    inCart,
+    cartColor,
     state,
     quote,
     setQuote,
@@ -192,7 +226,7 @@ function MobileCard({
   onAdd,
 }: { p: Product; group?: AssetGroup | undefined } & Omit<Props, "query">) {
   const [lightbox, setLightbox] = useState(false);
-  const { qty, setQty, state, quote, setQuote, onRequest, tier, add, hasSum, palette, colorIndex, setColorIndex } = useRowState(
+  const { qty, setQty, state, quote, setQuote, onRequest, tier, add, hasSum, palette, colorIndex, setColorIndex, inCart, cartColor } = useRowState(
     p,
     onAdd,
   );
@@ -227,7 +261,7 @@ function MobileCard({
         <div className="min-w-0 flex-1">
           <button
             type="button"
-            onClick={() => onOpenProduct(p)}
+            onClick={() => onOpenProduct(p, palette?.[colorIndex]?.hex)}
             className="tap-sm block w-full break-words text-left text-[15px] font-semibold leading-tight text-foreground [overflow-wrap:anywhere]"
           >
             {p.name}
@@ -334,6 +368,12 @@ function MobileCard({
                 : "В корзину"}
       </button>
 
+      {inCart > 0 && (
+        <div className="mt-2 flex justify-center">
+          <InCartBadge quantity={inCart} color={cartColor} />
+        </div>
+      )}
+
       {quote && <QuoteRequestModal sku={p.sku} name={p.name} onClose={() => setQuote(false)} />}
       {lightbox && group && (
         <AssetLightbox product={p} group={group} onClose={() => setLightbox(false)} onAdd={onAdd} />
@@ -349,7 +389,7 @@ function Row({
   onAdd,
 }: { p: Product; group?: AssetGroup | undefined } & Omit<Props, "query">) {
   const [lightbox, setLightbox] = useState(false);
-  const { qty, setQty, state, quote, setQuote, onRequest, tier, add, hasSum, label, palette, colorIndex, setColorIndex } = useRowState(
+  const { qty, setQty, state, quote, setQuote, onRequest, tier, add, hasSum, label, palette, colorIndex, setColorIndex, inCart, cartColor } = useRowState(
     p,
     onAdd,
   );
@@ -386,7 +426,10 @@ function Row({
   };
 
   return (
-    <div className="catalog-row group/row scroll-mt-[150px]">
+    <div
+      data-in-cart={inCart > 0 ? "true" : undefined}
+      className={`catalog-row group/row scroll-mt-[150px] ${inCart > 0 ? "[&_.catalog-cell]:bg-gray-50/70" : ""}`}
+    >
       <div className={`${CELL} justify-center`}>
         <Checkbox label={`Выбрать ${p.sku}`} />
       </div>
@@ -419,7 +462,7 @@ function Row({
       >
         <button
           type="button"
-          onClick={() => onOpenProduct(p)}
+          onClick={() => onOpenProduct(p, palette?.[colorIndex]?.hex)}
           title={p.name}
           className="tap-sm block w-full cursor-pointer overflow-hidden text-ellipsis whitespace-nowrap text-left text-sm font-medium text-[oklch(0.19_0.01_264)] transition-colors hover:text-primary"
         >
@@ -461,7 +504,7 @@ function Row({
           className="w-full min-w-0 rounded-sm border border-[#D1D5DB] disabled:cursor-not-allowed disabled:bg-[#F3F4F6] bg-card px-2 py-1.5 text-right text-sm tabular-nums text-foreground outline-none transition-colors duration-150 focus:border-foreground"
         />
       </div>
-      <div className={CELL}>
+      <div className={`${CELL} flex-col items-stretch justify-center gap-1`}>
         <button
           type="button"
           onClick={() => void add()}
@@ -488,6 +531,9 @@ function Row({
             <span className="overflow-hidden text-ellipsis whitespace-nowrap">{label}</span>
           )}
         </button>
+        {inCart > 0 && (
+          <InCartBadge quantity={inCart} color={cartColor} className="mt-1 self-center" />
+        )}
       </div>
       {quote && (
         <QuoteRequestModal sku={p.sku} name={p.name} onClose={() => setQuote(false)} />

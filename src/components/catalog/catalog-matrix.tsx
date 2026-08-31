@@ -1,6 +1,6 @@
 import { trackAddToCart } from "@/lib/metrika";
 import { useState } from "react";
-import { useCart } from "@/store/cart-store";
+import { stockLimit, useCart } from "@/store/cart-store";
 import { Check, Loader2, MessageSquareQuote, Minus, Plus, ShoppingCart } from "lucide-react";
 import { PRODUCTS, isOnRequest, tierOf, type Product } from "@/data/catalog";
 import { formatPrice, lineTotal } from "@/lib/pricing";

@@ -14,7 +14,13 @@ import { useAssetGroups } from "@/lib/asset-groups";
 import { useDebounce } from "@/hooks/use-debounce";
 import type { ShippingQuote } from "@/lib/logistics";
 
-type PartMaterial = { roughness: number; metalness: number; opacity?: number };
+type PartMaterial = {
+  roughness: number;
+  metalness: number;
+  opacity?: number;
+  clearcoat?: number;
+  texture?: "shagreen";
+};
 
 type CadViewerProps = {
   glbUrl: string | null;
@@ -45,7 +51,7 @@ const DOVETAIL_PALETTE: Swatch[] = [
 
 const DOVETAIL_PROFILE: PartProfile = {
   colorLabel: "Чёрный",
-  material: { roughness: 0.45, metalness: 0.08 },
+  material: { roughness: 0.45, metalness: 0.0 },
   description:
     "Универсальный крепёжный элемент «Ласточкин хвост» для скрытого монтажа и прочного соединения листовых материалов, мебельных деталей и конструкционных профилей. Надёжная фиксация узла достигается за счёт точной клиновидной геометрии и боковых фрикционных рёбер, полностью исключающих люфт после сборки. Изготовлен из износостойкого полимера, устойчивого к механическим нагрузкам. Расширенная цветовая гамма и наличие полупрозрачного варианта позволяют сделать соединение визуально незаметным на любом материале.",
   palette: DOVETAIL_PALETTE,
@@ -62,7 +68,7 @@ const DOVETAIL_CAP_PALETTE: Swatch[] = [
 
 const DOVETAIL_CAP_PROFILE: PartProfile = {
   colorLabel: "Чёрный",
-  material: { roughness: 0.45, metalness: 0.08 },
+  material: { roughness: 0.45, metalness: 0.0 },
   description:
     "Модифицированный крепёжный элемент «Ласточкин хвост», оснащённый интегрированной декоративной заглушкой. Предназначен для надёжного скрытого соединения деталей с одновременным эстетичным перекрытием монтажного паза. Плоская заглушка образует аккуратный торец вровень с поверхностью, дополнительно защищая крепёжный узел от попадания пыли и влаги. Оптимальное решение для лицевых фасадов и видимых частей конструкций. Широкая палитра литьевых оттенков позволяет подобрать деталь точно в тон собираемого изделия.",
   palette: DOVETAIL_CAP_PALETTE,
@@ -181,7 +187,7 @@ const SCREW_CAP_PALETTE: Swatch[] = [
 
 const SCREW_CAP_PROFILE: PartProfile = {
   colorLabel: "Светло-коричневый / Медный",
-  material: { roughness: 0.75, metalness: 0.0 },
+  material: { roughness: 0.78, metalness: 0.0, texture: "shagreen" },
   description:
     "Универсальная пластиковая заглушка для декоративной маскировки крепёжных узлов. Оснащена центральным фиксирующим штифтом, который плотно вставляется в крестообразный шлиц самореза (PZ или PH), обеспечивая надёжную фиксацию без использования клея. Внешняя полусферическая поверхность имеет лёгкую шагреневую текстуру (матовую шероховатость), благодаря чему деталь не бликует при освещении и органично сливается с текстурой ЛДСП, МДФ или натурального дерева. Эффективно защищает металлический метиз от коррозии и придаёт мебели законченный, эстетичный вид.",
   palette: SCREW_CAP_PALETTE,
@@ -324,14 +330,14 @@ const PROFILES: Record<string, PartProfile> = {
   // Тетрагедроны — литой промышленный пластик
   "Для производства сэндвич-панелей": {
     colorLabel: "Чёрный промышленный",
-    material: { roughness: 0.52, metalness: 0.12 },
+    material: { roughness: 0.52, metalness: 0.0 },
     description: TETRAHEDRON_DESCRIPTION,
   },
 };
 
 const DEFAULT_PROFILE: PartProfile = {
   colorLabel: "Чёрный промышленный",
-  material: { roughness: 0.52, metalness: 0.12 },
+  material: { roughness: 0.52, metalness: 0.0 },
   description: TETRAHEDRON_DESCRIPTION,
 };
 

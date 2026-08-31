@@ -158,9 +158,64 @@ export function CartPanel() {
   const err = (kind: "name" | "email" | "phone" | "inn", value: string) =>
     triedSubmit ? fieldError(kind, value) : null;
   // Кнопку не блокируем «молча»: клик подсвечивает незаполненные поля и даёт тост.
-  const ctaDisabled = !cartReady || unverified || Boolean(party?.blocked);
+  const ctaDisabled =
+    !cartReady || unverified || Boolean(party?.blocked) || blockedByStock || holding;
 
   const [submitting, setSubmitting] = useState(false);
+  // Дефицит склада, вернувшийся холдом 409: блокирует счёт до корректировки.
+  const [shortages, setShortages] = useState<Record<string, number>>({});
+  const [holding, setHolding] = useState(false);
+  const blockedByStock = Object.keys(shortages).length > 0;
+
+  // Изменил количество — снимаем прошлую блокировку по этой позиции.
+  useEffect(() => {
+    setShortages((prev) => {
+      if (!Object.keys(prev).length) return prev;
+      const next: Record<string, number> = {};
+      for (const l of lines) {
+        const avail = prev[l.sku];
+        if (avail !== undefined && l.quantity > avail) next[l.sku] = avail;
+      }
+      return Object.keys(next).length === Object.keys(prev).length ? prev : next;
+    });
+  }, [lines]);
+
+  /**
+   * Холд остатков: «в корзине» ≠ «зарезервировано». Перед выпуском счёта
+   * замораживаем склад на 24 часа под организацию (ИНН).
+   */
+  const holdInventory = async () => {
+    setHolding(true);
+    try {
+      const res = await fetch("/api/inventory/hold", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          organizationId: organizationId ?? (inn.replace(/\D/g, "") || null),
+          lockedBy: userId,
+          items: lines.map((l) => ({ sku: l.sku, quantity: l.quantity })),
+        }),
+      });
+      if (res.status === 409) {
+        const json = (await res.json()) as {
+          shortages?: Array<{ sku: string; available: number }>;
+        };
+        const map: Record<string, number> = {};
+        for (const sh of json.shortages ?? []) map[sh.sku] = sh.available;
+        setShortages(map);
+        toast.error("Часть позиций недоступна в заявленном объёме — скорректируйте количество");
+        return false;
+      }
+      if (!res.ok) throw new Error("hold");
+      setShortages({});
+      return true;
+    } catch {
+      // Недоступность сервиса резервирования не должна ломать выпуск счёта.
+      return true;
+    } finally {
+      setHolding(false);
+    }
+  };
   const idemKey = useRef<string | null>(null);
   // Стратегическому партнёру доступна отгрузка с отсрочкой платежа 15–30 дней.
   const [deferred, setDeferred] = useState(false);
@@ -191,6 +246,7 @@ export function CartPanel() {
       );
       return;
     }
+    if (!(await holdInventory())) return;
     setSubmitting(true);
     const ecomItems = lines.map((l) => ({
       sku: l.sku,
@@ -293,6 +349,7 @@ export function CartPanel() {
       toast.error("Корзина пуста — добавьте позиции или загрузите спецификацию");
       return;
     }
+    if (!(await holdInventory())) return;
     try {
       await generateInvoicePdfInBrowser({ lines, carrier, city, delivery });
       toast.success("PDF-счёт сформирован");
@@ -378,6 +435,12 @@ export function CartPanel() {
                       style={{ backgroundColor: l.color.hex }}
                     />
                     Цвет: {l.color.label}
+                  </p>
+                )}
+                {shortages[l.sku] !== undefined && (
+                  <p className="mt-1 inline-flex rounded-md bg-amber-100 px-2 py-1 text-xs font-medium text-amber-800">
+                    Доступно только {shortages[l.sku]!.toLocaleString("ru-RU")} шт из{" "}
+                    {l.quantity.toLocaleString("ru-RU")} шт
                   </p>
                 )}
                 {l.originalName && l.originalName !== l.name && (

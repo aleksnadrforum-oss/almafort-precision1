@@ -266,14 +266,16 @@ function MobileCard({
   onAdd,
 }: { p: Product; group?: AssetGroup | undefined } & Omit<Props, "query">) {
   const [lightbox, setLightbox] = useState(false);
-  const { qty, setQty, state, quote, setQuote, onRequest, tier, add, hasSum, palette, colorIndex, setColorIndex, inCart, cartColor } = useRowState(
+  const { qty, setQty, state, quote, setQuote, onRequest, tier, add, hasSum, palette, colorIndex, setColorIndex, inCart, cartColor, maxQty, limited, outOfStock, atMax, clampQty } = useRowState(
     p,
     onAdd,
   );
 
   const thumb = group?.images[0]?.thumb_url ?? null;
   const unit = tier === 2 ? p.price5000 : tier === 1 ? p.price1000 : p.price;
-  const bump = (d: number) => setQty((v) => Math.max(0, Math.min(9_999_999, v + d)));
+  const cap = limited ? maxQty : 9_999_999;
+  const bump = (d: number) => setQty((v) => Math.max(0, Math.min(cap, v + d)));
+
 
   return (
     <li className="rounded-lg border border-border bg-card p-4">

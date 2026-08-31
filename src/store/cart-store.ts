@@ -15,6 +15,8 @@ export type CartLine = {
   quantity: number;
   /** Как строка называлась в исходной спецификации клиента */
   originalName?: string | undefined;
+  /** Выбранный в карточке цвет детали (название + HEX). */
+  color?: { label: string; hex: string } | undefined;
 };
 
 /** Строка спецификации, требующая участия человека (жёлтая / красная). */
@@ -54,7 +56,10 @@ export function linePrice(sku: string, qty: number, minColumn: 0 | 1 | 2 = 0) {
   if (!p) return { base: 0, unit: 0, tier: 0 as 0 | 1 | 2, sum: 0 };
   const tier = Math.max(tierOf(qty, p), minColumn) as 0 | 1 | 2;
   const unit = tier === 2 ? p.price5000 : tier === 1 ? p.price1000 : unitPrice(p, qty);
-  return { base: p.price, unit, tier, sum: unit * qty };
+  const q = Math.max(0, Math.floor(qty));
+  // Деньги считаем в копейках — исключает артефакты плавающей точки.
+  const sum = Math.round(unit * 100) * q / 100;
+  return { base: p.price, unit, tier, sum: Number(sum.toFixed(2)) };
 }
 
 /** Агрегация партии на лету: сумма, вес и объём с защитой от нулевых ТТХ. */
@@ -128,7 +133,12 @@ type State = {
     rows: Array<{ sku: string; quantity: number; originalName?: string }>,
     mode: "merge" | "replace",
   ) => void;
-  addLine: (sku: string, quantity: number, originalName?: string) => void;
+  addLine: (
+    sku: string,
+    quantity: number,
+    originalName?: string,
+    color?: { label: string; hex: string },
+  ) => void;
   /** Применяет корзину, слитую на сервере при входе в кабинет. */
   applyMergedLines: (rows: Array<{ sku: string; quantity: number }>) => void;
   setQuantity: (sku: string, quantity: number) => void;
@@ -218,14 +228,17 @@ export const useCart = create<State>()(
       };
     }),
 
-  addLine: (sku, quantity, originalName) =>
+  addLine: (sku, quantity, originalName, color) =>
     set((s) => {
       const p = productBySku(sku);
+      const qty = Math.max(1, Math.floor(Number(quantity) || 0));
       if (!p) return s;
       const lines = [...s.lines];
       const found = lines.find((l) => l.sku === sku);
-      if (found) found.quantity += quantity;
-      else lines.push({ sku, name: p.name, quantity, originalName });
+      if (found) {
+        found.quantity += qty;
+        if (color) found.color = color;
+      } else lines.push({ sku, name: p.name, quantity: qty, originalName, color });
       return { lines };
     }),
 
@@ -241,7 +254,7 @@ export const useCart = create<State>()(
 
   setQuantity: (sku, quantity) =>
     set((s) => ({
-      lines: s.lines.map((l) => (l.sku === sku ? { ...l, quantity: Math.max(0, Math.floor(Number(quantity) || 0)) } : l)),
+      lines: s.lines.map((l) => (l.sku === sku ? { ...l, quantity: Math.min(9_999_999, Math.max(1, Math.floor(Number(quantity) || 1))) } : l)),
     })),
 
   removeLine: (sku) => set((s) => ({ lines: s.lines.filter((l) => l.sku !== sku) })),

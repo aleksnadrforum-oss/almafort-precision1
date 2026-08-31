@@ -883,8 +883,12 @@ export function ProductSheet({
                 <div className="sticky bottom-0 z-10 -mx-4 mt-6 border-t border-border bg-background px-4 pb-[max(env(safe-area-inset-bottom),0.75rem)] pt-3 md:static md:mx-0 md:mt-0 md:border-0 md:bg-transparent md:p-0">
                 <button
                   type="button"
+                  disabled={outOfStock}
                   onClick={() => {
-                    const qty = Math.max(1, Math.floor(batch) || 1);
+                    const wanted = Math.max(1, Math.floor(batch) || 1);
+                    const qty = Math.max(0, Math.floor(clampBatch(wanted)));
+                    if (qty <= 0) return;
+                    if (qty !== wanted) setBatch(qty);
                     addLine(
                       product.sku,
                       qty,
@@ -899,10 +903,17 @@ export function ProductSheet({
                       }`,
                     );
                   }}
-                  className="inline-flex min-h-[48px] w-full cursor-pointer items-center justify-center rounded-sm bg-primary px-6 text-sm font-semibold text-primary-foreground transition-colors duration-200 hover:opacity-90 md:mt-6"
+                  className={`inline-flex min-h-[48px] w-full cursor-pointer items-center justify-center rounded-sm px-6 text-sm font-semibold transition-colors duration-200 md:mt-6 disabled:cursor-not-allowed ${
+                    outOfStock
+                      ? "bg-[#E5E7EB] text-[#9CA3AF]"
+                      : "bg-primary text-primary-foreground hover:opacity-90"
+                  }`}
                 >
-                  В корзину · {Math.max(1, Math.floor(batch) || 1).toLocaleString("ru-RU")} шт
+                  {outOfStock
+                    ? "Нет в наличии"
+                    : `В корзину · ${Math.max(1, Math.floor(batch) || 1).toLocaleString("ru-RU")} шт`}
                 </button>
+
 
                 </div>
 

@@ -334,8 +334,6 @@ const DEFAULT_PROFILE: PartProfile = {
 };
 
 type ServiceProfile = {
-  image: string;
-  imageAlt: string;
   description: string;
   specs: [string, string][];
   cta: string;

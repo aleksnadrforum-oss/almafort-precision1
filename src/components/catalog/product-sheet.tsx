@@ -632,11 +632,13 @@ export function ProductSheet({
               </button>
             </div>
 
-            <QuoteRequestModal
-              sku={product.sku}
-              name={product.name}
-              onClose={() => setQuoteOpen(false)}
-            />
+            {quoteOpen && (
+              <QuoteRequestModal
+                sku={product.sku}
+                name={product.name}
+                onClose={() => setQuoteOpen(false)}
+              />
+            )}
           </>
         )}
         {product && !service && (

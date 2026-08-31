@@ -644,7 +644,10 @@ export function ProductSheet({
                                 type="button"
                                 aria-label={sw.label}
                                 aria-pressed={i === swatchIndex}
-                                onClick={() => setSwatchIndex(i)}
+                                onClick={() => {
+                                  setSwatchIndex(i);
+                                  onColorChange?.({ label: sw.label, hex: sw.hex });
+                                }}
                                 className={`size-7 rounded-full border transition ${
                                   i === swatchIndex
                                     ? "border-foreground ring-2 ring-foreground/30"

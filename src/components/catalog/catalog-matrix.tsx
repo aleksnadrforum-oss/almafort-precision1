@@ -433,7 +433,9 @@ function MobileCard({
         ) : (
           <ShoppingCart className="size-4" strokeWidth={1.75} />
         )}
-        {state === "loading"
+        {outOfStock
+          ? "Нет в наличии"
+          : state === "loading"
           ? "Добавляем…"
           : state === "done"
             ? "Добавлено"

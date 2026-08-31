@@ -276,7 +276,29 @@ const ROUND_TUBE_PLUG_PROFILE: PartProfile = {
   palette: TUBE_PLUG_PALETTE,
 };
 
+/** Усиленная крышка для канистры — независимый профиль (не связан с сэндвич-панелями). */
+const CANISTER_CAP_PROFILE: PartProfile = {
+  colorLabel: "Чёрный",
+  material: { roughness: 0.65, metalness: 0.0 },
+  description:
+    "Усиленная пластиковая крышка для промышленных и бытовых канистр, рассчитанная на экстремальные условия эксплуатации. Отличается увеличенной толщиной стенки и модифицированным профилем резьбы, что полностью исключает срыв при сильном затягивании и гарантирует многократное (вечное) использование. Абсолютная герметичность достигается за счет плотного внутреннего обтюратора (конуса).",
+  palette: [{ hex: "#000000", label: "Чёрный" }],
+};
+
+/** Семейство «Тетрагедрон» — утилитарный матовый промышленный пластик. */
+const TETRAHEDRON_PROFILE: PartProfile = {
+  colorLabel: "Чёрный",
+  material: { roughness: 0.85, metalness: 0.0 },
+  description:
+    "Технологические пластиковые детали (тетрагедроны) для производственных линий по выпуску сэндвич-панелей. Разработаны специально для обеспечения правильной геометрии и технологического процесса на заводах-изготовителях панелей. Литьё из высокопрочного чёрного пластика с точным соблюдением допусков.",
+  palette: [{ hex: "#000000", label: "Чёрный" }],
+};
+
 const SKU_PROFILES: Record<string, PartProfile> = {
+  "KAN-CAP-R": CANISTER_CAP_PROFILE,
+  "TG-080": TETRAHEDRON_PROFILE,
+  "TG-100": TETRAHEDRON_PROFILE,
+  "TG-150": TETRAHEDRON_PROFILE,
   "MK-LH": DOVETAIL_PROFILE,
   "MK-LHZ": DOVETAIL_CAP_PROFILE,
   "MK-LD": LATHOLDER_PROFILE,
@@ -329,15 +351,16 @@ const PROFILES: Record<string, PartProfile> = {
   },
   // Тетрагедроны — литой промышленный пластик
   "Для производства сэндвич-панелей": {
-    colorLabel: "Чёрный промышленный",
-    material: { roughness: 0.52, metalness: 0.0 },
+    colorLabel: "Чёрный",
+    material: { roughness: 0.85, metalness: 0.0 },
     description: TETRAHEDRON_DESCRIPTION,
+    palette: [{ hex: "#000000", label: "Чёрный" }],
   },
 };
 
 const DEFAULT_PROFILE: PartProfile = {
-  colorLabel: "Чёрный промышленный",
-  material: { roughness: 0.52, metalness: 0.0 },
+  colorLabel: "Чёрный",
+  material: { roughness: 0.85, metalness: 0.0 },
   description: TETRAHEDRON_DESCRIPTION,
 };
 

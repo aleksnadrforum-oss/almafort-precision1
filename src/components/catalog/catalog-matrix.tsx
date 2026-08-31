@@ -234,6 +234,14 @@ function MobileCard({
           </button>
           <p className="mt-1 text-xs tabular-nums text-muted-foreground">{p.sku}</p>
           <p className="mt-1 text-xs leading-[1.35] text-muted-foreground">{p.dims}</p>
+          {palette && (
+            <MicroSwatches
+              palette={palette}
+              index={colorIndex}
+              onPick={setColorIndex}
+              sku={p.sku}
+            />
+          )}
           <div className="mt-1.5">
             <StockCell p={p} />
           </div>

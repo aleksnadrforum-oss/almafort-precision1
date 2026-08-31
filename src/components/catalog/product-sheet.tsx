@@ -1,5 +1,5 @@
 import { toast } from "sonner";
-import { useCart } from "@/store/cart-store";
+import { stockLimit, useCart } from "@/store/cart-store";
 import { useEffect, useMemo, useRef, useState, type ComponentType } from "react";
 import { ClientOnly } from "@tanstack/react-router";
 import { createClientOnlyFn } from "@tanstack/react-start";

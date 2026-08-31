@@ -692,7 +692,7 @@ export function ProductSheet({
                               ? `${product.stock.qty.toLocaleString("ru-RU")} шт`
                               : product.stock.lead!,
                           ],
-                        ]
+                        ]) as [string, string][],
                   ).map(([k, v]) => (
                     <div key={k}>
                       <dt className="text-xs uppercase tracking-wider text-muted-foreground">{k}</dt>

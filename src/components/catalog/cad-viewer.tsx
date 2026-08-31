@@ -12,24 +12,31 @@ function attachDraco(loader: { setDRACOLoader: (l: DRACOLoader) => void }) {
   loader.setDRACOLoader(draco);
 }
 
-const PLASTIC = { roughness: 0.6, metalness: 0.1, color: "#d8dade" } as const;
+const PLASTIC = { roughness: 0.52, metalness: 0.12 } as const;
+export const DEFAULT_PART_COLOR = "#000000";
 
-function GltfModel({ url, wire }: { url: string; wire: boolean }) {
+function GltfModel({ url, wire, color }: { url: string; wire: boolean; color: string }) {
   const { scene } = useGLTF(url, true, undefined, attachDraco as never);
   const cloned = useMemo(() => {
     const s = scene.clone(true);
     s.traverse((o) => {
       const m = o as Mesh;
       if (m.isMesh && m.material && !Array.isArray(m.material)) {
-        const mat = m.material.clone() as unknown as { wireframe: boolean; roughness: number; metalness: number };
+        const mat = m.material.clone() as unknown as {
+          wireframe: boolean;
+          roughness: number;
+          metalness: number;
+          color?: { set: (c: string) => void };
+        };
         mat.wireframe = wire;
         mat.roughness = PLASTIC.roughness;
         mat.metalness = PLASTIC.metalness;
+        mat.color?.set(color);
         m.material = mat as never;
       }
     });
     return s;
-  }, [scene, wire]);
+  }, [scene, wire, color]);
   return <primitive object={cloned} />;
 }
 
@@ -37,8 +44,8 @@ function GltfModel({ url, wire }: { url: string; wire: boolean }) {
  * Параметрический прокси-меш: используется, пока в S3 нет Draco-модели артикула.
  * Геометрия строится по категории, поэтому вьювер всегда показывает узел, а не пустой холст.
  */
-function ProxyModel({ category, wire }: { category: string; wire: boolean }) {
-  const mat = <meshStandardMaterial {...PLASTIC} wireframe={wire} />;
+function ProxyModel({ category, wire, color }: { category: string; wire: boolean; color: string }) {
+  const mat = <meshStandardMaterial {...PLASTIC} color={color} wireframe={wire} />;
 
   if (category.includes("Колпач")) {
     return (
@@ -158,9 +165,11 @@ function CadLoader() {
 export function CadViewer({
   glbUrl,
   category,
+  color = DEFAULT_PART_COLOR,
 }: {
   glbUrl: string | null;
   category: string;
+  color?: string;
 }) {
   const [wire, setWire] = useState(false);
   const [auto, setAuto] = useState(true);
@@ -173,15 +182,16 @@ export function CadViewer({
         onPointerDown={() => setAuto(false)}
         onWheel={() => setAuto(false)}
       >
-        <ambientLight intensity={0.35} />
-        <directionalLight position={[4, 6, 3]} intensity={1.1} />
+        <ambientLight intensity={0.6} />
+        <directionalLight position={[4, 6, 3]} intensity={1.6} />
+        <directionalLight position={[-5, 2, -4]} intensity={0.7} />
         <Suspense fallback={null}>
           <Center>
             <Spin enabled={auto}>
               {glbUrl ? (
-                <GltfModel url={glbUrl} wire={wire} />
+                <GltfModel url={glbUrl} wire={wire} color={color} />
               ) : (
-                <ProxyModel category={category} wire={wire} />
+                <ProxyModel category={category} wire={wire} color={color} />
               )}
             </Spin>
           </Center>

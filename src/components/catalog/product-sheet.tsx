@@ -365,20 +365,36 @@ export function ProductSheet({
 
               <div>
                 <dl className="grid grid-cols-2 gap-x-6 gap-y-3 border-b border-border pb-6 text-sm">
-                  {[
-                    ["Материал", product.material],
-                    ["Габариты", product.dims],
-                    ["Нагрузка", product.load],
-                    ["Стандарт", product.gost],
-                    ...(product.features ? ([["Особенности", product.features]] as [string, string][]) : []),
-                    ["Вес детали", `${(product.weight * 1000).toFixed(0)} г`],
-                    [
-                      "Наличие",
-                      product.stock.qty > 0
-                        ? `${product.stock.qty.toLocaleString("ru-RU")} шт`
-                        : product.stock.lead!,
-                    ],
-                  ].map(([k, v]) => (
+                  {(
+                    product.specRows
+                      ? [
+                          ...product.specRows,
+                          ["Габариты", product.dims],
+                          ["Вес детали", `${(product.weight * 1000).toFixed(0)} г`],
+                          [
+                            "Наличие",
+                            product.stock.qty > 0
+                              ? `${product.stock.qty.toLocaleString("ru-RU")} шт`
+                              : product.stock.lead!,
+                          ],
+                        ]
+                      : [
+                          ["Материал", product.material],
+                          ["Габариты", product.dims],
+                          ["Нагрузка", product.load],
+                          ["Стандарт", product.gost],
+                          ...(product.features
+                            ? ([["Особенности", product.features]] as [string, string][])
+                            : []),
+                          ["Вес детали", `${(product.weight * 1000).toFixed(0)} г`],
+                          [
+                            "Наличие",
+                            product.stock.qty > 0
+                              ? `${product.stock.qty.toLocaleString("ru-RU")} шт`
+                              : product.stock.lead!,
+                          ],
+                        ]
+                  ).map(([k, v]) => (
                     <div key={k}>
                       <dt className="text-xs uppercase tracking-wider text-muted-foreground">{k}</dt>
                       <dd className="mt-0.5 font-medium text-foreground">{v}</dd>

@@ -11,9 +11,6 @@ import { BulkRequestDialog } from "@/components/catalog/bulk-request-dialog";
 import { useAssetGroups } from "@/lib/asset-groups";
 import { useDebounce } from "@/hooks/use-debounce";
 import type { ShippingQuote } from "@/lib/logistics";
-import serviceInjectionImg from "@/assets/service-injection.jpg";
-import serviceScanImg from "@/assets/service-scan.jpg";
-import serviceFdmImg from "@/assets/service-fdm.jpg";
 
 type PartMaterial = { roughness: number; metalness: number; opacity?: number };
 
@@ -337,8 +334,6 @@ const DEFAULT_PROFILE: PartProfile = {
 };
 
 type ServiceProfile = {
-  image: string;
-  imageAlt: string;
   description: string;
   specs: [string, string][];
   cta: string;
@@ -346,8 +341,6 @@ type ServiceProfile = {
 
 const SERVICE_PROFILES: Record<string, ServiceProfile> = {
   "SRV-INJ": {
-    image: serviceInjectionImg,
-    imageAlt: "Термопластавтомат на производстве пластиковых изделий",
     description:
       "Полный цикл контрактного производства пластиковых изделий на современных термопластавтоматах (ТПА). Берём на себя все этапы: от аудита 3D-модели и проектирования пресс-формы до серийного литья и упаковки готовой продукции. Обеспечиваем строгий контроль качества, соблюдение допусков и стабильность геометрии в каждой партии.",
     specs: [
@@ -359,8 +352,6 @@ const SERVICE_PROFILES: Record<string, ServiceProfile> = {
     cta: "Запросить расчёт",
   },
   "SRV-RE3D": {
-    image: serviceScanImg,
-    imageAlt: "Оптическое 3D-сканирование детали инженером",
     description:
       "Обратное проектирование сломанных, изношенных или уникальных деталей без исходных чертежей. Проводим высокоточное оптическое 3D-сканирование физического образца с последующим построением твердотельной параметрической CAD-модели. Готовим полную конструкторскую документацию, готовую для ЧПУ-фрезеровки, 3D-печати или производства пресс-формы.",
     specs: [
@@ -372,8 +363,6 @@ const SERVICE_PROFILES: Record<string, ServiceProfile> = {
     cta: "Оставить заявку",
   },
   "SRV-FDM": {
-    image: serviceFdmImg,
-    imageAlt: "Промышленный FDM 3D-принтер печатает функциональную деталь",
     description:
       "Быстрое прототипирование и мелкосерийное производство функциональных деталей методом послойного наплавления (FDM/FFF). Идеальное решение для проверки собираемости узлов перед заказом дорогостоящей пресс-формы. Используем инженерные термопласты, устойчивые к механическим нагрузкам, агрессивным средам и высоким температурам.",
     specs: [
@@ -547,40 +536,27 @@ export function ProductSheet({
               </DialogTitle>
             </DialogHeader>
 
-            <div className="grid gap-8 lg:grid-cols-2">
-              <div>
-                <img
-                  src={service.image}
-                  alt={service.imageAlt}
-                  loading="lazy"
-                  width={1024}
-                  height={768}
-                  className="h-72 w-full rounded-lg object-cover"
-                />
-              </div>
+            <div className="flex flex-col gap-6">
+              <p className="text-sm leading-[1.65] text-muted-foreground">
+                {service.description}
+              </p>
 
-              <div>
-                <p className="text-sm leading-[1.65] text-muted-foreground">
-                  {service.description}
-                </p>
+              <dl className="grid grid-cols-1 gap-x-6 gap-y-3 border-t border-border pt-6 text-sm sm:grid-cols-2">
+                {service.specs.map(([k, v]) => (
+                  <div key={k}>
+                    <dt className="text-xs uppercase tracking-wider text-muted-foreground">{k}</dt>
+                    <dd className="mt-0.5 font-medium text-foreground">{v}</dd>
+                  </div>
+                ))}
+              </dl>
 
-                <dl className="mt-6 grid grid-cols-1 gap-x-6 gap-y-3 border-t border-border pt-6 text-sm sm:grid-cols-2">
-                  {service.specs.map(([k, v]) => (
-                    <div key={k}>
-                      <dt className="text-xs uppercase tracking-wider text-muted-foreground">{k}</dt>
-                      <dd className="mt-0.5 font-medium text-foreground">{v}</dd>
-                    </div>
-                  ))}
-                </dl>
-
-                <button
-                  type="button"
-                  onClick={() => setBulkOpen(true)}
-                  className="mt-6 inline-flex min-h-[48px] w-full cursor-pointer items-center justify-center rounded-sm bg-primary px-6 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
-                >
-                  {service.cta}
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={() => setBulkOpen(true)}
+                className="mt-2 inline-flex min-h-[48px] w-full cursor-pointer items-center justify-center rounded-sm bg-primary px-6 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+              >
+                {service.cta}
+              </button>
             </div>
 
             <BulkRequestDialog

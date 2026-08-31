@@ -536,40 +536,27 @@ export function ProductSheet({
               </DialogTitle>
             </DialogHeader>
 
-            <div className="grid gap-8 lg:grid-cols-2">
-              <div>
-                <img
-                  src={service.image}
-                  alt={service.imageAlt}
-                  loading="lazy"
-                  width={1024}
-                  height={768}
-                  className="h-72 w-full rounded-lg object-cover"
-                />
-              </div>
+            <div className="flex flex-col gap-6">
+              <p className="text-sm leading-[1.65] text-muted-foreground">
+                {service.description}
+              </p>
 
-              <div>
-                <p className="text-sm leading-[1.65] text-muted-foreground">
-                  {service.description}
-                </p>
+              <dl className="grid grid-cols-1 gap-x-6 gap-y-3 border-t border-border pt-6 text-sm sm:grid-cols-2">
+                {service.specs.map(([k, v]) => (
+                  <div key={k}>
+                    <dt className="text-xs uppercase tracking-wider text-muted-foreground">{k}</dt>
+                    <dd className="mt-0.5 font-medium text-foreground">{v}</dd>
+                  </div>
+                ))}
+              </dl>
 
-                <dl className="mt-6 grid grid-cols-1 gap-x-6 gap-y-3 border-t border-border pt-6 text-sm sm:grid-cols-2">
-                  {service.specs.map(([k, v]) => (
-                    <div key={k}>
-                      <dt className="text-xs uppercase tracking-wider text-muted-foreground">{k}</dt>
-                      <dd className="mt-0.5 font-medium text-foreground">{v}</dd>
-                    </div>
-                  ))}
-                </dl>
-
-                <button
-                  type="button"
-                  onClick={() => setBulkOpen(true)}
-                  className="mt-6 inline-flex min-h-[48px] w-full cursor-pointer items-center justify-center rounded-sm bg-primary px-6 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
-                >
-                  {service.cta}
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={() => setBulkOpen(true)}
+                className="mt-2 inline-flex min-h-[48px] w-full cursor-pointer items-center justify-center rounded-sm bg-primary px-6 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+              >
+                {service.cta}
+              </button>
             </div>
 
             <BulkRequestDialog

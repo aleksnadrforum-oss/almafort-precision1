@@ -404,9 +404,15 @@ const loadCadViewer = createClientOnlyFn(async () => {
 export function ProductSheet({
   product,
   onClose,
+  initialColorHex,
+  onColorChange,
 }: {
   product: Product | null;
   onClose: () => void;
+  /** HEX цвета из URL (?color=...) — карточка открывается с ним предвыбранным. */
+  initialColorHex?: string | undefined;
+  /** Синхронизация выбранного цвета с адресной строкой. */
+  onColorChange?: ((color: { label: string; hex: string }) => void) | undefined;
 }) {
   const [city, setCity] = useState<CityValue>({ city: "Москва", fiasId: null });
   const [batch, setBatch] = useState(1000);
@@ -421,8 +427,12 @@ export function ProductSheet({
     : DEFAULT_PROFILE;
   const [swatchIndex, setSwatchIndex] = useState(0);
   useEffect(() => {
-    setSwatchIndex(0);
-  }, [product?.sku]);
+    if (!product) return;
+    const prof = SKU_PROFILES[product.sku] ?? PROFILES[product.category] ?? DEFAULT_PROFILE;
+    const wanted = initialColorHex?.toLowerCase();
+    const idx = wanted ? (prof.palette ?? []).findIndex((s) => s.hex.toLowerCase() === wanted) : -1;
+    setSwatchIndex(idx >= 0 ? idx : 0);
+  }, [product?.sku, initialColorHex]);
   const activeSwatch = profile.palette?.[swatchIndex];
   const partColor = activeSwatch?.hex ?? PART_COLOR_HEX;
   const partMaterial = activeSwatch

@@ -350,6 +350,14 @@ export function baseColorForProduct(p: { sku: string; category: string }) {
   return { label: sw?.label ?? prof.colorLabel, hex: sw?.hex ?? PART_COLOR_HEX };
 }
 
+/** Маркетинговое описание позиции — используется в JSON-LD микроразметке. */
+export function descriptionForProduct(p: { sku: string; category: string }): string {
+  const service = SERVICE_PROFILES[p.sku];
+  if (service) return service.description;
+  const prof = SKU_PROFILES[p.sku] ?? PROFILES[p.category] ?? DEFAULT_PROFILE;
+  return prof.description;
+}
+
 
 
 type ServiceProfile = {

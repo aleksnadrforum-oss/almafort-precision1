@@ -675,61 +675,43 @@ export function ProductSheet({
                   <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     Цвет детали
                   </p>
-                  {profile.palette ? (
-                    <TooltipProvider delayDuration={120}>
-                      <div className="mt-2 flex flex-wrap items-center gap-3 sm:gap-2">
-                        {profile.palette.map((sw, i) => (
-                          <Tooltip key={sw.hex + sw.label}>
-                            <TooltipTrigger asChild>
-                              <button
-                                type="button"
-                                aria-label={sw.label}
-                                aria-pressed={i === swatchIndex}
-                                onClick={() => {
-                                  setSwatchIndex(i);
-                                  onColorChange?.({ label: sw.label, hex: sw.hex });
-                                }}
-                                className={`size-10 cursor-pointer rounded-full border shadow-inner transition-all duration-200 sm:size-8 ${
-                                  i === swatchIndex
-                                    ? "border-foreground ring-2 ring-gray-400 ring-offset-2"
-                                    : "border-border hover:border-foreground/60"
-                                }`}
-                                style={
-                                  sw.opacity
-                                    ? {
-                                        backgroundImage:
-                                          "linear-gradient(135deg, #ffffff 45%, #cfcfcf 45%, #cfcfcf 55%, #ffffff 55%)",
-                                      }
-                                    : {
-                                        // Градиент даёт объём: свотч 1:1 к базовому цвету 3D-модели
-                                        backgroundColor: sw.hex,
-                                        backgroundImage:
-                                          "linear-gradient(160deg, rgba(255,255,255,0.28), rgba(0,0,0,0.18))",
-                                        ...(sw.borderColor
-                                          ? { borderColor: sw.borderColor }
-                                          : {}),
-                                      }
-                                }
-                              />
-                            </TooltipTrigger>
-                            <TooltipContent>{sw.label}</TooltipContent>
-                          </Tooltip>
-                        ))}
-                      </div>
-                      <p className="mt-2 text-sm font-medium text-foreground">
-                        {activeSwatch?.label ?? profile.colorLabel}
-                      </p>
-                    </TooltipProvider>
-                  ) : (
-                    <div className="mt-2 flex items-center gap-3">
-                      <span
-                        aria-hidden
-                        className="size-7 rounded-full border-2 border-foreground ring-2 ring-background"
-                        style={{ backgroundColor: PART_COLOR_HEX }}
-                      />
-                      <span className="text-sm font-medium text-foreground">{profile.colorLabel}</span>
+                  {/* Единый дизайн-код каталога: компактная сетка свотчей + тултип. */}
+                  <TooltipProvider delayDuration={120}>
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                      {swatches.map((sw, i) => (
+                        <Tooltip key={sw.hex + sw.label}>
+                          <TooltipTrigger asChild>
+                            <button
+                              type="button"
+                              aria-label={sw.label}
+                              aria-pressed={i === swatchIndex}
+                              onClick={() => {
+                                setSwatchIndex(i);
+                                onColorChange?.({ label: sw.label, hex: sw.hex });
+                              }}
+                              className={`size-6 cursor-pointer rounded-full border transition-all duration-200 ${
+                                i === swatchIndex
+                                  ? "border-foreground ring-2 ring-gray-400 ring-offset-2"
+                                  : "border-border hover:border-foreground/60"
+                              }`}
+                              style={
+                                sw.opacity
+                                  ? {
+                                      backgroundImage:
+                                        "linear-gradient(135deg, #ffffff 45%, #cfcfcf 45%, #cfcfcf 55%, #ffffff 55%)",
+                                    }
+                                  : {
+                                      backgroundColor: sw.hex,
+                                      ...(sw.borderColor ? { borderColor: sw.borderColor } : {}),
+                                    }
+                              }
+                            />
+                          </TooltipTrigger>
+                          <TooltipContent>{sw.label}</TooltipContent>
+                        </Tooltip>
+                      ))}
                     </div>
-                  )}
+                  </TooltipProvider>
                 </div>
 
                 <p className="mt-3 text-xs text-muted-foreground">

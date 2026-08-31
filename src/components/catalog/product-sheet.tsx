@@ -64,9 +64,22 @@ const DOVETAIL_CAP_PROFILE: PartProfile = {
   palette: DOVETAIL_CAP_PALETTE,
 };
 
+const LATHOLDER_PALETTE: Swatch[] = [
+  { hex: "#000000", label: "Чёрный (Базовый)" },
+];
+
+const LATHOLDER_PROFILE: PartProfile = {
+  colorLabel: "Чёрный (Базовый)",
+  material: { roughness: 0.8, metalness: 0.0 },
+  description:
+    "Универсальный пластиковый латодержатель для надёжной фиксации ортопедических деревянных лат (ламелей) к металлическому или деревянному каркасу мягкой мебели. Деталь выполняет функцию амортизатора: надёжно удерживает ламель, предотвращает скрип, гасит вибрации и полностью исключает трение древесины о конструкцию основания. Изготавливается из эластичного, ударопрочного полимера, рассчитанного на постоянные циклические нагрузки. Оптимальное стандартизированное решение для конвейерного производства кроватей, диванов и ортопедических решёток.",
+  palette: LATHOLDER_PALETTE,
+};
+
 const SKU_PROFILES: Record<string, PartProfile> = {
   "MK-LH": DOVETAIL_PROFILE,
   "MK-LHZ": DOVETAIL_CAP_PROFILE,
+  "MK-LD": LATHOLDER_PROFILE,
 };
 
 

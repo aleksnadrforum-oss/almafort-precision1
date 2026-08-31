@@ -159,7 +159,8 @@ function useRowState(p: Product, onAdd: Props["onAdd"]) {
 
   const hasSum = !onRequest && qty > 0 && state !== "done";
   const label = onRequest
-    ? "Запросить расчет"
+    ? "Расчёт"
+
     : state === "done"
       ? "Добавлено"
       : hasSum

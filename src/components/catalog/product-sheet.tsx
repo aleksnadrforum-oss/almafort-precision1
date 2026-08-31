@@ -227,6 +227,18 @@ const SUPPORT_PROFILE: PartProfile = {
   palette: SUPPORT_PALETTE,
 };
 
+const METAL_FRAME_SUPPORT_PALETTE: Swatch[] = [
+  { hex: "#000000", label: "Чёрный" },
+];
+
+const METAL_FRAME_SUPPORT_PROFILE: PartProfile = {
+  colorLabel: "Чёрный",
+  material: { roughness: 0.85, metalness: 0.0 },
+  description:
+    "Специализированный пластиковый подпятник (опора-заглушка) для мебели на металлическом каркасе, включая школьные парты, стулья, столы и изделия в стиле лофт. Главная функция — надёжная защита напольных покрытий (ламината, линолеума, паркета) от царапин, продавливания и прямого контакта с жёстким металлическим профилем. Благодаря продуманной системе фиксации (плотный охват трубы или внутренние рёбра жёсткости), подпятник прочно держится на ножке мебели и не слетает при частом перемещении стульев. Отливается из износостойкого полимера, рассчитанного на постоянные статические и динамические нагрузки, а также стойкого к истиранию.",
+  palette: METAL_FRAME_SUPPORT_PALETTE,
+};
+
 const TUBE_PLUG_PALETTE: Swatch[] = [
   { hex: "#000000", label: "Чёрный (Базовый)" },
 ];
@@ -272,8 +284,8 @@ const SKU_PROFILES: Record<string, PartProfile> = {
   "OP-H50": SUPPORT_PROFILE,
   "OP-SH-H50": SUPPORT_PROFILE,
   "OP-M6-H28": SUPPORT_PROFILE,
-  "OP-PM-20": SUPPORT_PROFILE,
-  "OP-PM-25": SUPPORT_PROFILE,
+  "OP-PM-20": METAL_FRAME_SUPPORT_PROFILE,
+  "OP-PM-25": METAL_FRAME_SUPPORT_PROFILE,
   "OP-P-STD": SUPPORT_PROFILE,
   "ZGV-20x40": RECT_TUBE_PLUG_PROFILE,
   "ZGV-40x60": RECT_TUBE_PLUG_PROFILE,

@@ -48,7 +48,7 @@ export type ParsePayload = {
  * Композитный ключ строки: артикул + цвет.
  * Один и тот же SKU разных цветов — разные независимые строки корзины.
  */
-export const lineKey = (l: { sku: string; color?: { label: string } | null }) =>
+export const lineKey = (l: { sku: string; color?: { label: string } | null | undefined }) =>
   `${l.sku}::${l.color?.label ?? ""}`;
 
 export const productBySku = (sku: string) => PRODUCTS.find((p) => p.sku === sku);

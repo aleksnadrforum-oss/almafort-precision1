@@ -192,7 +192,7 @@ function MobileCard({
   onAdd,
 }: { p: Product; group?: AssetGroup | undefined } & Omit<Props, "query">) {
   const [lightbox, setLightbox] = useState(false);
-  const { qty, setQty, state, quote, setQuote, onRequest, tier, add, hasSum } = useRowState(
+  const { qty, setQty, state, quote, setQuote, onRequest, tier, add, hasSum, palette, colorIndex, setColorIndex } = useRowState(
     p,
     onAdd,
   );

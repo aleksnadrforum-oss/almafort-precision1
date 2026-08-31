@@ -1,8 +1,7 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import {
-  Environment,
-  Lightformer,
+  ContactShadows,
   ContactShadows,
   OrbitControls,
   useGLTF,

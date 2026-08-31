@@ -569,7 +569,11 @@ export function ProductSheet({
 
   return (
     <Dialog open={!!product} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-h-[90dvh] max-w-5xl overflow-y-auto">
+      <DialogContent
+        className="max-h-[90dvh] max-w-6xl overflow-y-auto overscroll-contain max-md:inset-x-0 max-md:bottom-0 max-md:top-auto max-md:max-h-[92dvh] max-md:w-full max-md:max-w-none max-md:translate-x-0 max-md:translate-y-0 max-md:rounded-t-2xl max-md:rounded-b-none max-md:p-4 max-md:pb-[env(safe-area-inset-bottom)] max-md:data-[state=closed]:slide-out-to-bottom max-md:data-[state=open]:slide-in-from-bottom"
+      >
+        {/* Индикатор шторки: подсказывает жест «свайп вниз» на мобильных */}
+        <div aria-hidden className="mx-auto -mt-1 h-1.5 w-12 shrink-0 rounded-full bg-border md:hidden" />
         {product && service && (
           <>
             <DialogHeader>
@@ -650,7 +654,7 @@ export function ProductSheet({
                   </p>
                   {profile.palette ? (
                     <TooltipProvider delayDuration={120}>
-                      <div className="mt-2 flex flex-wrap items-center gap-2">
+                      <div className="mt-2 flex flex-wrap items-center gap-3 sm:gap-2">
                         {profile.palette.map((sw, i) => (
                           <Tooltip key={sw.hex + sw.label}>
                             <TooltipTrigger asChild>
@@ -662,9 +666,9 @@ export function ProductSheet({
                                   setSwatchIndex(i);
                                   onColorChange?.({ label: sw.label, hex: sw.hex });
                                 }}
-                                className={`size-7 rounded-full border transition ${
+                                className={`size-10 cursor-pointer rounded-full border shadow-inner transition-all duration-200 sm:size-8 ${
                                   i === swatchIndex
-                                    ? "border-foreground ring-2 ring-foreground/30"
+                                    ? "border-foreground ring-2 ring-gray-400 ring-offset-2"
                                     : "border-border hover:border-foreground/60"
                                 }`}
                                 style={
@@ -674,7 +678,10 @@ export function ProductSheet({
                                           "linear-gradient(135deg, #ffffff 45%, #cfcfcf 45%, #cfcfcf 55%, #ffffff 55%)",
                                       }
                                     : {
+                                        // Градиент даёт объём: свотч 1:1 к базовому цвету 3D-модели
                                         backgroundColor: sw.hex,
+                                        backgroundImage:
+                                          "linear-gradient(160deg, rgba(255,255,255,0.28), rgba(0,0,0,0.18))",
                                         ...(sw.borderColor
                                           ? { borderColor: sw.borderColor }
                                           : {}),
@@ -845,6 +852,8 @@ export function ProductSheet({
                   )}
                 </div>
 
+                {/* Мобильный CTA приклеен к низу шторки: цена и корзина всегда под большим пальцем */}
+                <div className="sticky bottom-0 z-10 -mx-4 mt-6 border-t border-border bg-background px-4 pb-[max(env(safe-area-inset-bottom),0.75rem)] pt-3 md:static md:mx-0 md:mt-0 md:border-0 md:bg-transparent md:p-0">
                 <button
                   type="button"
                   onClick={() => {
@@ -863,15 +872,17 @@ export function ProductSheet({
                       }`,
                     );
                   }}
-                  className="mt-6 inline-flex min-h-[48px] w-full cursor-pointer items-center justify-center rounded-sm bg-primary px-6 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+                  className="inline-flex min-h-[48px] w-full cursor-pointer items-center justify-center rounded-sm bg-primary px-6 text-sm font-semibold text-primary-foreground transition-colors duration-200 hover:opacity-90 md:mt-6"
                 >
                   В корзину · {Math.max(1, Math.floor(batch) || 1).toLocaleString("ru-RU")} шт
                 </button>
 
+                </div>
+
                 <button
                   type="button"
                   onClick={() => setBulkOpen(true)}
-                  className="mt-4 inline-flex min-h-[44px] cursor-pointer items-center rounded-sm px-1 text-left text-sm font-medium text-foreground underline-offset-4 transition-colors hover:text-primary hover:underline"
+                  className="mt-4 inline-flex min-h-[44px] cursor-pointer items-center rounded-sm px-1 text-left text-sm font-medium text-foreground underline-offset-4 transition-colors duration-200 hover:text-primary hover:underline"
                 >
                   Запросить спец. условия на партию от{" "}
                   {(product.tier2Qty || 50000).toLocaleString("ru-RU")} шт →

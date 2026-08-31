@@ -26,6 +26,8 @@ export type Product = {
   material: string;
   gost: string;
   load: string;
+  /** Доп. характеристика (напр. «Антискрип»). Выводится в сетке при наличии. */
+  features?: string;
   weight: number; // kg, вес единицы
   volume: number; // m3, объём единицы в упаковке
   stock: Stock;
@@ -155,8 +157,21 @@ export const isService = (p: { parent: string }) => p.parent === SERVICE_PARENT;
 export const isOnRequest = (p: { price: number }) =>
   !Number.isFinite(p.price) || p.price <= 0;
 
+/** Поколоночные переопределения спецификаций для отдельных SKU. */
+const SKU_SPECS: Partial<
+  Record<string, { material?: string; load?: string; gost?: string; features?: string }>
+> = {
+  "MK-LD": {
+    material: "Эластичный полимер (ПВД/ПНД)",
+    load: "Высокая стойкость к циклическим деформациям",
+    features: "Антискрип (гашение вибраций)",
+  },
+};
+
 export const PRODUCTS: Product[] = raw.map(
-  ([sku, name, parent, category, dims, color, price, qty, weight, volume, tier1, tier2]) => ({
+  ([sku, name, parent, category, dims, color, price, qty, weight, volume, tier1, tier2]) => {
+    const spec = SKU_SPECS[sku];
+    return {
     id: sku.toLowerCase(),
     sku,
     name,
@@ -164,9 +179,10 @@ export const PRODUCTS: Product[] = raw.map(
     category,
     dims,
     color,
-    material: "Полипропилен PP, ударопрочный",
-    gost: "ГОСТ 26996-86 / ТУ 22.29.29",
-    load: "до 240 кг статической нагрузки",
+    material: spec?.material ?? "Полипропилен PP, ударопрочный",
+    gost: spec?.gost ?? "ГОСТ 26996-86 / ТУ 22.29.29",
+    load: spec?.load ?? "до 240 кг статической нагрузки",
+    ...(spec?.features ? { features: spec.features } : {}),
     weight,
     volume,
     stock:
@@ -189,7 +205,8 @@ export const PRODUCTS: Product[] = raw.map(
       model_dwg_url: `/api/public/cad/${sku}/dwg`,
       passport_pdf_url: `/api/public/cad/${sku}/pdf`,
     },
-  }),
+    };
+  },
 );
 
 /** Тир партии. Пороги берём из карточки товара — они разные по группам. */

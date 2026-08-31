@@ -620,7 +620,9 @@ function Row({
             <ShoppingCart className="size-4 shrink-0" strokeWidth={1.75} />
           )}
           {state === "loading" ? null : (
-            <span className="overflow-hidden text-ellipsis whitespace-nowrap">{label}</span>
+            <span className="overflow-hidden text-ellipsis whitespace-nowrap">
+              {outOfStock ? "Нет в наличии" : label}
+            </span>
           )}
         </button>
         {inCart > 0 && (

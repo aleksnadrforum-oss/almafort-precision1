@@ -142,6 +142,29 @@ function ProxyModel({
       </group>
     );
   }
+  // Крышка канистры — круглый корпус DIN 61 с накаткой и внутренним обтюратором
+  if (category.includes("канистр")) {
+    return (
+      <group>
+        <mesh castShadow>
+          <cylinderGeometry args={[0.72, 0.72, 0.42, 64]} />
+          {mat}
+        </mesh>
+        <mesh position={[0, 0.23, 0]}>
+          <cylinderGeometry args={[0.68, 0.72, 0.05, 64]} />
+          {mat}
+        </mesh>
+        <mesh position={[0, -0.26, 0]}>
+          <cylinderGeometry args={[0.58, 0.58, 0.14, 48]} />
+          {mat}
+        </mesh>
+        <mesh position={[0, -0.38, 0]}>
+          <coneGeometry args={[0.5, 0.16, 48]} />
+          {mat}
+        </mesh>
+      </group>
+    );
+  }
   if (category.includes("Хомут")) {
     return (
       <group rotation={[Math.PI / 2.2, 0, 0]}>

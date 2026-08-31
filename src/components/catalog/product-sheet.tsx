@@ -276,7 +276,29 @@ const ROUND_TUBE_PLUG_PROFILE: PartProfile = {
   palette: TUBE_PLUG_PALETTE,
 };
 
+/** Усиленная крышка для канистры — независимый профиль (не связан с сэндвич-панелями). */
+const CANISTER_CAP_PROFILE: PartProfile = {
+  colorLabel: "Чёрный",
+  material: { roughness: 0.65, metalness: 0.0 },
+  description:
+    "Усиленная пластиковая крышка для промышленных и бытовых канистр, рассчитанная на экстремальные условия эксплуатации. Отличается увеличенной толщиной стенки и модифицированным профилем резьбы, что полностью исключает срыв при сильном затягивании и гарантирует многократное (вечное) использование. Абсолютная герметичность достигается за счет плотного внутреннего обтюратора (конуса).",
+  palette: [{ hex: "#000000", label: "Чёрный" }],
+};
+
+/** Семейство «Тетрагедрон» — утилитарный матовый промышленный пластик. */
+const TETRAHEDRON_PROFILE: PartProfile = {
+  colorLabel: "Чёрный",
+  material: { roughness: 0.85, metalness: 0.0 },
+  description:
+    "Технологические пластиковые детали (тетрагедроны) для производственных линий по выпуску сэндвич-панелей. Разработаны специально для обеспечения правильной геометрии и технологического процесса на заводах-изготовителях панелей. Литьё из высокопрочного чёрного пластика с точным соблюдением допусков.",
+  palette: [{ hex: "#000000", label: "Чёрный" }],
+};
+
 const SKU_PROFILES: Record<string, PartProfile> = {
+  "KAN-CAP-R": CANISTER_CAP_PROFILE,
+  "TG-080": TETRAHEDRON_PROFILE,
+  "TG-100": TETRAHEDRON_PROFILE,
+  "TG-150": TETRAHEDRON_PROFILE,
   "MK-LH": DOVETAIL_PROFILE,
   "MK-LHZ": DOVETAIL_CAP_PROFILE,
   "MK-LD": LATHOLDER_PROFILE,
@@ -329,15 +351,16 @@ const PROFILES: Record<string, PartProfile> = {
   },
   // Тетрагедроны — литой промышленный пластик
   "Для производства сэндвич-панелей": {
-    colorLabel: "Чёрный промышленный",
-    material: { roughness: 0.52, metalness: 0.0 },
+    colorLabel: "Чёрный",
+    material: { roughness: 0.85, metalness: 0.0 },
     description: TETRAHEDRON_DESCRIPTION,
+    palette: [{ hex: "#000000", label: "Чёрный" }],
   },
 };
 
 const DEFAULT_PROFILE: PartProfile = {
-  colorLabel: "Чёрный промышленный",
-  material: { roughness: 0.52, metalness: 0.0 },
+  colorLabel: "Чёрный",
+  material: { roughness: 0.85, metalness: 0.0 },
   description: TETRAHEDRON_DESCRIPTION,
 };
 
@@ -447,7 +470,12 @@ export function ProductSheet({
     const idx = wanted ? (prof.palette ?? []).findIndex((s) => s.hex.toLowerCase() === wanted) : -1;
     setSwatchIndex(idx >= 0 ? idx : 0);
   }, [product?.sku, initialColorHex]);
-  const activeSwatch = profile.palette?.[swatchIndex];
+  // Позиции без палитры получают один базовый свотч — UI везде одинаковый.
+  const swatches: Swatch[] =
+    profile.palette && profile.palette.length
+      ? profile.palette
+      : [{ hex: PART_COLOR_HEX, label: profile.colorLabel }];
+  const activeSwatch = swatches[swatchIndex] ?? swatches[0];
   const partColor = activeSwatch?.hex ?? PART_COLOR_HEX;
   const partMaterial = activeSwatch
     ? {
@@ -652,61 +680,43 @@ export function ProductSheet({
                   <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     Цвет детали
                   </p>
-                  {profile.palette ? (
-                    <TooltipProvider delayDuration={120}>
-                      <div className="mt-2 flex flex-wrap items-center gap-3 sm:gap-2">
-                        {profile.palette.map((sw, i) => (
-                          <Tooltip key={sw.hex + sw.label}>
-                            <TooltipTrigger asChild>
-                              <button
-                                type="button"
-                                aria-label={sw.label}
-                                aria-pressed={i === swatchIndex}
-                                onClick={() => {
-                                  setSwatchIndex(i);
-                                  onColorChange?.({ label: sw.label, hex: sw.hex });
-                                }}
-                                className={`size-10 cursor-pointer rounded-full border shadow-inner transition-all duration-200 sm:size-8 ${
-                                  i === swatchIndex
-                                    ? "border-foreground ring-2 ring-gray-400 ring-offset-2"
-                                    : "border-border hover:border-foreground/60"
-                                }`}
-                                style={
-                                  sw.opacity
-                                    ? {
-                                        backgroundImage:
-                                          "linear-gradient(135deg, #ffffff 45%, #cfcfcf 45%, #cfcfcf 55%, #ffffff 55%)",
-                                      }
-                                    : {
-                                        // Градиент даёт объём: свотч 1:1 к базовому цвету 3D-модели
-                                        backgroundColor: sw.hex,
-                                        backgroundImage:
-                                          "linear-gradient(160deg, rgba(255,255,255,0.28), rgba(0,0,0,0.18))",
-                                        ...(sw.borderColor
-                                          ? { borderColor: sw.borderColor }
-                                          : {}),
-                                      }
-                                }
-                              />
-                            </TooltipTrigger>
-                            <TooltipContent>{sw.label}</TooltipContent>
-                          </Tooltip>
-                        ))}
-                      </div>
-                      <p className="mt-2 text-sm font-medium text-foreground">
-                        {activeSwatch?.label ?? profile.colorLabel}
-                      </p>
-                    </TooltipProvider>
-                  ) : (
-                    <div className="mt-2 flex items-center gap-3">
-                      <span
-                        aria-hidden
-                        className="size-7 rounded-full border-2 border-foreground ring-2 ring-background"
-                        style={{ backgroundColor: PART_COLOR_HEX }}
-                      />
-                      <span className="text-sm font-medium text-foreground">{profile.colorLabel}</span>
+                  {/* Единый дизайн-код каталога: компактная сетка свотчей + тултип. */}
+                  <TooltipProvider delayDuration={120}>
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                      {swatches.map((sw, i) => (
+                        <Tooltip key={sw.hex + sw.label}>
+                          <TooltipTrigger asChild>
+                            <button
+                              type="button"
+                              aria-label={sw.label}
+                              aria-pressed={i === swatchIndex}
+                              onClick={() => {
+                                setSwatchIndex(i);
+                                onColorChange?.({ label: sw.label, hex: sw.hex });
+                              }}
+                              className={`size-6 cursor-pointer rounded-full border transition-all duration-200 ${
+                                i === swatchIndex
+                                  ? "border-foreground ring-2 ring-gray-400 ring-offset-2"
+                                  : "border-border hover:border-foreground/60"
+                              }`}
+                              style={
+                                sw.opacity
+                                  ? {
+                                      backgroundImage:
+                                        "linear-gradient(135deg, #ffffff 45%, #cfcfcf 45%, #cfcfcf 55%, #ffffff 55%)",
+                                    }
+                                  : {
+                                      backgroundColor: sw.hex,
+                                      ...(sw.borderColor ? { borderColor: sw.borderColor } : {}),
+                                    }
+                              }
+                            />
+                          </TooltipTrigger>
+                          <TooltipContent>{sw.label}</TooltipContent>
+                        </Tooltip>
+                      ))}
                     </div>
-                  )}
+                  </TooltipProvider>
                 </div>
 
                 <p className="mt-3 text-xs text-muted-foreground">

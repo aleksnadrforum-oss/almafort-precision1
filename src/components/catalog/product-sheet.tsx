@@ -482,6 +482,19 @@ export function ProductSheet({
       }
     : profile.material;
   const addLine = useCart((st) => st.addLine);
+  // Складской потолок артикула: общий на все цвета, минус уже набранное в корзине.
+  const inCartSku = useCart((st) =>
+    product ? st.lines.reduce((a, l) => (l.sku === product.sku ? a + l.quantity : a), 0) : 0,
+  );
+  const stockCap = product ? stockLimit(product.sku) : Number.POSITIVE_INFINITY;
+  const stockLimited = Number.isFinite(stockCap);
+  const maxBatch = stockLimited ? Math.max(0, stockCap - inCartSku) : Number.POSITIVE_INFINITY;
+  const outOfStock = stockLimited && maxBatch <= 0;
+  const clampBatch = (v: number) => {
+    if (!stockLimited || v <= maxBatch) return v;
+    toast.error(`Доступно для заказа только ${Math.max(0, maxBatch).toLocaleString("ru-RU")} шт.`);
+    return Math.max(0, maxBatch);
+  };
   const [bulkOpen, setBulkOpen] = useState(false);
   const [quoteOpen, setQuoteOpen] = useState(false);
   const [CadViewer, setCadViewer] = useState<ComponentType<CadViewerProps> | null>(null);

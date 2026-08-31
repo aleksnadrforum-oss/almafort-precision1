@@ -335,6 +335,23 @@ const DEFAULT_PROFILE: PartProfile = {
   description: TETRAHEDRON_DESCRIPTION,
 };
 
+export type ColorSwatch = Swatch;
+
+/** Палитра позиции для табличной сетки: null — у SKU нет вариаций цвета. */
+export function paletteForProduct(p: { sku: string; category: string }): Swatch[] | null {
+  const prof = SKU_PROFILES[p.sku] ?? PROFILES[p.category] ?? null;
+  return prof?.palette && prof.palette.length > 1 ? prof.palette : null;
+}
+
+/** Базовый цвет позиции без палитры (для сквозной передачи в корзину). */
+export function baseColorForProduct(p: { sku: string; category: string }) {
+  const prof = SKU_PROFILES[p.sku] ?? PROFILES[p.category] ?? DEFAULT_PROFILE;
+  const sw = prof.palette?.[0];
+  return { label: sw?.label ?? prof.colorLabel, hex: sw?.hex ?? PART_COLOR_HEX };
+}
+
+
+
 type ServiceProfile = {
   description: string;
   specs: [string, string][];

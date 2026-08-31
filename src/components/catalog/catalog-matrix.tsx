@@ -9,12 +9,68 @@ import { QuoteRequestModal } from "@/components/catalog/quote-request-modal";
 import { ProductThumb } from "@/components/catalog/product-thumb";
 import { AssetLightbox } from "@/components/catalog/asset-lightbox";
 import { useAssetGroups, type AssetGroup } from "@/lib/asset-groups";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  baseColorForProduct,
+  paletteForProduct,
+  type ColorSwatch,
+} from "@/components/catalog/product-sheet";
 
 type Props = {
   query: string;
   onOpenProduct: (p: Product) => void;
-  onAdd: (p: Product, qty: number) => void;
+  onAdd: (p: Product, qty: number, color?: { label: string; hex: string }) => void;
 };
+
+/** Компактная палитра прямо в строке: снабженец не добавляет «слепой» цвет. */
+function MicroSwatches({
+  palette,
+  index,
+  onPick,
+  sku,
+}: {
+  palette: ColorSwatch[];
+  index: number;
+  onPick: (i: number) => void;
+  sku: string;
+}) {
+  return (
+    <TooltipProvider delayDuration={120}>
+      <div className="mt-1 flex flex-wrap items-center gap-1">
+        {palette.map((sw, i) => (
+          <Tooltip key={sw.hex + sw.label}>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                aria-label={`${sku}: ${sw.label}`}
+                aria-pressed={i === index}
+                onClick={() => onPick(i)}
+                className={`size-4 shrink-0 rounded-full border transition ${
+                  i === index
+                    ? "border-foreground ring-1 ring-gray-400"
+                    : "border-border hover:border-foreground/60"
+                }`}
+                style={
+                  sw.opacity
+                    ? {
+                        backgroundImage:
+                          "linear-gradient(135deg, #ffffff 45%, #cfcfcf 45%, #cfcfcf 55%, #ffffff 55%)",
+                      }
+                    : {
+                        backgroundColor: sw.hex,
+                        ...(sw.borderColor ? { borderColor: sw.borderColor } : {}),
+                      }
+                }
+              />
+            </TooltipTrigger>
+            <TooltipContent>{sw.label}</TooltipContent>
+          </Tooltip>
+        ))}
+      </div>
+    </TooltipProvider>
+  );
+}
+
 
 
 // Общая база ячейки: границы и hover-подсветка живут на ячейках,
@@ -31,6 +87,12 @@ function useRowState(p: Product, onAdd: Props["onAdd"]) {
   const [quote, setQuote] = useState(false);
   const onRequest = isOnRequest(p);
   const tier = tierOf(qty, p);
+  const palette = paletteForProduct(p);
+  // Базовый цвет предвыбран программно — «слепых» позиций в корзине не бывает.
+  const [colorIndex, setColorIndex] = useState(0);
+  const color = palette
+    ? { label: palette[colorIndex]!.label, hex: palette[colorIndex]!.hex }
+    : baseColorForProduct(p);
 
   const add = async () => {
     if (onRequest) {
@@ -52,7 +114,7 @@ function useRowState(p: Product, onAdd: Props["onAdd"]) {
       });
       if (!res.ok) throw new Error("cart");
       const data = (await res.json()) as { quantity: number };
-      onAdd(p, data.quantity);
+      onAdd(p, data.quantity, color);
       trackAddToCart({ sku: p.sku, name: p.name, price: p.price, quantity: data.quantity });
       setInCart((v) => v + data.quantity);
       setState("done");
@@ -74,8 +136,23 @@ function useRowState(p: Product, onAdd: Props["onAdd"]) {
           ? `В корзине · ${inCart.toLocaleString("ru-RU")} шт`
           : null;
 
-  return { qty, setQty, state, quote, setQuote, onRequest, tier, add, hasSum, label };
+  return {
+    qty,
+    setQty,
+    state,
+    quote,
+    setQuote,
+    onRequest,
+    tier,
+    add,
+    hasSum,
+    label,
+    palette,
+    colorIndex,
+    setColorIndex,
+  };
 }
+
 
 function StockCell({ p }: { p: Product }) {
   const color =
@@ -115,7 +192,7 @@ function MobileCard({
   onAdd,
 }: { p: Product; group?: AssetGroup | undefined } & Omit<Props, "query">) {
   const [lightbox, setLightbox] = useState(false);
-  const { qty, setQty, state, quote, setQuote, onRequest, tier, add, hasSum } = useRowState(
+  const { qty, setQty, state, quote, setQuote, onRequest, tier, add, hasSum, palette, colorIndex, setColorIndex } = useRowState(
     p,
     onAdd,
   );
@@ -157,6 +234,14 @@ function MobileCard({
           </button>
           <p className="mt-1 text-xs tabular-nums text-muted-foreground">{p.sku}</p>
           <p className="mt-1 text-xs leading-[1.35] text-muted-foreground">{p.dims}</p>
+          {palette && (
+            <MicroSwatches
+              palette={palette}
+              index={colorIndex}
+              onPick={setColorIndex}
+              sku={p.sku}
+            />
+          )}
           <div className="mt-1.5">
             <StockCell p={p} />
           </div>
@@ -264,7 +349,7 @@ function Row({
   onAdd,
 }: { p: Product; group?: AssetGroup | undefined } & Omit<Props, "query">) {
   const [lightbox, setLightbox] = useState(false);
-  const { qty, setQty, state, quote, setQuote, onRequest, tier, add, hasSum, label } = useRowState(
+  const { qty, setQty, state, quote, setQuote, onRequest, tier, add, hasSum, label, palette, colorIndex, setColorIndex } = useRowState(
     p,
     onAdd,
   );
@@ -343,6 +428,9 @@ function Row({
         <span className="block w-full overflow-hidden text-ellipsis whitespace-nowrap text-xs tabular-nums text-[oklch(0.55_0.01_264)]">
           {p.sku}
         </span>
+        {palette && (
+          <MicroSwatches palette={palette} index={colorIndex} onPick={setColorIndex} sku={p.sku} />
+        )}
       </div>
       <div className={`${CELL} text-sm text-muted-foreground`}>
         <span

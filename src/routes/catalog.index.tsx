@@ -49,9 +49,11 @@ function CatalogPage() {
   const addLine = useCart((s) => s.addLine);
   const cart = { lines: lines.length, total: cartTotals(lines).goods };
 
-  const add = (p: Product, qty: number) => {
-    addLine(p.sku, qty);
-    toast.success(`${p.sku} · ${qty.toLocaleString("ru-RU")} шт добавлено`);
+  const add = (p: Product, qty: number, color?: { label: string; hex: string }) => {
+    addLine(p.sku, qty, undefined, color);
+    toast.success(
+      `${p.sku} · ${qty.toLocaleString("ru-RU")} шт добавлено${color ? ` (${color.label})` : ""}`,
+    );
   };
 
   return (

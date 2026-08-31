@@ -428,6 +428,9 @@ function Row({
         <span className="block w-full overflow-hidden text-ellipsis whitespace-nowrap text-xs tabular-nums text-[oklch(0.55_0.01_264)]">
           {p.sku}
         </span>
+        {palette && (
+          <MicroSwatches palette={palette} index={colorIndex} onPick={setColorIndex} sku={p.sku} />
+        )}
       </div>
       <div className={`${CELL} text-sm text-muted-foreground`}>
         <span

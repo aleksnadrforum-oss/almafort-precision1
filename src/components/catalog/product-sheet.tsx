@@ -413,6 +413,7 @@ export function ProductSheet({
         opacity: activeSwatch.opacity ?? 1,
       }
     : profile.material;
+  const addLine = useCart((st) => st.addLine);
   const [bulkOpen, setBulkOpen] = useState(false);
   const [CadViewer, setCadViewer] = useState<ComponentType<CadViewerProps> | null>(null);
 
@@ -797,6 +798,29 @@ export function ProductSheet({
                     </p>
                   )}
                 </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    const qty = Math.max(1, Math.floor(batch) || 1);
+                    addLine(
+                      product.sku,
+                      qty,
+                      undefined,
+                      activeSwatch
+                        ? { label: activeSwatch.label, hex: activeSwatch.hex }
+                        : undefined,
+                    );
+                    toast.success(
+                      `${product.sku} — ${qty.toLocaleString("ru-RU")} шт добавлено в корзину${
+                        activeSwatch ? ` (${activeSwatch.label})` : ""
+                      }`,
+                    );
+                  }}
+                  className="mt-6 inline-flex min-h-[48px] w-full cursor-pointer items-center justify-center rounded-sm bg-primary px-6 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+                >
+                  В корзину · {Math.max(1, Math.floor(batch) || 1).toLocaleString("ru-RU")} шт
+                </button>
 
                 <button
                   type="button"

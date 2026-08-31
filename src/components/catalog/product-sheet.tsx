@@ -147,6 +147,25 @@ const RODHOLDER_PROFILE: PartProfile = {
   palette: RODHOLDER_PALETTE,
 };
 
+const EUROVINT_CAP_PALETTE: Swatch[] = [
+  { hex: "#fdd835", label: "Жёлтый" },
+  { hex: "#1e88e5", label: "Голубой" },
+  { hex: "#722f37", label: "Вишня" },
+  { hex: "#3e2723", label: "Венге" },
+  { hex: "#d4a373", label: "Бук" },
+  { hex: "#ffffff", label: "Белый", borderColor: "#e5e7eb" },
+  { hex: "#e8d5c4", label: "Бежевый" },
+  { hex: "#e1c699", label: "Бамбук" },
+];
+
+const EUROVINT_CAP_PROFILE: PartProfile = {
+  colorLabel: "Жёлтый",
+  material: { roughness: 0.35, metalness: 0.0 },
+  description:
+    "Пластиковая заглушка для маскировки головок евровинтов (конфирматов) при сборке мебели из ЛДСП. Модификация отличается продуманной геометрией: внутреннее углубление в нижней части позволяет полностью «спрятать» выступающую шляпку метиза, а оптимальный диаметр надёжно перекрывает сколы лакового слоя вокруг отверстия. В ассортименте более 20 вариантов, включая базовые монохромные цвета, оттенки под древесную текстуру и яркие решения для детской мебели.",
+  palette: EUROVINT_CAP_PALETTE,
+};
+
 const SKU_PROFILES: Record<string, PartProfile> = {
   "MK-LH": DOVETAIL_PROFILE,
   "MK-LHZ": DOVETAIL_CAP_PROFILE,
@@ -155,6 +174,7 @@ const SKU_PROFILES: Record<string, PartProfile> = {
   "MK-UG": ANGLE_BRACKET_PROFILE,
   "STK-POL-01": SHELF_GLASSHOLDER_PROFILE,
   "MK-SHD": RODHOLDER_PROFILE,
+  "ZGD-EV": EUROVINT_CAP_PROFILE,
 };
 
 

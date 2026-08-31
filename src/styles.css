@@ -702,3 +702,20 @@ body.kb-open .above-tabbar-float {
   60% { transform: translateX(-4px); }
   80% { transform: translateX(4px); }
 }
+
+/* Аккуратный тонкий скроллбар для внутренних областей карточек. */
+@utility scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: oklch(0.83 0.01 264) transparent;
+}
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: oklch(0.83 0.01 264);
+  border-radius: 9999px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}

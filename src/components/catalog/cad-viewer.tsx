@@ -1,4 +1,4 @@
-import { Suspense, useMemo, useRef, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Environment, OrbitControls, useGLTF, useProgress, Center } from "@react-three/drei";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
@@ -210,12 +210,38 @@ export function CadViewer({
 }) {
   const [wire, setWire] = useState(false);
   const [auto, setAuto] = useState(true);
+  const glRef = useRef<{
+    dispose: () => void;
+    forceContextLoss?: () => void;
+    renderLists?: { dispose: () => void };
+  } | null>(null);
+
+  // Без ручной очистки серия открытий карточек выжирает WebGL-контексты на мобильных.
+  useEffect(
+    () => () => {
+      const gl = glRef.current;
+      if (!gl) return;
+      try {
+        gl.renderLists?.dispose();
+        gl.dispose();
+        gl.forceContextLoss?.();
+      } catch {
+        /* контекст уже освобождён браузером */
+      }
+      glRef.current = null;
+    },
+    [],
+  );
 
   return (
     <div className="relative h-72 overflow-hidden rounded-lg bg-surface">
       <Canvas
         camera={{ position: [2.6, 1.8, 2.6], fov: 40 }}
         dpr={[1, 2]}
+        onCreated={({ gl, scene }) => {
+          glRef.current = gl as unknown as typeof glRef.current;
+          void scene;
+        }}
         onPointerDown={() => setAuto(false)}
         onWheel={() => setAuto(false)}
       >

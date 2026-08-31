@@ -11,9 +11,6 @@ import { BulkRequestDialog } from "@/components/catalog/bulk-request-dialog";
 import { useAssetGroups } from "@/lib/asset-groups";
 import { useDebounce } from "@/hooks/use-debounce";
 import type { ShippingQuote } from "@/lib/logistics";
-import serviceInjectionImg from "@/assets/service-injection.jpg";
-import serviceScanImg from "@/assets/service-scan.jpg";
-import serviceFdmImg from "@/assets/service-fdm.jpg";
 
 type PartMaterial = { roughness: number; metalness: number; opacity?: number };
 

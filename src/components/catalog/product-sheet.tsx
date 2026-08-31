@@ -1,6 +1,6 @@
 import { toast } from "sonner";
 import { useCart } from "@/store/cart-store";
-import { useEffect, useMemo, useState, type ComponentType } from "react";
+import { useEffect, useMemo, useRef, useState, type ComponentType } from "react";
 import { ClientOnly } from "@tanstack/react-router";
 import { createClientOnlyFn } from "@tanstack/react-start";
 import { Download, FileText, Layers, Ruler, Truck } from "lucide-react";
@@ -932,17 +932,32 @@ function CadViewerPlaceholder() {
 /** Длинные описания сворачиваются, чтобы характеристики и кнопка заказа не уезжали за экран. */
 function CollapsibleText({ text, className = "" }: { text: string; className?: string }) {
   const [open, setOpen] = useState(false);
-  const long = text.length > 320;
+  const [clamped, setClamped] = useState(false);
+  const ref = useRef<HTMLParagraphElement | null>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const check = () => {
+      if (open) return;
+      setClamped(el.scrollHeight - el.clientHeight > 4);
+    };
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, [text, open]);
+
   return (
     <div className={className}>
       <p
+        ref={ref}
         className={`max-w-[70ch] text-sm leading-[1.6] text-muted-foreground ${
-          long && !open ? "line-clamp-5" : ""
+          open ? "" : "line-clamp-5"
         }`}
       >
         {text}
       </p>
-      {long && (
+      {(clamped || open) && (
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
@@ -954,6 +969,7 @@ function CollapsibleText({ text, className = "" }: { text: string; className?: s
     </div>
   );
 }
+
 
 /** Убирает дубли ключей и унифицирует название параметра размеров. */
 function normalizeSpecs(rows: [string, string][]): [string, string][] {

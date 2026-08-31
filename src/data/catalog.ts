@@ -26,6 +26,8 @@ export type Product = {
   material: string;
   gost: string;
   load: string;
+  /** Доп. характеристика (напр. «Антискрип»). Выводится в сетке при наличии. */
+  features?: string;
   weight: number; // kg, вес единицы
   volume: number; // m3, объём единицы в упаковке
   stock: Stock;

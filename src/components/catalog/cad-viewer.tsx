@@ -1,8 +1,17 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { Environment, OrbitControls, useGLTF, useProgress, Center } from "@react-three/drei";
+import {
+  Environment,
+  Lightformer,
+  ContactShadows,
+  OrbitControls,
+  useGLTF,
+  useProgress,
+  Center,
+} from "@react-three/drei";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
-import type { Mesh, Group } from "three";
+import * as THREE from "three";
+import type { Mesh, Group, Texture } from "three";
 import { Box, Grid3x3 } from "lucide-react";
 
 /** WASM-декодеры Draco лежат в public/draco/ — без них сжатая сетка не распакуется. */
@@ -12,9 +21,59 @@ function attachDraco(loader: { setDRACOLoader: (l: DRACOLoader) => void }) {
   loader.setDRACOLoader(draco);
 }
 
-const PLASTIC = { roughness: 0.52, metalness: 0.12 } as const;
+const PLASTIC = { roughness: 0.52, metalness: 0 } as const;
 export const DEFAULT_PART_COLOR = "#000000";
-export type PartMaterial = { roughness: number; metalness: number; opacity?: number };
+export type PartMaterial = {
+  roughness: number;
+  /** Пластик — диэлектрик: значение всегда приводится к 0. */
+  metalness: number;
+  opacity?: number;
+  /** Микроплёнка от литья под давлением. */
+  clearcoat?: number;
+  /** Процедурная шагрень: микрорельеф литой корки. */
+  texture?: "shagreen";
+};
+
+/**
+ * Карта нормалей с микрошумом: имитирует шагрень — свет рассеивается
+ * по микрорельефу, поверхность перестаёт быть «пластиковой пустотой».
+ */
+let shagreenCache: Texture | null = null;
+function shagreenNormalMap(): Texture {
+  if (shagreenCache) return shagreenCache;
+  const size = 256;
+  const data = new Uint8Array(size * size * 4);
+  for (let i = 0; i < size * size; i++) {
+    const n = (Math.random() - 0.5) * 46;
+    data[i * 4] = 128 + n;
+    data[i * 4 + 1] = 128 + (Math.random() - 0.5) * 46;
+    data[i * 4 + 2] = 255;
+    data[i * 4 + 3] = 255;
+  }
+  const tex = new THREE.DataTexture(data, size, size, THREE.RGBAFormat);
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  tex.repeat.set(6, 6);
+  tex.needsUpdate = true;
+  shagreenCache = tex;
+  return tex;
+}
+
+/** Единая PBR-настройка пластика: metalness 0 + тонкий clearcoat. */
+function pbrProps(material: PartMaterial) {
+  const opacity = material.opacity ?? 1;
+  return {
+    roughness: material.roughness,
+    metalness: 0,
+    clearcoat: material.clearcoat ?? 0.08,
+    clearcoatRoughness: Math.min(0.6, material.roughness * 0.7),
+    envMapIntensity: material.roughness < 0.4 ? 1.15 : 0.75,
+    transparent: opacity < 1,
+    opacity,
+    ...(material.texture === "shagreen"
+      ? { normalMap: shagreenNormalMap(), normalScale: new THREE.Vector2(0.35, 0.35) }
+      : {}),
+  };
+}
 
 function GltfModel({
   url,
@@ -33,21 +92,18 @@ function GltfModel({
     s.traverse((o) => {
       const m = o as Mesh;
       if (m.isMesh && m.material && !Array.isArray(m.material)) {
-        const mat = m.material.clone() as unknown as {
-          wireframe: boolean;
-          roughness: number;
-          metalness: number;
-          transparent: boolean;
-          opacity: number;
-          color?: { set: (c: string) => void };
-        };
-        mat.wireframe = wire;
-        mat.roughness = material.roughness;
-        mat.metalness = material.metalness;
-        mat.opacity = material.opacity ?? 1;
-        mat.transparent = (material.opacity ?? 1) < 1;
-        mat.color?.set(color);
+        // Базовые материалы из GLB заменяем на физически корректный пластик.
+        const src = m.material as unknown as { map?: Texture | null; aoMap?: Texture | null };
+        const mat = new THREE.MeshPhysicalMaterial({
+          color: new THREE.Color(color),
+          wireframe: wire,
+          ...pbrProps(material),
+          ...(src.map ? { map: src.map } : {}),
+          ...(src.aoMap ? { aoMap: src.aoMap, aoMapIntensity: 1 } : {}),
+        });
         m.material = mat as never;
+        m.castShadow = true;
+        m.receiveShadow = true;
       }
     });
     return s;
@@ -70,17 +126,7 @@ function ProxyModel({
   color: string;
   material: PartMaterial;
 }) {
-  const opacity = material.opacity ?? 1;
-  const mat = (
-    <meshStandardMaterial
-      roughness={material.roughness}
-      metalness={material.metalness}
-      color={color}
-      wireframe={wire}
-      transparent={opacity < 1}
-      opacity={opacity}
-    />
-  );
+  const mat = <meshPhysicalMaterial color={color} wireframe={wire} {...pbrProps(material)} />;
 
   if (category.includes("Колпач")) {
     return (
@@ -210,6 +256,7 @@ export function CadViewer({
 }) {
   const [wire, setWire] = useState(false);
   const [auto, setAuto] = useState(true);
+  const [grabbing, setGrabbing] = useState(false);
   const glRef = useRef<{
     dispose: () => void;
     forceContextLoss?: () => void;
@@ -234,20 +281,31 @@ export function CadViewer({
   );
 
   return (
-    <div className="relative h-72 overflow-hidden rounded-lg bg-surface">
+    <div
+      className={`relative h-64 overflow-hidden rounded-lg bg-surface sm:h-72 lg:h-[380px] ${
+        grabbing ? "cursor-grabbing" : "cursor-grab"
+      }`}
+      // Жест вращения не должен прокручивать страницу под пальцем
+      style={{ touchAction: "none" }}
+      onPointerUp={() => setGrabbing(false)}
+      onPointerLeave={() => setGrabbing(false)}
+    >
       <Canvas
         camera={{ position: [2.6, 1.8, 2.6], fov: 40 }}
         dpr={[1, 2]}
+        gl={{ antialias: true }}
         onCreated={({ gl, scene }) => {
           glRef.current = gl as unknown as typeof glRef.current;
           void scene;
         }}
-        onPointerDown={() => setAuto(false)}
+        onPointerDown={() => {
+          setAuto(false);
+          setGrabbing(true);
+        }}
         onWheel={() => setAuto(false)}
       >
-        <ambientLight intensity={0.6} />
-        <directionalLight position={[4, 6, 3]} intensity={1.6} />
-        <directionalLight position={[-5, 2, -4]} intensity={0.7} />
+        {/* Студийный софтбокс вместо жёстких direct-теней */}
+        <ambientLight intensity={0.55} />
         <Suspense fallback={null}>
           <Center>
             <Spin enabled={auto}>
@@ -258,7 +316,38 @@ export function CadViewer({
               )}
             </Spin>
           </Center>
-          <Environment preset="studio" />
+          <Environment resolution={256}>
+            <Lightformer
+              intensity={2.6}
+              color="#ffffff"
+              position={[0, 5, 2]}
+              rotation-x={Math.PI / 2}
+              scale={[9, 9, 1]}
+            />
+            <Lightformer
+              intensity={1.1}
+              color="#f4f6f8"
+              position={[-5, 1, 1]}
+              rotation-y={Math.PI / 2}
+              scale={[12, 4, 1]}
+            />
+            <Lightformer
+              intensity={1.1}
+              color="#eef1f4"
+              position={[5, 1, -1]}
+              rotation-y={-Math.PI / 2}
+              scale={[12, 4, 1]}
+            />
+          </Environment>
+          {/* Мягкое контактное затенение вместо чёрной проекционной тени */}
+          <ContactShadows
+            position={[0, -1.15, 0]}
+            opacity={0.32}
+            scale={9}
+            blur={2.8}
+            far={4}
+            resolution={512}
+          />
         </Suspense>
         <OrbitControls
           enablePan={false}
@@ -266,6 +355,8 @@ export function CadViewer({
           maxDistance={7}
           enableDamping
           dampingFactor={0.08}
+          // Один палец — вращение, два пальца — pinch-to-zoom
+          touches={{ ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_PAN }}
         />
       </Canvas>
 
@@ -281,7 +372,7 @@ export function CadViewer({
       </button>
 
       <p className="pointer-events-none absolute right-3 top-3 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-        WebGL · вращение мышью
+        WebGL · PBR · вращение мышью / свайпом
       </p>
     </div>
   );

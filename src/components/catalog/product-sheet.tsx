@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, type ComponentType } from "react";
 import { ClientOnly } from "@tanstack/react-router";
 import { createClientOnlyFn } from "@tanstack/react-start";
 import { Download, FileText, Layers, Ruler, Truck } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import type { Product } from "@/data/catalog";
 import { trackCadDownload, trackViewItem } from "@/lib/metrika";
@@ -10,17 +11,45 @@ import { BulkRequestDialog } from "@/components/catalog/bulk-request-dialog";
 import { useAssetGroups } from "@/lib/asset-groups";
 import { useDebounce } from "@/hooks/use-debounce";
 import type { ShippingQuote } from "@/lib/logistics";
+type PartMaterial = { roughness: number; metalness: number; opacity?: number };
+
 type CadViewerProps = {
   glbUrl: string | null;
   category: string;
   color?: string;
-  material?: { roughness: number; metalness: number };
+  material?: PartMaterial;
 };
+
+type Swatch = { hex: string; label: string; opacity?: number };
 
 type PartProfile = {
   colorLabel: string;
-  material: { roughness: number; metalness: number };
+  material: PartMaterial;
   description: string;
+  palette?: Swatch[];
+};
+
+const DOVETAIL_PALETTE: Swatch[] = [
+  { hex: "#000000", label: "Чёрный" },
+  { hex: "#3e2723", label: "Тёмно-коричневый / Венге" },
+  { hex: "#6a3326", label: "Красно-коричневый / Махагон" },
+  { hex: "#8d6e63", label: "Светло-коричневый / Орех" },
+  { hex: "#d7ccc8", label: "Бежевый / Слоновая кость" },
+  { hex: "#757575", label: "Серый" },
+  { hex: "#f5f5f5", label: "Полупрозрачный / Натуральный полимер", opacity: 0.8 },
+];
+
+const DOVETAIL_PROFILE: PartProfile = {
+  colorLabel: "Чёрный",
+  material: { roughness: 0.45, metalness: 0.08 },
+  description:
+    "Универсальный крепёжный элемент «Ласточкин хвост» для скрытого монтажа и прочного соединения листовых материалов, мебельных деталей и конструкционных профилей. Надёжная фиксация узла достигается за счёт точной клиновидной геометрии и боковых фрикционных рёбер, полностью исключающих люфт после сборки. Изготовлен из износостойкого полимера, устойчивого к механическим нагрузкам. Расширенная цветовая гамма и наличие полупрозрачного варианта позволяют сделать соединение визуально незаметным на любом материале.",
+  palette: DOVETAIL_PALETTE,
+};
+
+const SKU_PROFILES: Record<string, PartProfile> = {
+  "MK-LH": DOVETAIL_PROFILE,
+  "MK-LHZ": DOVETAIL_PROFILE,
 };
 
 const TETRAHEDRON_DESCRIPTION =
@@ -69,8 +98,17 @@ export function ProductSheet({
   const assets = useAssetGroups();
   const assetGroup = product ? assets.get(product.sku) : undefined;
   const profile = product
-    ? PROFILES[product.category] ?? DEFAULT_PROFILE
+    ? SKU_PROFILES[product.sku] ?? PROFILES[product.category] ?? DEFAULT_PROFILE
     : DEFAULT_PROFILE;
+  const [swatchIndex, setSwatchIndex] = useState(0);
+  useEffect(() => {
+    setSwatchIndex(0);
+  }, [product?.sku]);
+  const activeSwatch = profile.palette?.[swatchIndex];
+  const partColor = activeSwatch?.hex ?? PART_COLOR_HEX;
+  const partMaterial = activeSwatch
+    ? { ...profile.material, opacity: activeSwatch.opacity ?? 1 }
+    : profile.material;
   const [bulkOpen, setBulkOpen] = useState(false);
   const [CadViewer, setCadViewer] = useState<ComponentType<CadViewerProps> | null>(null);
 
@@ -206,8 +244,8 @@ export function ProductSheet({
                     <CadViewer
                       glbUrl={product.engineering_assets.model_glb_url}
                       category={product.category}
-                      color={PART_COLOR_HEX}
-                      material={profile.material}
+                      color={partColor}
+                      material={partMaterial}
                     />
                   ) : (
                     <CadViewerPlaceholder />
@@ -218,14 +256,50 @@ export function ProductSheet({
                   <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     Цвет детали
                   </p>
-                  <div className="mt-2 flex items-center gap-3">
-                    <span
-                      aria-hidden
-                      className="size-7 rounded-full border-2 border-foreground ring-2 ring-background"
-                      style={{ backgroundColor: PART_COLOR_HEX }}
-                    />
-                    <span className="text-sm font-medium text-foreground">{profile.colorLabel}</span>
-                  </div>
+                  {profile.palette ? (
+                    <TooltipProvider delayDuration={120}>
+                      <div className="mt-2 flex flex-wrap items-center gap-2">
+                        {profile.palette.map((sw, i) => (
+                          <Tooltip key={sw.hex + sw.label}>
+                            <TooltipTrigger asChild>
+                              <button
+                                type="button"
+                                aria-label={sw.label}
+                                aria-pressed={i === swatchIndex}
+                                onClick={() => setSwatchIndex(i)}
+                                className={`size-7 rounded-full border transition ${
+                                  i === swatchIndex
+                                    ? "border-foreground ring-2 ring-foreground/30"
+                                    : "border-border hover:border-foreground/60"
+                                }`}
+                                style={
+                                  sw.opacity
+                                    ? {
+                                        backgroundImage:
+                                          "linear-gradient(135deg, #ffffff 45%, #cfcfcf 45%, #cfcfcf 55%, #ffffff 55%)",
+                                      }
+                                    : { backgroundColor: sw.hex }
+                                }
+                              />
+                            </TooltipTrigger>
+                            <TooltipContent>{sw.label}</TooltipContent>
+                          </Tooltip>
+                        ))}
+                      </div>
+                      <p className="mt-2 text-sm font-medium text-foreground">
+                        {activeSwatch?.label ?? profile.colorLabel}
+                      </p>
+                    </TooltipProvider>
+                  ) : (
+                    <div className="mt-2 flex items-center gap-3">
+                      <span
+                        aria-hidden
+                        className="size-7 rounded-full border-2 border-foreground ring-2 ring-background"
+                        style={{ backgroundColor: PART_COLOR_HEX }}
+                      />
+                      <span className="text-sm font-medium text-foreground">{profile.colorLabel}</span>
+                    </div>
+                  )
                 </div>
 
                 <p className="mt-3 text-xs text-muted-foreground">

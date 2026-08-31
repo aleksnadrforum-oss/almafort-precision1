@@ -20,7 +20,7 @@ type CadViewerProps = {
   material?: PartMaterial;
 };
 
-type Swatch = { hex: string; label: string; opacity?: number; roughness?: number };
+type Swatch = { hex: string; label: string; opacity?: number; roughness?: number; borderColor?: string };
 
 type PartProfile = {
   colorLabel: string;
@@ -94,11 +94,33 @@ const GLASSHOLDER_PROFILE: PartProfile = {
   palette: GLASSHOLDER_PALETTE,
 };
 
+const ANGLE_BRACKET_PALETTE: Swatch[] = [
+  { hex: "#ffffff", label: "Белый", borderColor: "#e5e7eb" },
+  { hex: "#e8d5c4", label: "Бежевый" },
+  { hex: "#d4a373", label: "Бук" },
+  { hex: "#5d4037", label: "Коричневый" },
+  { hex: "#8d6e63", label: "Орех светлый" },
+  { hex: "#3e2723", label: "Орех тёмный" },
+  { hex: "#000000", label: "Чёрный" },
+  { hex: "#1976d2", label: "Синий" },
+  { hex: "#388e3c", label: "Зелёный" },
+  { hex: "#722f37", label: "Вишня" },
+];
+
+const ANGLE_BRACKET_PROFILE: PartProfile = {
+  colorLabel: "Белый",
+  material: { roughness: 0.6, metalness: 0.0 },
+  description:
+    "Классический мебельный крепёжный уголок из прочного пластика для жёсткого соединения деталей из ЛДСП, МДФ и массива под прямым углом (90 градусов). Обеспечивает надёжную стяжку элементов каркаса, полок, ящиков и внутренних перегородок. Усиленная конструкция устойчива к нагрузкам на излом и вырывание саморезов. Широкая палитра, включающая как монохромные оттенки, так и имитацию популярных древесных декоров, позволяет подобрать крепёж тон в тон. Это делает узел соединения визуально незаметным и сохраняет эстетику внутреннего пространства готовой мебели.",
+  palette: ANGLE_BRACKET_PALETTE,
+};
+
 const SKU_PROFILES: Record<string, PartProfile> = {
   "MK-LH": DOVETAIL_PROFILE,
   "MK-LHZ": DOVETAIL_CAP_PROFILE,
   "MK-LD": LATHOLDER_PROFILE,
   "MK-SD": GLASSHOLDER_PROFILE,
+  "MK-UG": ANGLE_BRACKET_PROFILE,
 };
 
 
@@ -332,7 +354,12 @@ export function ProductSheet({
                                         backgroundImage:
                                           "linear-gradient(135deg, #ffffff 45%, #cfcfcf 45%, #cfcfcf 55%, #ffffff 55%)",
                                       }
-                                    : { backgroundColor: sw.hex }
+                                    : {
+                                        backgroundColor: sw.hex,
+                                        ...(sw.borderColor
+                                          ? { borderColor: sw.borderColor }
+                                          : {}),
+                                      }
                                 }
                               />
                             </TooltipTrigger>

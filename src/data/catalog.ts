@@ -388,6 +388,19 @@ export const PRODUCTS: Product[] = raw.map(
   },
 );
 
+/** Габариты обязаны содержать число и единицу измерения — абстракции запрещены. */
+const DIMS_RE = /\d/;
+const DIMS_UNIT_RE = /(мм|см|м³|см³|тонн|шт)/i;
+const DIMS_BANNED = /(стандарт|универсальн|под заказ|tbd|n\/a)/i;
+export function isValidDims(dims: string) {
+  return DIMS_RE.test(dims) && DIMS_UNIT_RE.test(dims) && !DIMS_BANNED.test(dims);
+}
+if (import.meta.env?.DEV) {
+  const bad = PRODUCTS.filter((p) => !isValidDims(p.dims)).map((p) => `${p.sku}: ${p.dims}`);
+  if (bad.length) console.warn("[catalog] Некорректные габариты:", bad);
+}
+
+
 /** Тир партии. Пороги берём из карточки товара — они разные по группам. */
 export function tierOf(qty: number, p?: Product): 0 | 1 | 2 {
   const t1 = p?.tier1Qty ?? DEFAULT_TIER1;

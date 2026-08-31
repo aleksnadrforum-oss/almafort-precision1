@@ -187,10 +187,12 @@ export function CadViewer({
   glbUrl,
   category,
   color = DEFAULT_PART_COLOR,
+  material = PLASTIC,
 }: {
   glbUrl: string | null;
   category: string;
   color?: string;
+  material?: PartMaterial;
 }) {
   const [wire, setWire] = useState(false);
   const [auto, setAuto] = useState(true);

@@ -467,7 +467,7 @@ function Row({
   onAdd,
 }: { p: Product; group?: AssetGroup | undefined } & Omit<Props, "query">) {
   const [lightbox, setLightbox] = useState(false);
-  const { qty, setQty, state, quote, setQuote, onRequest, tier, add, hasSum, label, palette, colorIndex, setColorIndex, inCart, cartColor } = useRowState(
+  const { qty, setQty, state, quote, setQuote, onRequest, tier, add, hasSum, label, palette, colorIndex, setColorIndex, inCart, cartColor, maxQty, limited, outOfStock, clampQty } = useRowState(
     p,
     onAdd,
   );

@@ -44,6 +44,13 @@ export type ParsePayload = {
   }>;
 };
 
+/**
+ * Композитный ключ строки: артикул + цвет.
+ * Один и тот же SKU разных цветов — разные независимые строки корзины.
+ */
+export const lineKey = (l: { sku: string; color?: { label: string } | null | undefined }) =>
+  `${l.sku}::${l.color?.label ?? ""}`;
+
 export const productBySku = (sku: string) => PRODUCTS.find((p) => p.sku === sku);
 
 /**
@@ -146,8 +153,8 @@ type State = {
   ) => void;
   /** Применяет корзину, слитую на сервере при входе в кабинет. */
   applyMergedLines: (rows: Array<{ sku: string; quantity: number }>) => void;
-  setQuantity: (sku: string, quantity: number) => void;
-  removeLine: (sku: string) => void;
+  setQuantity: (key: string, quantity: number) => void;
+  removeLine: (key: string) => void;
   resolvePending: (id: string, sku: string) => void;
   removePending: (id: string) => void;
   setCarrier: (c: Carrier) => void;
@@ -247,12 +254,11 @@ export const useCart = create<State>()(
       const p = productBySku(sku);
       const qty = Math.max(1, Math.floor(Number(quantity) || 0));
       if (!p) return s;
-      const lines = [...s.lines];
-      const found = lines.find((l) => l.sku === sku);
-      if (found) {
-        found.quantity += qty;
-        if (color) found.color = color;
-      } else lines.push({ sku, name: p.name, quantity: qty, originalName, color });
+      const next: CartLine = { sku, name: p.name, quantity: qty, originalName, color };
+      const key = lineKey(next);
+      // Совпадение только по паре «артикул + цвет»; иначе — новая строка.
+      const lines = s.lines.map((l) => (lineKey(l) === key ? { ...l, quantity: l.quantity + qty } : l));
+      if (!s.lines.some((l) => lineKey(l) === key)) lines.push(next);
       return { lines };
     }),
 
@@ -266,12 +272,12 @@ export const useCart = create<State>()(
         .filter((l): l is CartLine => Boolean(l)),
     })),
 
-  setQuantity: (sku, quantity) =>
+  setQuantity: (key, quantity) =>
     set((s) => ({
-      lines: s.lines.map((l) => (l.sku === sku ? { ...l, quantity: Math.min(9_999_999, Math.max(1, Math.floor(Number(quantity) || 1))) } : l)),
+      lines: s.lines.map((l) => (lineKey(l) === key ? { ...l, quantity: Math.min(9_999_999, Math.max(1, Math.floor(Number(quantity) || 1))) } : l)),
     })),
 
-  removeLine: (sku) => set((s) => ({ lines: s.lines.filter((l) => l.sku !== sku) })),
+  removeLine: (key) => set((s) => ({ lines: s.lines.filter((l) => lineKey(l) !== key) })),
 
   resolvePending: (id, sku) =>
     set((s) => {

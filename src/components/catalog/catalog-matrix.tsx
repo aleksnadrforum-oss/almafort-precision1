@@ -114,9 +114,20 @@ function useRowState(p: Product, onAdd: Props["onAdd"]) {
   const [state, setState] = useState<"idle" | "loading" | "done">("idle");
   // Персистентный статус строки: берём из корзины, а не из локального счётчика,
   // чтобы после перезагрузки снабженец видел, что позиция уже в спецификации.
-  const cartLine = useCart((s) => s.lines.find((l) => l.sku === p.sku));
-  const inCart = cartLine?.quantity ?? 0;
-  const cartColor = cartLine?.color ?? null;
+  // Строк по одному SKU может быть несколько (разные цвета) — суммируем для бейджа.
+  const inCart = useCart((s) =>
+    s.lines.reduce((a, l) => (l.sku === p.sku ? a + l.quantity : a), 0),
+  );
+  // Свотч в бейдже показываем, только если цвет у позиции один (иначе — смешанный набор).
+  const cartColorKey = useCart((s) => {
+    const own = s.lines.filter((l) => l.sku === p.sku);
+    return own.length === 1 ? `${own[0]!.color?.label ?? ""}|${own[0]!.color?.hex ?? ""}` : "";
+  });
+  const cartColor = cartColorKey.startsWith("|")
+    ? null
+    : cartColorKey
+      ? { label: cartColorKey.split("|")[0]!, hex: cartColorKey.split("|")[1]! }
+      : null;
   const [quote, setQuote] = useState(false);
   const onRequest = isOnRequest(p);
   const tier = tierOf(qty, p);

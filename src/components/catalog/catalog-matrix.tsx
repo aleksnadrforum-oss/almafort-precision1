@@ -87,6 +87,12 @@ function useRowState(p: Product, onAdd: Props["onAdd"]) {
   const [quote, setQuote] = useState(false);
   const onRequest = isOnRequest(p);
   const tier = tierOf(qty, p);
+  const palette = paletteForProduct(p);
+  // Базовый цвет предвыбран программно — «слепых» позиций в корзине не бывает.
+  const [colorIndex, setColorIndex] = useState(0);
+  const color = palette
+    ? { label: palette[colorIndex]!.label, hex: palette[colorIndex]!.hex }
+    : baseColorForProduct(p);
 
   const add = async () => {
     if (onRequest) {
@@ -108,7 +114,7 @@ function useRowState(p: Product, onAdd: Props["onAdd"]) {
       });
       if (!res.ok) throw new Error("cart");
       const data = (await res.json()) as { quantity: number };
-      onAdd(p, data.quantity);
+      onAdd(p, data.quantity, color);
       trackAddToCart({ sku: p.sku, name: p.name, price: p.price, quantity: data.quantity });
       setInCart((v) => v + data.quantity);
       setState("done");
@@ -130,8 +136,23 @@ function useRowState(p: Product, onAdd: Props["onAdd"]) {
           ? `В корзине · ${inCart.toLocaleString("ru-RU")} шт`
           : null;
 
-  return { qty, setQty, state, quote, setQuote, onRequest, tier, add, hasSum, label };
+  return {
+    qty,
+    setQty,
+    state,
+    quote,
+    setQuote,
+    onRequest,
+    tier,
+    add,
+    hasSum,
+    label,
+    palette,
+    colorIndex,
+    setColorIndex,
+  };
 }
+
 
 function StockCell({ p }: { p: Product }) {
   const color =

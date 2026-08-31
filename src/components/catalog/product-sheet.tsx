@@ -20,7 +20,7 @@ type CadViewerProps = {
   material?: PartMaterial;
 };
 
-type Swatch = { hex: string; label: string; opacity?: number; roughness?: number };
+type Swatch = { hex: string; label: string; opacity?: number; roughness?: number; borderColor?: string };
 
 type PartProfile = {
   colorLabel: string;

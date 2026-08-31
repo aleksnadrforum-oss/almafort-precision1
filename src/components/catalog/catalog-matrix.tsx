@@ -13,8 +13,58 @@ import { useAssetGroups, type AssetGroup } from "@/lib/asset-groups";
 type Props = {
   query: string;
   onOpenProduct: (p: Product) => void;
-  onAdd: (p: Product, qty: number) => void;
+  onAdd: (p: Product, qty: number, color?: { label: string; hex: string }) => void;
 };
+
+/** Компактная палитра прямо в строке: снабженец не добавляет «слепой» цвет. */
+function MicroSwatches({
+  palette,
+  index,
+  onPick,
+  sku,
+}: {
+  palette: ColorSwatch[];
+  index: number;
+  onPick: (i: number) => void;
+  sku: string;
+}) {
+  return (
+    <TooltipProvider delayDuration={120}>
+      <div className="mt-1 flex flex-wrap items-center gap-1">
+        {palette.map((sw, i) => (
+          <Tooltip key={sw.hex + sw.label}>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                aria-label={`${sku}: ${sw.label}`}
+                aria-pressed={i === index}
+                onClick={() => onPick(i)}
+                className={`size-4 shrink-0 rounded-full border transition ${
+                  i === index
+                    ? "border-foreground ring-1 ring-gray-400"
+                    : "border-border hover:border-foreground/60"
+                }`}
+                style={
+                  sw.opacity
+                    ? {
+                        backgroundImage:
+                          "linear-gradient(135deg, #ffffff 45%, #cfcfcf 45%, #cfcfcf 55%, #ffffff 55%)",
+                      }
+                    : {
+                        backgroundColor: sw.hex,
+                        ...(sw.borderColor ? { borderColor: sw.borderColor } : {}),
+                      }
+                }
+              />
+            </TooltipTrigger>
+            <TooltipContent>{sw.label}</TooltipContent>
+          </Tooltip>
+        ))}
+      </div>
+    </TooltipProvider>
+  );
+}
+
 
 
 // Общая база ячейки: границы и hover-подсветка живут на ячейках,

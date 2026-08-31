@@ -25,6 +25,7 @@ import { TIER_META } from "@/lib/loyalty";
 import { saveOrderToCabinet } from "@/lib/cabinet.functions";
 import { isAuthed } from "@/lib/session";
 import {
+  availableFor,
   cartTotals,
   deliveryCost,
   linePrice,
@@ -414,6 +415,18 @@ export function CartPanel() {
           const discounted = tier > 0;
           // Ключ строки — артикул + цвет: количество жёлтых не влияет на синие.
           const key = lineKey(l);
+          // Потолок строки: остаток артикула минус объём, занятый другими цветами.
+          const cap = availableFor(lines, l.sku, key);
+          const capped = Number.isFinite(cap);
+          const maxQty = capped ? Math.max(1, cap) : Number.POSITIVE_INFINITY;
+          const atMax = capped && l.quantity >= maxQty;
+          const setQtyGuarded = (want: number) => {
+            const safe = Math.max(1, Math.min(want, maxQty));
+            if (safe < want) {
+              toast.error(`Доступно для заказа только ${maxQty.toLocaleString("ru-RU")} шт.`);
+            }
+            setQuantity(key, safe);
+          };
           return (
             <SwipeToDelete key={key} onDelete={() => removeLine(key)}>
             <div
@@ -469,7 +482,7 @@ export function CartPanel() {
                 <button
                   type="button"
                   aria-label="Уменьшить количество"
-                  onClick={() => setQuantity(key, Math.max(1, l.quantity - 100))}
+                  onClick={() => setQtyGuarded(Math.max(1, l.quantity - 100))}
                   className="grid h-11 place-items-center rounded-md border border-[#D1D5DB] text-foreground active:scale-95 md:hidden"
                 >
                   −
@@ -477,16 +490,18 @@ export function CartPanel() {
                 <input
                   inputMode="numeric"
                   value={l.quantity}
+                  max={capped ? maxQty : undefined}
                   onChange={(e) =>
-                    setQuantity(key, Number(e.target.value.replace(/\D/g, "")) || 1)
+                    setQtyGuarded(Number(e.target.value.replace(/\D/g, "")) || 1)
                   }
                   className="h-11 w-full rounded-md border border-[#D1D5DB] px-2 text-center tabular-nums outline-none transition-colors focus:border-foreground md:h-auto md:rounded-sm md:py-1.5 md:text-right md:text-sm"
                 />
                 <button
                   type="button"
                   aria-label="Увеличить количество"
-                  onClick={() => setQuantity(key, l.quantity + 100)}
-                  className="grid h-11 place-items-center rounded-md border border-[#D1D5DB] text-foreground active:scale-95 md:hidden"
+                  onClick={() => setQtyGuarded(l.quantity + 100)}
+                  disabled={atMax}
+                  className="grid h-11 place-items-center rounded-md border border-[#D1D5DB] text-foreground active:scale-95 disabled:cursor-not-allowed disabled:text-gray-300 md:hidden"
                 >
                   +
                 </button>

@@ -538,9 +538,7 @@ export function ProductSheet({
             </DialogHeader>
 
             <div className="flex flex-col gap-6">
-              <p className="text-sm leading-[1.65] text-muted-foreground">
-                {service.description}
-              </p>
+              <CollapsibleText text={service.description} />
 
               <dl className="grid grid-cols-1 gap-x-6 gap-y-3 border-t border-border pt-6 text-sm sm:grid-cols-2">
                 {service.specs.map(([k, v]) => (
@@ -579,9 +577,7 @@ export function ProductSheet({
               </DialogTitle>
             </DialogHeader>
 
-            <p className="-mt-1 max-w-[70ch] text-sm leading-[1.6] text-muted-foreground">
-              {profile.description}
-            </p>
+            <CollapsibleText text={profile.description} className="-mt-1" />
 
             {profile.disclaimer && (
               <div className="mt-4 max-w-[70ch] rounded-md border-l-4 border-amber-400 bg-amber-50/50 p-3 text-sm leading-[1.5] text-gray-700">
@@ -668,8 +664,8 @@ export function ProductSheet({
 
               <div>
                 <dl className="grid grid-cols-2 gap-x-6 gap-y-3 border-b border-border pb-6 text-sm">
-                  {(
-                    product.specRows
+                  {normalizeSpecs(
+                    (product.specRows
                       ? [
                           ...product.specRows,
                           ["Габариты", product.dims],
@@ -832,8 +828,56 @@ export function ProductSheet({
 
 function CadViewerPlaceholder() {
   return (
-    <div className="grid h-72 place-items-center rounded-lg bg-surface font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
+    <div
+      aria-busy="true"
+      aria-label="Загрузка 3D-модели"
+      className="grid h-72 animate-pulse place-items-center rounded-lg bg-muted font-mono text-[11px] uppercase tracking-wider text-muted-foreground"
+    >
       Инициализация WebGL...
     </div>
   );
+}
+
+/** Длинные описания сворачиваются, чтобы характеристики и кнопка заказа не уезжали за экран. */
+function CollapsibleText({ text, className = "" }: { text: string; className?: string }) {
+  const [open, setOpen] = useState(false);
+  const long = text.length > 320;
+  return (
+    <div className={className}>
+      <p
+        className={`max-w-[70ch] text-sm leading-[1.6] text-muted-foreground ${
+          long && !open ? "line-clamp-5" : ""
+        }`}
+      >
+        {text}
+      </p>
+      {long && (
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          className="mt-1 min-h-[36px] cursor-pointer text-sm font-medium text-foreground underline underline-offset-4"
+        >
+          {open ? "Свернуть" : "Читать далее..."}
+        </button>
+      )}
+    </div>
+  );
+}
+
+/** Убирает дубли ключей и унифицирует название параметра размеров. */
+function normalizeSpecs(rows: [string, string][]): [string, string][] {
+  const out: [string, string][] = [];
+  const seen = new Set<string>();
+  for (const [rawKey, rawValue] of rows) {
+    if (!rawValue) continue;
+    const isDims = /габарит|размер/i.test(rawKey);
+    const key = isDims ? "Габариты" : rawKey.trim();
+    const id = key.toLowerCase();
+    if (seen.has(id)) continue;
+    seen.add(id);
+    // Значение не должно повторять ключ («Габариты: Габариты 20×20»)
+    const value = String(rawValue).replace(new RegExp(`^\\s*${key}\\s*[:—-]?\\s*`, "i"), "").trim();
+    out.push([key, value || String(rawValue)]);
+  }
+  return out;
 }

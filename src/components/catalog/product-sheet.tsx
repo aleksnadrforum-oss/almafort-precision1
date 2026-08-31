@@ -161,16 +161,33 @@ export function ProductSheet({
                     <CadViewer
                       glbUrl={product.engineering_assets.model_glb_url}
                       category={product.category}
+                      color={PART_COLOR.hex}
                     />
                   ) : (
                     <CadViewerPlaceholder />
                   )}
                 </ClientOnly>
+
+                <div className="mt-4">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Цвет детали
+                  </p>
+                  <div className="mt-2 flex items-center gap-3">
+                    <span
+                      aria-hidden
+                      className="size-7 rounded-full border-2 border-foreground ring-2 ring-background"
+                      style={{ backgroundColor: PART_COLOR.hex }}
+                    />
+                    <span className="text-sm font-medium text-foreground">{PART_COLOR.label}</span>
+                  </div>
+                </div>
+
                 <p className="mt-3 text-xs text-muted-foreground">
                   Модель сжата Draco · вращение мышью, зум колесом. Геометрия совпадает с
                   отливкой артикула {product.sku}.
                 </p>
               </div>
+
 
               <div>
                 <dl className="grid grid-cols-2 gap-x-6 gap-y-3 border-b border-border pb-6 text-sm">

@@ -129,6 +129,24 @@ const SHELF_GLASSHOLDER_PROFILE: PartProfile = {
   palette: SHELF_GLASSHOLDER_PALETTE,
 };
 
+const RODHOLDER_PALETTE: Swatch[] = [
+  { hex: "#000000", label: "Чёрный" },
+  { hex: "#ffffff", label: "Белый", borderColor: "#e5e7eb" },
+  { hex: "#808080", label: "Серый" },
+  { hex: "#3e2723", label: "Тёмно-коричневый / Венге" },
+  { hex: "#722f37", label: "Красно-коричневый / Вишня" },
+  { hex: "#d4a373", label: "Светло-коричневый / Бук" },
+  { hex: "#e8d5c4", label: "Бежевый / Песочный" },
+];
+
+const RODHOLDER_PROFILE: PartProfile = {
+  colorLabel: "Чёрный",
+  material: { roughness: 0.7, metalness: 0.0 },
+  description:
+    "Специализированный пластиковый штангодержатель U-образной формы, предназначенный для надёжной фиксации стандартной овальной штанги в плательных шкафах и гардеробных системах. Деталь обеспечивает жёсткое крепление к боковым стенкам мебельного короба, равномерно распределяя весовую нагрузку от одежды. Конструкция из высокопрочного полимера предотвращает деформацию под тяжестью вещей, гасит металлический лязг при снятии и установке вешалок, а также исключает появление царапин на самой штанге. Широкая цветовая гамма позволяет подобрать фурнитуру в тон внутреннего ЛДСП.",
+  palette: RODHOLDER_PALETTE,
+};
+
 const SKU_PROFILES: Record<string, PartProfile> = {
   "MK-LH": DOVETAIL_PROFILE,
   "MK-LHZ": DOVETAIL_CAP_PROFILE,
@@ -136,6 +154,7 @@ const SKU_PROFILES: Record<string, PartProfile> = {
   "MK-SD": GLASSHOLDER_PROFILE,
   "MK-UG": ANGLE_BRACKET_PROFILE,
   "STK-POL-01": SHELF_GLASSHOLDER_PROFILE,
+  "MK-SHD": RODHOLDER_PROFILE,
 };
 
 

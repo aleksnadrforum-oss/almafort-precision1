@@ -824,11 +824,15 @@ export function ProductSheet({
                         onChange={(e) =>
                           setBatch(Math.max(1, Number(e.target.value.replace(/\D/g, "")) || 1))
                         }
+                        onBlur={() => setBatch((v) => Math.max(1, clampBatch(v)))}
+                        max={stockLimited ? maxBatch : undefined}
+                        disabled={outOfStock}
                         inputMode="numeric"
                         pattern="[0-9]*"
                         aria-label="Количество, шт"
-                        className="mt-3 h-11 w-[104px] shrink-0 rounded-sm border border-[#D1D5DB] px-3 text-base outline-none focus:border-foreground"
+                        className="mt-3 h-11 w-[104px] shrink-0 rounded-sm border border-[#D1D5DB] px-3 text-base outline-none focus:border-foreground disabled:cursor-not-allowed disabled:bg-[#F3F4F6] disabled:text-gray-300"
                       />
+
                     </div>
                     <p className="text-xs text-muted-foreground">
                       Расчётный груз: {parcel.totalWeight.toLocaleString("ru-RU")} кг ·{" "}

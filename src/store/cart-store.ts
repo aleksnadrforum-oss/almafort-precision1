@@ -256,8 +256,13 @@ export const useCart = create<State>()(
       if (!p) return s;
       const next: CartLine = { sku, name: p.name, quantity: qty, originalName, color };
       const key = lineKey(next);
+      // Остаток общий на артикул: свободный объём = склад − уже набранное всеми цветами.
+      const free = availableFor(s.lines, sku);
+      if (free <= 0) return s;
+      const add = Math.min(qty, free);
+      next.quantity = add;
       // Совпадение только по паре «артикул + цвет»; иначе — новая строка.
-      const lines = s.lines.map((l) => (lineKey(l) === key ? { ...l, quantity: l.quantity + qty } : l));
+      const lines = s.lines.map((l) => (lineKey(l) === key ? { ...l, quantity: l.quantity + add } : l));
       if (!s.lines.some((l) => lineKey(l) === key)) lines.push(next);
       return { lines };
     }),
@@ -274,8 +279,15 @@ export const useCart = create<State>()(
 
   setQuantity: (key, quantity) =>
     set((s) => ({
-      lines: s.lines.map((l) => (lineKey(l) === key ? { ...l, quantity: Math.min(9_999_999, Math.max(1, Math.floor(Number(quantity) || 1))) } : l)),
+      lines: s.lines.map((l) => {
+        if (lineKey(l) !== key) return l;
+        const wanted = Math.min(9_999_999, Math.max(1, Math.floor(Number(quantity) || 1)));
+        // Жёсткий потолок: остаток артикула минус то, что занято другими цветами.
+        const cap = Math.max(1, availableFor(s.lines, l.sku, key));
+        return { ...l, quantity: Math.min(wanted, cap) };
+      }),
     })),
+
 
   removeLine: (key) => set((s) => ({ lines: s.lines.filter((l) => lineKey(l) !== key) })),
 

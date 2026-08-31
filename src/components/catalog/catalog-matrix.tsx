@@ -504,7 +504,7 @@ function Row({
           className="w-full min-w-0 rounded-sm border border-[#D1D5DB] disabled:cursor-not-allowed disabled:bg-[#F3F4F6] bg-card px-2 py-1.5 text-right text-sm tabular-nums text-foreground outline-none transition-colors duration-150 focus:border-foreground"
         />
       </div>
-      <div className={CELL}>
+      <div className={`${CELL} flex-col items-stretch justify-center gap-1`}>
         <button
           type="button"
           onClick={() => void add()}

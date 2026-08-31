@@ -534,8 +534,63 @@ export function ProductSheet({
   return (
     <Dialog open={!!product} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-h-[90dvh] max-w-5xl overflow-y-auto">
-        {product && (
+        {product && service && (
           <>
+            <DialogHeader>
+              <DialogTitle className="text-xl font-extrabold text-foreground">
+                {product.name}
+                <span className="ml-2 text-sm font-normal text-muted-foreground">
+                  {product.sku}
+                </span>
+              </DialogTitle>
+            </DialogHeader>
+
+            <div className="grid gap-8 lg:grid-cols-2">
+              <div>
+                <img
+                  src={service.image}
+                  alt={service.imageAlt}
+                  loading="lazy"
+                  width={1024}
+                  height={768}
+                  className="h-72 w-full rounded-lg object-cover"
+                />
+              </div>
+
+              <div>
+                <p className="text-sm leading-[1.65] text-muted-foreground">
+                  {service.description}
+                </p>
+
+                <dl className="mt-6 grid grid-cols-1 gap-x-6 gap-y-3 border-t border-border pt-6 text-sm sm:grid-cols-2">
+                  {service.specs.map(([k, v]) => (
+                    <div key={k}>
+                      <dt className="text-xs uppercase tracking-wider text-muted-foreground">{k}</dt>
+                      <dd className="mt-0.5 font-medium text-foreground">{v}</dd>
+                    </div>
+                  ))}
+                </dl>
+
+                <button
+                  type="button"
+                  onClick={() => setBulkOpen(true)}
+                  className="mt-6 inline-flex min-h-[48px] w-full cursor-pointer items-center justify-center rounded-sm bg-primary px-6 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+                >
+                  {service.cta}
+                </button>
+              </div>
+            </div>
+
+            <BulkRequestDialog
+              product={product}
+              open={bulkOpen}
+              onClose={() => setBulkOpen(false)}
+            />
+          </>
+        )}
+        {product && !service && (
+          <>
+
             <DialogHeader>
               <DialogTitle className="text-xl font-extrabold text-foreground">
                 {product.name}

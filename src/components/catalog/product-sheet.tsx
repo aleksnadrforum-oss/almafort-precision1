@@ -10,6 +10,7 @@ import type { Product } from "@/data/catalog";
 import { trackCadDownload, trackViewItem } from "@/lib/metrika";
 import { CityInput, type CityValue } from "@/components/cart/city-input";
 import { BulkRequestDialog } from "@/components/catalog/bulk-request-dialog";
+import { QuoteRequestModal } from "@/components/catalog/quote-request-modal";
 import { useAssetGroups } from "@/lib/asset-groups";
 import { useDebounce } from "@/hooks/use-debounce";
 import type { ShippingQuote } from "@/lib/logistics";
@@ -392,7 +393,6 @@ export function descriptionForProduct(p: { sku: string; category: string }): str
 type ServiceProfile = {
   description: string;
   specs: [string, string][];
-  cta: string;
 };
 
 const SERVICE_PROFILES: Record<string, ServiceProfile> = {
@@ -405,7 +405,6 @@ const SERVICE_PROFILES: Record<string, ServiceProfile> = {
       ["Объём впрыска", "От 120 до 450 см³"],
       ["Материалы", "ПП (PP), ПЭ (PE), ПС (PS), АБС (ABS), ПА (PA), ПОМ (POM) и другие под ваши требования"],
     ],
-    cta: "Запросить расчёт",
   },
   "SRV-RE3D": {
     description:
@@ -417,7 +416,6 @@ const SERVICE_PROFILES: Record<string, ServiceProfile> = {
       ["Шаг 4 — Документация", "Чертежи по ЕСКД (DWG, PDF)"],
       ["Шаг 5 — Тестовая 3D-печать", "Физическая копия для проверки собираемости узла до запуска серии"],
     ],
-    cta: "Оставить заявку",
   },
   "SRV-FDM": {
     description:
@@ -428,7 +426,6 @@ const SERVICE_PROFILES: Record<string, ServiceProfile> = {
       ["Исходные данные", "Печать по вашим 3D-моделям (STL, STEP). Нет исходников — сделаем реверс-инжиниринг"],
       ["Применение", "Функциональные прототипы, корпуса, оснастка"],
     ],
-    cta: "Запросить расчёт",
   },
 };
 
@@ -486,6 +483,7 @@ export function ProductSheet({
     : profile.material;
   const addLine = useCart((st) => st.addLine);
   const [bulkOpen, setBulkOpen] = useState(false);
+  const [quoteOpen, setQuoteOpen] = useState(false);
   const [CadViewer, setCadViewer] = useState<ComponentType<CadViewerProps> | null>(null);
 
   useEffect(() => {
@@ -627,17 +625,17 @@ export function ProductSheet({
 
               <button
                 type="button"
-                onClick={() => setBulkOpen(true)}
+                onClick={() => setQuoteOpen(true)}
                 className="mt-2 inline-flex min-h-[48px] w-full cursor-pointer items-center justify-center rounded-sm bg-primary px-6 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
               >
-                {service.cta}
+                Расчёт
               </button>
             </div>
 
-            <BulkRequestDialog
-              product={product}
-              open={bulkOpen}
-              onClose={() => setBulkOpen(false)}
+            <QuoteRequestModal
+              sku={product.sku}
+              name={product.name}
+              onClose={() => setQuoteOpen(false)}
             />
           </>
         )}

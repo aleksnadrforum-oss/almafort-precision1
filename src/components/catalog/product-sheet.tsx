@@ -1,5 +1,5 @@
 import { toast } from "sonner";
-import { useCart } from "@/store/cart-store";
+import { stockLimit, useCart } from "@/store/cart-store";
 import { useEffect, useMemo, useRef, useState, type ComponentType } from "react";
 import { ClientOnly } from "@tanstack/react-router";
 import { createClientOnlyFn } from "@tanstack/react-start";
@@ -482,6 +482,19 @@ export function ProductSheet({
       }
     : profile.material;
   const addLine = useCart((st) => st.addLine);
+  // Складской потолок артикула: общий на все цвета, минус уже набранное в корзине.
+  const inCartSku = useCart((st) =>
+    product ? st.lines.reduce((a, l) => (l.sku === product.sku ? a + l.quantity : a), 0) : 0,
+  );
+  const stockCap = product ? stockLimit(product.sku) : Number.POSITIVE_INFINITY;
+  const stockLimited = Number.isFinite(stockCap);
+  const maxBatch = stockLimited ? Math.max(0, stockCap - inCartSku) : Number.POSITIVE_INFINITY;
+  const outOfStock = stockLimited && maxBatch <= 0;
+  const clampBatch = (v: number) => {
+    if (!stockLimited || v <= maxBatch) return v;
+    toast.error(`Доступно для заказа только ${Math.max(0, maxBatch).toLocaleString("ru-RU")} шт.`);
+    return Math.max(0, maxBatch);
+  };
   const [bulkOpen, setBulkOpen] = useState(false);
   const [quoteOpen, setQuoteOpen] = useState(false);
   const [CadViewer, setCadViewer] = useState<ComponentType<CadViewerProps> | null>(null);
@@ -811,11 +824,15 @@ export function ProductSheet({
                         onChange={(e) =>
                           setBatch(Math.max(1, Number(e.target.value.replace(/\D/g, "")) || 1))
                         }
+                        onBlur={() => setBatch((v) => Math.max(1, clampBatch(v)))}
+                        max={stockLimited ? maxBatch : undefined}
+                        disabled={outOfStock}
                         inputMode="numeric"
                         pattern="[0-9]*"
                         aria-label="Количество, шт"
-                        className="mt-3 h-11 w-[104px] shrink-0 rounded-sm border border-[#D1D5DB] px-3 text-base outline-none focus:border-foreground"
+                        className="mt-3 h-11 w-[104px] shrink-0 rounded-sm border border-[#D1D5DB] px-3 text-base outline-none focus:border-foreground disabled:cursor-not-allowed disabled:bg-[#F3F4F6] disabled:text-gray-300"
                       />
+
                     </div>
                     <p className="text-xs text-muted-foreground">
                       Расчётный груз: {parcel.totalWeight.toLocaleString("ru-RU")} кг ·{" "}
@@ -866,8 +883,12 @@ export function ProductSheet({
                 <div className="sticky bottom-0 z-10 -mx-4 mt-6 border-t border-border bg-background px-4 pb-[max(env(safe-area-inset-bottom),0.75rem)] pt-3 md:static md:mx-0 md:mt-0 md:border-0 md:bg-transparent md:p-0">
                 <button
                   type="button"
+                  disabled={outOfStock}
                   onClick={() => {
-                    const qty = Math.max(1, Math.floor(batch) || 1);
+                    const wanted = Math.max(1, Math.floor(batch) || 1);
+                    const qty = Math.max(0, Math.floor(clampBatch(wanted)));
+                    if (qty <= 0) return;
+                    if (qty !== wanted) setBatch(qty);
                     addLine(
                       product.sku,
                       qty,
@@ -882,10 +903,17 @@ export function ProductSheet({
                       }`,
                     );
                   }}
-                  className="inline-flex min-h-[48px] w-full cursor-pointer items-center justify-center rounded-sm bg-primary px-6 text-sm font-semibold text-primary-foreground transition-colors duration-200 hover:opacity-90 md:mt-6"
+                  className={`inline-flex min-h-[48px] w-full cursor-pointer items-center justify-center rounded-sm px-6 text-sm font-semibold transition-colors duration-200 md:mt-6 disabled:cursor-not-allowed ${
+                    outOfStock
+                      ? "bg-[#E5E7EB] text-[#9CA3AF]"
+                      : "bg-primary text-primary-foreground hover:opacity-90"
+                  }`}
                 >
-                  В корзину · {Math.max(1, Math.floor(batch) || 1).toLocaleString("ru-RU")} шт
+                  {outOfStock
+                    ? "Нет в наличии"
+                    : `В корзину · ${Math.max(1, Math.floor(batch) || 1).toLocaleString("ru-RU")} шт`}
                 </button>
+
 
                 </div>
 

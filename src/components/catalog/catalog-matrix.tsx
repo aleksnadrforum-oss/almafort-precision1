@@ -1,6 +1,6 @@
 import { trackAddToCart } from "@/lib/metrika";
 import { useState } from "react";
-import { useCart } from "@/store/cart-store";
+import { stockLimit, useCart } from "@/store/cart-store";
 import { Check, Loader2, MessageSquareQuote, Minus, Plus, ShoppingCart } from "lucide-react";
 import { PRODUCTS, isOnRequest, tierOf, type Product } from "@/data/catalog";
 import { formatPrice, lineTotal } from "@/lib/pricing";
@@ -138,6 +138,20 @@ function useRowState(p: Product, onAdd: Props["onAdd"]) {
     ? { label: palette[colorIndex]!.label, hex: palette[colorIndex]!.hex }
     : baseColorForProduct(p);
 
+  // Складской потолок: общий на артикул, уже занятое другими цветами вычитаем.
+  const limit = stockLimit(p.sku);
+  const limited = Number.isFinite(limit);
+  const maxQty = limited ? Math.max(0, limit - inCart) : Number.POSITIVE_INFINITY;
+  const outOfStock = limited && limit <= 0;
+  const atMax = limited && qty >= maxQty;
+
+  /** Автокоррекция ввода до доступного остатка + строгий фидбэк. */
+  const clampQty = (value: number) => {
+    if (!limited || value <= maxQty) return value;
+    toast.error(`Доступно для заказа только ${Math.max(0, maxQty).toLocaleString("ru-RU")} шт.`);
+    return Math.max(0, maxQty);
+  };
+
   const add = async () => {
     if (onRequest) {
       setQuote(true);
@@ -145,7 +159,13 @@ function useRowState(p: Product, onAdd: Props["onAdd"]) {
     }
     // Защита от дребезга: серия быстрых тапов не создаёт дубликаты позиций
     if (state !== "idle") return;
-    if (qty <= 0) {
+    if (outOfStock) {
+      toast.error("Нет в наличии");
+      return;
+    }
+    const safeQty = clampQty(qty);
+    if (safeQty !== qty) setQty(safeQty);
+    if (safeQty <= 0) {
       toast.error("Укажите количество");
       return;
     }
@@ -154,12 +174,13 @@ function useRowState(p: Product, onAdd: Props["onAdd"]) {
       const res = await fetch("/api/cart", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sku: p.sku, quantity: qty }),
+        body: JSON.stringify({ sku: p.sku, quantity: safeQty }),
       });
       if (!res.ok) throw new Error("cart");
       const data = (await res.json()) as { quantity: number };
-      onAdd(p, data.quantity, color);
-      trackAddToCart({ sku: p.sku, name: p.name, price: p.price, quantity: data.quantity });
+      const applied = clampQty(Math.max(1, Math.floor(data.quantity)));
+      onAdd(p, applied, color);
+      trackAddToCart({ sku: p.sku, name: p.name, price: p.price, quantity: applied });
       setState("done");
       window.setTimeout(() => setState("idle"), 2000);
     } catch {
@@ -169,6 +190,7 @@ function useRowState(p: Product, onAdd: Props["onAdd"]) {
   };
 
   const hasSum = !onRequest && qty > 0 && state !== "done";
+
   const label = onRequest
     ? "Расчёт"
 
@@ -196,7 +218,13 @@ function useRowState(p: Product, onAdd: Props["onAdd"]) {
     palette,
     colorIndex,
     setColorIndex,
+    maxQty,
+    limited,
+    outOfStock,
+    atMax,
+    clampQty,
   };
+
 }
 
 
@@ -238,14 +266,16 @@ function MobileCard({
   onAdd,
 }: { p: Product; group?: AssetGroup | undefined } & Omit<Props, "query">) {
   const [lightbox, setLightbox] = useState(false);
-  const { qty, setQty, state, quote, setQuote, onRequest, tier, add, hasSum, palette, colorIndex, setColorIndex, inCart, cartColor } = useRowState(
+  const { qty, setQty, state, quote, setQuote, onRequest, tier, add, hasSum, palette, colorIndex, setColorIndex, inCart, cartColor, maxQty, limited, outOfStock, atMax, clampQty } = useRowState(
     p,
     onAdd,
   );
 
   const thumb = group?.images[0]?.thumb_url ?? null;
   const unit = tier === 2 ? p.price5000 : tier === 1 ? p.price1000 : p.price;
-  const bump = (d: number) => setQty((v) => Math.max(0, Math.min(9_999_999, v + d)));
+  const cap = limited ? maxQty : 9_999_999;
+  const bump = (d: number) => setQty((v) => Math.max(0, Math.min(cap, v + d)));
+
 
   return (
     <li className="rounded-lg border border-border bg-card p-4">
@@ -348,8 +378,9 @@ function MobileCard({
           <button
             type="button"
             onClick={() => bump(-Math.min(qty, 100) || -1)}
+            disabled={outOfStock}
             aria-label="Уменьшить количество"
-            className="grid h-11 place-items-center rounded-md border border-[#D1D5DB] bg-card text-foreground active:scale-95"
+            className="grid h-11 place-items-center rounded-md border border-[#D1D5DB] bg-card text-foreground active:scale-95 disabled:cursor-not-allowed disabled:text-gray-300"
           >
             <Minus className="size-4" strokeWidth={2} />
           </button>
@@ -357,19 +388,23 @@ function MobileCard({
             type="text"
             inputMode="numeric"
             value={qty || ""}
+            max={limited ? maxQty : undefined}
+            disabled={outOfStock}
             onChange={(e) => {
               const digits = e.target.value.replace(/[^0-9]/g, "").slice(0, 7);
               setQty(digits ? Number.parseInt(digits, 10) : 0);
             }}
+            onBlur={() => setQty((v) => clampQty(v))}
             placeholder="0"
             aria-label={`Количество ${p.sku}`}
-            className="h-11 w-full rounded-md border border-[#D1D5DB] bg-card px-3 text-center tabular-nums text-foreground outline-none focus:border-foreground"
+            className="h-11 w-full rounded-md border border-[#D1D5DB] bg-card px-3 text-center tabular-nums text-foreground outline-none focus:border-foreground disabled:cursor-not-allowed disabled:bg-[#F3F4F6] disabled:text-gray-300"
           />
           <button
             type="button"
             onClick={() => bump(100)}
+            disabled={outOfStock || atMax}
             aria-label="Увеличить количество"
-            className="grid h-11 place-items-center rounded-md border border-[#D1D5DB] bg-card text-foreground active:scale-95"
+            className="grid h-11 place-items-center rounded-md border border-[#D1D5DB] bg-card text-foreground active:scale-95 disabled:cursor-not-allowed disabled:text-gray-300"
           >
             <Plus className="size-4" strokeWidth={2} />
           </button>
@@ -379,13 +414,16 @@ function MobileCard({
       <button
         type="button"
         onClick={() => void add()}
-        disabled={state === "loading"}
-        className={`mt-3 flex h-12 w-full items-center justify-center gap-2 rounded-md text-sm font-semibold tabular-nums transition-colors active:scale-[0.99] disabled:opacity-60 ${
-          state === "done"
-            ? "bg-[#10B981] text-white"
-            : "bg-primary text-primary-foreground"
+        disabled={state === "loading" || outOfStock}
+        className={`mt-3 flex h-12 w-full items-center justify-center gap-2 rounded-md text-sm font-semibold tabular-nums transition-colors active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed ${
+          outOfStock
+            ? "bg-[#E5E7EB] text-[#9CA3AF]"
+            : state === "done"
+              ? "bg-[#10B981] text-white"
+              : "bg-primary text-primary-foreground"
         }`}
       >
+
         {state === "loading" ? (
           <Loader2 className="size-4 animate-spin" strokeWidth={1.75} />
         ) : state === "done" ? (
@@ -395,7 +433,9 @@ function MobileCard({
         ) : (
           <ShoppingCart className="size-4" strokeWidth={1.75} />
         )}
-        {state === "loading"
+        {outOfStock
+          ? "Нет в наличии"
+          : state === "loading"
           ? "Добавляем…"
           : state === "done"
             ? "Добавлено"
@@ -427,7 +467,7 @@ function Row({
   onAdd,
 }: { p: Product; group?: AssetGroup | undefined } & Omit<Props, "query">) {
   const [lightbox, setLightbox] = useState(false);
-  const { qty, setQty, state, quote, setQuote, onRequest, tier, add, hasSum, label, palette, colorIndex, setColorIndex, inCart, cartColor } = useRowState(
+  const { qty, setQty, state, quote, setQuote, onRequest, tier, add, hasSum, label, palette, colorIndex, setColorIndex, inCart, cartColor, maxQty, limited, outOfStock, clampQty } = useRowState(
     p,
     onAdd,
   );
@@ -541,30 +581,35 @@ function Row({
           type="text"
           inputMode="numeric"
           value={qty || ""}
+          max={limited ? maxQty : undefined}
           onChange={(e) => {
             const digits = e.target.value.replace(/[^0-9]/g, "").slice(0, 7);
             setQty(digits ? Number.parseInt(digits, 10) : 0);
           }}
-          placeholder={onRequest ? "—" : "0"}
-          disabled={onRequest}
+          onBlur={() => setQty((v) => clampQty(v))}
+          placeholder={onRequest ? "—" : outOfStock ? "—" : "0"}
+          disabled={onRequest || outOfStock}
           aria-label={`Количество ${p.sku}`}
-          className="w-full min-w-0 rounded-sm border border-[#D1D5DB] disabled:cursor-not-allowed disabled:bg-[#F3F4F6] bg-card px-2 py-1.5 text-right text-sm tabular-nums text-foreground outline-none transition-colors duration-150 focus:border-foreground"
+          className="w-full min-w-0 rounded-sm border border-[#D1D5DB] disabled:cursor-not-allowed disabled:bg-[#F3F4F6] disabled:text-gray-300 bg-card px-2 py-1.5 text-right text-sm tabular-nums text-foreground outline-none transition-colors duration-150 focus:border-foreground"
         />
       </div>
       <div className={`${CELL} flex-col items-stretch justify-center gap-1`}>
         <button
           type="button"
           onClick={() => void add()}
-          disabled={state === "loading"}
+          disabled={state === "loading" || outOfStock}
           aria-label={onRequest ? "Запросить индивидуальный расчет" : "Добавить в корзину"}
           className={`group flex w-full min-w-0 cursor-pointer items-center justify-center gap-2 overflow-hidden whitespace-nowrap rounded-sm px-3 py-2 text-xs font-semibold tabular-nums transition-all duration-200 disabled:cursor-not-allowed ${
-            state === "done"
+            outOfStock
+              ? "border border-[#E5E7EB] bg-[#F3F4F6] text-[#9CA3AF]"
+              : state === "done"
               ? "bg-[#10B981] text-white"
               : hasSum
                 ? "bg-[#F3F4F6] text-foreground hover:bg-primary hover:text-primary-foreground"
                 : "border border-[#D1D5DB] bg-[#F3F4F6] text-muted-foreground hover:border-primary hover:bg-primary hover:text-primary-foreground"
           }`}
         >
+
           {state === "loading" ? (
             <Loader2 className="size-4 shrink-0 animate-spin" strokeWidth={1.75} />
           ) : state === "done" ? (
@@ -575,7 +620,9 @@ function Row({
             <ShoppingCart className="size-4 shrink-0" strokeWidth={1.75} />
           )}
           {state === "loading" ? null : (
-            <span className="overflow-hidden text-ellipsis whitespace-nowrap">{label}</span>
+            <span className="overflow-hidden text-ellipsis whitespace-nowrap">
+              {outOfStock ? "Нет в наличии" : label}
+            </span>
           )}
         </button>
         {inCart > 0 && (

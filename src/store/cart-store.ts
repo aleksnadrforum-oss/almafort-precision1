@@ -54,6 +54,44 @@ export const lineKey = (l: { sku: string; color?: { label: string } | null | und
 export const productBySku = (sku: string) => PRODUCTS.find((p) => p.sku === sku);
 
 /**
+ * Потолок заказа по артикулу. Склад общий для всех цветов SKU.
+ * qty = 0 при наличии срока поставки — позиция «под заказ», лимита нет.
+ */
+export const stockLimit = (sku: string): number => {
+  const p = productBySku(sku);
+  if (!p) return Number.POSITIVE_INFINITY;
+  if (p.is_service) return Number.POSITIVE_INFINITY;
+  if (p.stock.qty > 0) return p.stock.qty;
+  return p.stock.lead ? Number.POSITIVE_INFINITY : 0;
+};
+
+/** Есть ли жёсткий складской лимит у позиции. */
+export const hasStockLimit = (sku: string) => Number.isFinite(stockLimit(sku));
+
+/** Сумма всех цветов артикула в корзине (можно исключить конкретную строку). */
+export const skuInCart = (
+  lines: Array<{ sku: string; quantity: number; color?: { label: string } | null | undefined }>,
+  sku: string,
+  excludeKey?: string,
+) =>
+  lines.reduce(
+    (a, l) => (l.sku === sku && lineKey(l) !== excludeKey ? a + l.quantity : a),
+    0,
+  );
+
+/** Сколько ещё можно добавить по артикулу с учётом уже набранных цветов. */
+export const availableFor = (
+  lines: Array<{ sku: string; quantity: number; color?: { label: string } | null | undefined }>,
+  sku: string,
+  excludeKey?: string,
+) => {
+  const limit = stockLimit(sku);
+  if (!Number.isFinite(limit)) return limit;
+  return Math.max(0, limit - skuInCart(lines, sku, excludeKey));
+};
+
+
+/**
  * Чистая функция каскадных скидок.
  * minColumn — «пол» ценовой колонки от грейда лояльности: Опт 1 / Опт 2
  * закрепляются за партнёром на любой объём.
@@ -256,8 +294,13 @@ export const useCart = create<State>()(
       if (!p) return s;
       const next: CartLine = { sku, name: p.name, quantity: qty, originalName, color };
       const key = lineKey(next);
+      // Остаток общий на артикул: свободный объём = склад − уже набранное всеми цветами.
+      const free = availableFor(s.lines, sku);
+      if (free <= 0) return s;
+      const add = Math.min(qty, free);
+      next.quantity = add;
       // Совпадение только по паре «артикул + цвет»; иначе — новая строка.
-      const lines = s.lines.map((l) => (lineKey(l) === key ? { ...l, quantity: l.quantity + qty } : l));
+      const lines = s.lines.map((l) => (lineKey(l) === key ? { ...l, quantity: l.quantity + add } : l));
       if (!s.lines.some((l) => lineKey(l) === key)) lines.push(next);
       return { lines };
     }),
@@ -274,8 +317,15 @@ export const useCart = create<State>()(
 
   setQuantity: (key, quantity) =>
     set((s) => ({
-      lines: s.lines.map((l) => (lineKey(l) === key ? { ...l, quantity: Math.min(9_999_999, Math.max(1, Math.floor(Number(quantity) || 1))) } : l)),
+      lines: s.lines.map((l) => {
+        if (lineKey(l) !== key) return l;
+        const wanted = Math.min(9_999_999, Math.max(1, Math.floor(Number(quantity) || 1)));
+        // Жёсткий потолок: остаток артикула минус то, что занято другими цветами.
+        const cap = Math.max(1, availableFor(s.lines, l.sku, key));
+        return { ...l, quantity: Math.min(wanted, cap) };
+      }),
     })),
+
 
   removeLine: (key) => set((s) => ({ lines: s.lines.filter((l) => lineKey(l) !== key) })),
 

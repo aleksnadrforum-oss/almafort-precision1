@@ -393,7 +393,6 @@ export function descriptionForProduct(p: { sku: string; category: string }): str
 type ServiceProfile = {
   description: string;
   specs: [string, string][];
-  cta: string;
 };
 
 const SERVICE_PROFILES: Record<string, ServiceProfile> = {

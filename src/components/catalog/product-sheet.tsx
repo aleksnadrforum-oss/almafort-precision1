@@ -483,9 +483,9 @@ export function ProductSheet({
             </p>
 
             {profile.disclaimer && (
-              <p className="-mt-2 max-w-[70ch] text-xs italic leading-[1.5] text-gray-400">
+              <div className="mt-4 max-w-[70ch] rounded-md border-l-4 border-amber-400 bg-amber-50/50 p-3 text-sm leading-[1.5] text-gray-700">
                 {profile.disclaimer}
-              </p>
+              </div>
             )}
 
             <div className="grid gap-8 lg:grid-cols-2">

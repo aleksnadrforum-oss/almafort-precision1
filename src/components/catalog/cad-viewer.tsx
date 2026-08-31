@@ -14,8 +14,19 @@ function attachDraco(loader: { setDRACOLoader: (l: DRACOLoader) => void }) {
 
 const PLASTIC = { roughness: 0.52, metalness: 0.12 } as const;
 export const DEFAULT_PART_COLOR = "#000000";
+export type PartMaterial = { roughness: number; metalness: number };
 
-function GltfModel({ url, wire, color }: { url: string; wire: boolean; color: string }) {
+function GltfModel({
+  url,
+  wire,
+  color,
+  material,
+}: {
+  url: string;
+  wire: boolean;
+  color: string;
+  material: PartMaterial;
+}) {
   const { scene } = useGLTF(url, true, undefined, attachDraco as never);
   const cloned = useMemo(() => {
     const s = scene.clone(true);
@@ -29,14 +40,14 @@ function GltfModel({ url, wire, color }: { url: string; wire: boolean; color: st
           color?: { set: (c: string) => void };
         };
         mat.wireframe = wire;
-        mat.roughness = PLASTIC.roughness;
-        mat.metalness = PLASTIC.metalness;
+        mat.roughness = material.roughness;
+        mat.metalness = material.metalness;
         mat.color?.set(color);
         m.material = mat as never;
       }
     });
     return s;
-  }, [scene, wire, color]);
+  }, [scene, wire, color, material]);
   return <primitive object={cloned} />;
 }
 

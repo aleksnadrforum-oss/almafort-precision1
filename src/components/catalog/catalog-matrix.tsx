@@ -218,7 +218,13 @@ function useRowState(p: Product, onAdd: Props["onAdd"]) {
     palette,
     colorIndex,
     setColorIndex,
+    maxQty,
+    limited,
+    outOfStock,
+    atMax,
+    clampQty,
   };
+
 }
 
 

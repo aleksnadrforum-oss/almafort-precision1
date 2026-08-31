@@ -157,6 +157,17 @@ export const isService = (p: { parent: string }) => p.parent === SERVICE_PARENT;
 export const isOnRequest = (p: { price: number }) =>
   !Number.isFinite(p.price) || p.price <= 0;
 
+/** Поколоночные переопределения спецификаций для отдельных SKU. */
+const SKU_SPECS: Partial<
+  Record<string, { material?: string; load?: string; gost?: string; features?: string }>
+> = {
+  "MK-LD": {
+    material: "Эластичный полимер (ПВД/ПНД)",
+    load: "Высокая стойкость к циклическим деформациям",
+    features: "Антискрип (гашение вибраций)",
+  },
+};
+
 export const PRODUCTS: Product[] = raw.map(
   ([sku, name, parent, category, dims, color, price, qty, weight, volume, tier1, tier2]) => ({
     id: sku.toLowerCase(),

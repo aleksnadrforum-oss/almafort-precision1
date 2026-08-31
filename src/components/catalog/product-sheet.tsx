@@ -115,12 +115,27 @@ const ANGLE_BRACKET_PROFILE: PartProfile = {
   palette: ANGLE_BRACKET_PALETTE,
 };
 
+const SHELF_GLASSHOLDER_PALETTE: Swatch[] = [
+  { hex: "#8c9091", label: "Серый (базовый)" },
+  { hex: "#000000", label: "Чёрный" },
+  { hex: "#ffffff", label: "Белый", borderColor: "#e5e7eb" },
+];
+
+const SHELF_GLASSHOLDER_PROFILE: PartProfile = {
+  colorLabel: "Серый (базовый)",
+  material: { roughness: 0.65, metalness: 0.0 },
+  description:
+    "Держатель для стеклянных полок S=4 и 5 мм. Специализированный пластиковый держатель для надёжной фиксации стеклянных полок толщиной S=4 и 5 мм. Защищает стекло от сколов и люфта.",
+  palette: SHELF_GLASSHOLDER_PALETTE,
+};
+
 const SKU_PROFILES: Record<string, PartProfile> = {
   "MK-LH": DOVETAIL_PROFILE,
   "MK-LHZ": DOVETAIL_CAP_PROFILE,
   "MK-LD": LATHOLDER_PROFILE,
   "MK-SD": GLASSHOLDER_PROFILE,
   "MK-UG": ANGLE_BRACKET_PROFILE,
+  "STK-POL-01": SHELF_GLASSHOLDER_PROFILE,
 };
 
 

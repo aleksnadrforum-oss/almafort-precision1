@@ -1,8 +1,6 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import {
-  Environment,
-  Lightformer,
   ContactShadows,
   OrbitControls,
   useGLTF,
@@ -343,29 +341,13 @@ export function CadViewer({
               )}
             </Spin>
           </Center>
-          <Environment resolution={256}>
-            <Lightformer
-              intensity={2.6}
-              color="#ffffff"
-              position={[0, 5, 2]}
-              rotation-x={Math.PI / 2}
-              scale={[9, 9, 1]}
-            />
-            <Lightformer
-              intensity={1.1}
-              color="#f4f6f8"
-              position={[-5, 1, 1]}
-              rotation-y={Math.PI / 2}
-              scale={[12, 4, 1]}
-            />
-            <Lightformer
-              intensity={1.1}
-              color="#eef1f4"
-              position={[5, 1, -1]}
-              rotation-y={-Math.PI / 2}
-              scale={[12, 4, 1]}
-            />
-          </Environment>
+          {/* Студийный свет обычными источниками: drei-Environment с детьми
+              роняет контекст при закрытии карточки (dispose cube render target). */}
+          <ambientLight intensity={0.85} />
+          <hemisphereLight args={["#ffffff", "#c8ccd2", 0.7]} />
+          <directionalLight position={[0, 5, 2]} intensity={2.2} color="#ffffff" />
+          <directionalLight position={[-5, 1, 1]} intensity={0.9} color="#f4f6f8" />
+          <directionalLight position={[5, 1, -1]} intensity={0.9} color="#eef1f4" />
           {/* Мягкое контактное затенение вместо чёрной проекционной тени */}
           <ContactShadows
             position={[0, -1.15, 0]}

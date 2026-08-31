@@ -1,7 +1,7 @@
 import { formatPhone } from "@/lib/phone";
 import { ensureOnline } from "@/lib/use-network";
 import { useEffect, useMemo, useState, useRef } from "react";
-import { useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { AlertTriangle, FileDown, Loader2, Search, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { PRODUCTS } from "@/data/catalog";

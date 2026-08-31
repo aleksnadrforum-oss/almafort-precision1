@@ -370,7 +370,7 @@ export type ColorSwatch = Swatch;
 /** Палитра позиции для табличной сетки: null — у SKU нет вариаций цвета. */
 export function paletteForProduct(p: { sku: string; category: string }): Swatch[] | null {
   const prof = SKU_PROFILES[p.sku] ?? PROFILES[p.category] ?? null;
-  return prof?.palette && prof.palette.length > 1 ? prof.palette : null;
+  return prof?.palette && prof.palette.length > 0 ? prof.palette : null;
 }
 
 /** Базовый цвет позиции без палитры (для сквозной передачи в корзину). */

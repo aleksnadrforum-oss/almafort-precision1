@@ -37,7 +37,7 @@ function MicroSwatches({
 }) {
   return (
     <TooltipProvider delayDuration={120}>
-      <div className="mt-1 flex flex-wrap items-center gap-1">
+      <div className="mt-1.5 flex min-h-[24px] flex-wrap items-center gap-1.5">
         {palette.map((sw, i) => (
           <Tooltip key={sw.hex + sw.label}>
             <TooltipTrigger asChild>

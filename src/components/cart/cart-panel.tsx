@@ -28,6 +28,7 @@ import {
   cartTotals,
   deliveryCost,
   linePrice,
+  lineKey,
   useCart,
   type Carrier,
   type PendingRow,

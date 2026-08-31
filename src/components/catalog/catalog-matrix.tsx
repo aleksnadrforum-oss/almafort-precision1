@@ -1,5 +1,6 @@
 import { trackAddToCart } from "@/lib/metrika";
 import { useState } from "react";
+import { useCart } from "@/store/cart-store";
 import { Check, Loader2, MessageSquareQuote, Minus, Plus, ShoppingCart } from "lucide-react";
 import { PRODUCTS, isOnRequest, tierOf, type Product } from "@/data/catalog";
 import { formatPrice, lineTotal } from "@/lib/pricing";
@@ -18,7 +19,7 @@ import {
 
 type Props = {
   query: string;
-  onOpenProduct: (p: Product) => void;
+  onOpenProduct: (p: Product, colorHex?: string) => void;
   onAdd: (p: Product, qty: number, color?: { label: string; hex: string }) => void;
 };
 
@@ -83,7 +84,11 @@ const CELL =
 function useRowState(p: Product, onAdd: Props["onAdd"]) {
   const [qty, setQty] = useState(0);
   const [state, setState] = useState<"idle" | "loading" | "done">("idle");
-  const [inCart, setInCart] = useState(0);
+  // Персистентный статус строки: берём из корзины, а не из локального счётчика,
+  // чтобы после перезагрузки снабженец видел, что позиция уже в спецификации.
+  const cartLine = useCart((s) => s.lines.find((l) => l.sku === p.sku));
+  const inCart = cartLine?.quantity ?? 0;
+  const cartColor = cartLine?.color ?? null;
   const [quote, setQuote] = useState(false);
   const onRequest = isOnRequest(p);
   const tier = tierOf(qty, p);
@@ -116,7 +121,6 @@ function useRowState(p: Product, onAdd: Props["onAdd"]) {
       const data = (await res.json()) as { quantity: number };
       onAdd(p, data.quantity, color);
       trackAddToCart({ sku: p.sku, name: p.name, price: p.price, quantity: data.quantity });
-      setInCart((v) => v + data.quantity);
       setState("done");
       window.setTimeout(() => setState("idle"), 2000);
     } catch {
@@ -139,6 +143,8 @@ function useRowState(p: Product, onAdd: Props["onAdd"]) {
   return {
     qty,
     setQty,
+    inCart,
+    cartColor,
     state,
     quote,
     setQuote,

@@ -10,6 +10,7 @@ import type { Product } from "@/data/catalog";
 import { trackCadDownload, trackViewItem } from "@/lib/metrika";
 import { CityInput, type CityValue } from "@/components/cart/city-input";
 import { BulkRequestDialog } from "@/components/catalog/bulk-request-dialog";
+import { QuoteRequestModal } from "@/components/catalog/quote-request-modal";
 import { useAssetGroups } from "@/lib/asset-groups";
 import { useDebounce } from "@/hooks/use-debounce";
 import type { ShippingQuote } from "@/lib/logistics";
@@ -486,6 +487,7 @@ export function ProductSheet({
     : profile.material;
   const addLine = useCart((st) => st.addLine);
   const [bulkOpen, setBulkOpen] = useState(false);
+  const [quoteOpen, setQuoteOpen] = useState(false);
   const [CadViewer, setCadViewer] = useState<ComponentType<CadViewerProps> | null>(null);
 
   useEffect(() => {
@@ -627,17 +629,17 @@ export function ProductSheet({
 
               <button
                 type="button"
-                onClick={() => setBulkOpen(true)}
+                onClick={() => setQuoteOpen(true)}
                 className="mt-2 inline-flex min-h-[48px] w-full cursor-pointer items-center justify-center rounded-sm bg-primary px-6 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
               >
-                {service.cta}
+                Расчёт
               </button>
             </div>
 
-            <BulkRequestDialog
-              product={product}
-              open={bulkOpen}
-              onClose={() => setBulkOpen(false)}
+            <QuoteRequestModal
+              sku={product.sku}
+              name={product.name}
+              onClose={() => setQuoteOpen(false)}
             />
           </>
         )}

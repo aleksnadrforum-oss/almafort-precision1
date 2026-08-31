@@ -68,6 +68,9 @@ export function ProductSheet({
   const [calcState, setCalcState] = useState<"idle" | "loading" | "ready" | "failed">("idle");
   const assets = useAssetGroups();
   const assetGroup = product ? assets.get(product.sku) : undefined;
+  const profile = product
+    ? PROFILES[product.category] ?? DEFAULT_PROFILE
+    : DEFAULT_PROFILE;
   const [bulkOpen, setBulkOpen] = useState(false);
   const [CadViewer, setCadViewer] = useState<ComponentType<CadViewerProps> | null>(null);
 

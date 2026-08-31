@@ -212,9 +212,9 @@ export function CadViewer({
           <Center>
             <Spin enabled={auto}>
               {glbUrl ? (
-                <GltfModel url={glbUrl} wire={wire} color={color} />
+                <GltfModel url={glbUrl} wire={wire} color={color} material={material} />
               ) : (
-                <ProxyModel category={category} wire={wire} color={color} />
+                <ProxyModel category={category} wire={wire} color={color} material={material} />
               )}
             </Spin>
           </Center>

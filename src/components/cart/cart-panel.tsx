@@ -336,9 +336,17 @@ export function CartPanel() {
 
 
         {lines.length === 0 && (
-          <p className="px-5 py-10 text-center text-sm text-muted-foreground">
-            Корзина пуста. Загрузите спецификацию — позиции подставятся автоматически.
-          </p>
+          <div className="flex flex-col items-center gap-3 px-5 py-12 text-center">
+            <p className="text-sm text-muted-foreground">
+              Корзина пуста. Загрузите спецификацию — позиции подставятся автоматически.
+            </p>
+            <Link
+              to="/catalog"
+              className="inline-flex min-h-[44px] items-center rounded-sm bg-primary px-5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+            >
+              Вернуться в каталог
+            </Link>
+          </div>
         )}
 
         {lines.map((l) => {
@@ -362,6 +370,16 @@ export function CartPanel() {
                 <p className="text-sm font-medium text-foreground md:truncate">
                   {l.sku} — {l.name}
                 </p>
+                {l.color && (
+                  <p className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <span
+                      aria-hidden
+                      className="inline-block size-3 shrink-0 rounded-full border border-border"
+                      style={{ backgroundColor: l.color.hex }}
+                    />
+                    Цвет: {l.color.label}
+                  </p>
+                )}
                 {l.originalName && l.originalName !== l.name && (
                   <p className="truncate text-xs text-muted-foreground">
                     из вашей сметы: {l.originalName}
@@ -383,7 +401,7 @@ export function CartPanel() {
                 <button
                   type="button"
                   aria-label="Уменьшить количество"
-                  onClick={() => setQuantity(l.sku, Math.max(0, l.quantity - 100))}
+                  onClick={() => setQuantity(l.sku, Math.max(1, l.quantity - 100))}
                   className="grid h-11 place-items-center rounded-md border border-[#D1D5DB] text-foreground active:scale-95 md:hidden"
                 >
                   −
@@ -392,7 +410,7 @@ export function CartPanel() {
                   inputMode="numeric"
                   value={l.quantity}
                   onChange={(e) =>
-                    setQuantity(l.sku, Number(e.target.value.replace(/\D/g, "")) || 0)
+                    setQuantity(l.sku, Number(e.target.value.replace(/\D/g, "")) || 1)
                   }
                   className="h-11 w-full rounded-md border border-[#D1D5DB] px-2 text-center tabular-nums outline-none transition-colors focus:border-foreground md:h-auto md:rounded-sm md:py-1.5 md:text-right md:text-sm"
                 />

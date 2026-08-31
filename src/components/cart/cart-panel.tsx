@@ -1,6 +1,7 @@
 import { formatPhone } from "@/lib/phone";
 import { ensureOnline } from "@/lib/use-network";
 import { useEffect, useMemo, useState, useRef } from "react";
+import { useOrg } from "@/lib/org-context";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { AlertTriangle, FileDown, Loader2, Search, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -158,10 +159,8 @@ export function CartPanel() {
   const err = (kind: "name" | "email" | "phone" | "inn", value: string) =>
     triedSubmit ? fieldError(kind, value) : null;
   // Кнопку не блокируем «молча»: клик подсвечивает незаполненные поля и даёт тост.
-  const ctaDisabled =
-    !cartReady || unverified || Boolean(party?.blocked) || blockedByStock || holding;
-
   const [submitting, setSubmitting] = useState(false);
+  const { organizationId, userId } = useOrg();
   // Дефицит склада, вернувшийся холдом 409: блокирует счёт до корректировки.
   const [shortages, setShortages] = useState<Record<string, number>>({});
   const [holding, setHolding] = useState(false);
@@ -184,6 +183,9 @@ export function CartPanel() {
    * Холд остатков: «в корзине» ≠ «зарезервировано». Перед выпуском счёта
    * замораживаем склад на 24 часа под организацию (ИНН).
    */
+  const ctaDisabled =
+    !cartReady || unverified || Boolean(party?.blocked) || blockedByStock || holding;
+
   const holdInventory = async () => {
     setHolding(true);
     try {

@@ -14,7 +14,7 @@ function attachDraco(loader: { setDRACOLoader: (l: DRACOLoader) => void }) {
 
 const PLASTIC = { roughness: 0.52, metalness: 0.12 } as const;
 export const DEFAULT_PART_COLOR = "#000000";
-export type PartMaterial = { roughness: number; metalness: number };
+export type PartMaterial = { roughness: number; metalness: number; opacity?: number };
 
 function GltfModel({
   url,
@@ -37,11 +37,15 @@ function GltfModel({
           wireframe: boolean;
           roughness: number;
           metalness: number;
+          transparent: boolean;
+          opacity: number;
           color?: { set: (c: string) => void };
         };
         mat.wireframe = wire;
         mat.roughness = material.roughness;
         mat.metalness = material.metalness;
+        mat.opacity = material.opacity ?? 1;
+        mat.transparent = (material.opacity ?? 1) < 1;
         mat.color?.set(color);
         m.material = mat as never;
       }
@@ -66,7 +70,17 @@ function ProxyModel({
   color: string;
   material: PartMaterial;
 }) {
-  const mat = <meshStandardMaterial {...material} color={color} wireframe={wire} />;
+  const opacity = material.opacity ?? 1;
+  const mat = (
+    <meshStandardMaterial
+      roughness={material.roughness}
+      metalness={material.metalness}
+      color={color}
+      wireframe={wire}
+      transparent={opacity < 1}
+      opacity={opacity}
+    />
+  );
 
   if (category.includes("Колпач")) {
     return (

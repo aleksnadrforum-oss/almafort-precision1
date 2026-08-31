@@ -196,7 +196,7 @@ export function ProductSheet({
             </DialogHeader>
 
             <p className="-mt-1 max-w-[70ch] text-sm leading-[1.6] text-muted-foreground">
-              {TETRAHEDRON_DESCRIPTION}
+              {profile.description}
             </p>
 
             <div className="grid gap-8 lg:grid-cols-2">
@@ -206,7 +206,8 @@ export function ProductSheet({
                     <CadViewer
                       glbUrl={product.engineering_assets.model_glb_url}
                       category={product.category}
-                      color={PART_COLOR.hex}
+                      color={PART_COLOR_HEX}
+                      material={profile.material}
                     />
                   ) : (
                     <CadViewerPlaceholder />
@@ -221,9 +222,9 @@ export function ProductSheet({
                     <span
                       aria-hidden
                       className="size-7 rounded-full border-2 border-foreground ring-2 ring-background"
-                      style={{ backgroundColor: PART_COLOR.hex }}
+                      style={{ backgroundColor: PART_COLOR_HEX }}
                     />
-                    <span className="text-sm font-medium text-foreground">{PART_COLOR.label}</span>
+                    <span className="text-sm font-medium text-foreground">{profile.colorLabel}</span>
                   </div>
                 </div>
 

@@ -212,6 +212,34 @@ const SUPPORT_PROFILE: PartProfile = {
   palette: SUPPORT_PALETTE,
 };
 
+const TUBE_PLUG_PALETTE: Swatch[] = [
+  { hex: "#000000", label: "Чёрный (Базовый)" },
+];
+
+const RECT_TUBE_PLUG_PROFILE: PartProfile = {
+  colorLabel: "Чёрный (Базовый)",
+  material: { roughness: 0.82, metalness: 0.0 },
+  description:
+    "Внутренняя пластиковая заглушка прямоугольного сечения для профильных труб. Обеспечивает герметизацию торца трубы, защищая внутреннюю полость от влаги, мусора и скрытой коррозии. Оснащена эластичными жаберными упорами (рёбрами жёсткости) для плотной посадки и автоматической компенсации расхождений в толщине металлической стенки. Придаёт металлоконструкции завершённый, травмобезопасный вид без необходимости заваривания торцов.",
+  palette: TUBE_PLUG_PALETTE,
+};
+
+const SQUARE_TUBE_PLUG_PROFILE: PartProfile = {
+  colorLabel: "Чёрный (Базовый)",
+  material: { roughness: 0.82, metalness: 0.0 },
+  description:
+    "Универсальная квадратная заглушка-вкладыш для декоративного торцевания профильного проката. Монтируется забивным способом (киянкой) без использования клея. Боковые фиксирующие гофры гарантируют надёжное удержание детали внутри профиля даже при резких перепадах температур и вибрационных нагрузках. Идеальное технологическое решение для производства стеллажных систем, заборов, рекламных стоек и каркасной мебели на металлокаркасе.",
+  palette: TUBE_PLUG_PALETTE,
+};
+
+const ROUND_TUBE_PLUG_PROFILE: PartProfile = {
+  colorLabel: "Чёрный (Базовый)",
+  material: { roughness: 0.82, metalness: 0.0 },
+  description:
+    "Круглая пластиковая заглушка для стальных и алюминиевых труб. Формирует аккуратный, скруглённый торец и надёжно защищает напольные покрытия от порезов и царапин в случаях, когда труба выступает в роли мебельной опоры. Многореберная эластичная ножка центрирует деталь при монтаже и обеспечивает тугую посадку в трубы с различным ГОСТом толщины стенки (от 1.0 до 3.0 мм).",
+  palette: TUBE_PLUG_PALETTE,
+};
+
 const SKU_PROFILES: Record<string, PartProfile> = {
   "MK-LH": DOVETAIL_PROFILE,
   "MK-LHZ": DOVETAIL_CAP_PROFILE,
@@ -232,6 +260,18 @@ const SKU_PROFILES: Record<string, PartProfile> = {
   "OP-PM-20": SUPPORT_PROFILE,
   "OP-PM-25": SUPPORT_PROFILE,
   "OP-P-STD": SUPPORT_PROFILE,
+  "ZGV-20x40": RECT_TUBE_PLUG_PROFILE,
+  "ZGV-40x60": RECT_TUBE_PLUG_PROFILE,
+  "ZGV-15x15": SQUARE_TUBE_PLUG_PROFILE,
+  "ZGV-20x20": SQUARE_TUBE_PLUG_PROFILE,
+  "ZGV-25x25": SQUARE_TUBE_PLUG_PROFILE,
+  "ZGV-40x40": SQUARE_TUBE_PLUG_PROFILE,
+  "ZGV-60x60": SQUARE_TUBE_PLUG_PROFILE,
+  "ZGV-80x80": SQUARE_TUBE_PLUG_PROFILE,
+  "ZGV-100x100": SQUARE_TUBE_PLUG_PROFILE,
+  "ZGV-D20": ROUND_TUBE_PLUG_PROFILE,
+  "ZGV-D22": ROUND_TUBE_PLUG_PROFILE,
+  "ZGV-D25": ROUND_TUBE_PLUG_PROFILE,
 };
 
 

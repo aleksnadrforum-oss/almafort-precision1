@@ -264,21 +264,25 @@ export function CadViewer({
   } | null>(null);
 
   // Без ручной очистки серия открытий карточек выжирает WebGL-контексты на мобильных.
+  // Освобождаем контекст асинхронно: drei успевает удалить свои render-target'ы.
   useEffect(
     () => () => {
       const gl = glRef.current;
-      if (!gl) return;
-      try {
-        gl.renderLists?.dispose();
-        gl.dispose();
-        gl.forceContextLoss?.();
-      } catch {
-        /* контекст уже освобождён браузером */
-      }
       glRef.current = null;
+      if (!gl) return;
+      setTimeout(() => {
+        try {
+          gl.renderLists?.dispose();
+          gl.dispose();
+          gl.forceContextLoss?.();
+        } catch {
+          /* контекст уже освобождён браузером */
+        }
+      }, 0);
     },
     [],
   );
+
 
   return (
     <div

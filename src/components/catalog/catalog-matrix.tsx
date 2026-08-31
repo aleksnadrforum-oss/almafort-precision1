@@ -581,30 +581,35 @@ function Row({
           type="text"
           inputMode="numeric"
           value={qty || ""}
+          max={limited ? maxQty : undefined}
           onChange={(e) => {
             const digits = e.target.value.replace(/[^0-9]/g, "").slice(0, 7);
             setQty(digits ? Number.parseInt(digits, 10) : 0);
           }}
-          placeholder={onRequest ? "—" : "0"}
-          disabled={onRequest}
+          onBlur={() => setQty((v) => clampQty(v))}
+          placeholder={onRequest ? "—" : outOfStock ? "—" : "0"}
+          disabled={onRequest || outOfStock}
           aria-label={`Количество ${p.sku}`}
-          className="w-full min-w-0 rounded-sm border border-[#D1D5DB] disabled:cursor-not-allowed disabled:bg-[#F3F4F6] bg-card px-2 py-1.5 text-right text-sm tabular-nums text-foreground outline-none transition-colors duration-150 focus:border-foreground"
+          className="w-full min-w-0 rounded-sm border border-[#D1D5DB] disabled:cursor-not-allowed disabled:bg-[#F3F4F6] disabled:text-gray-300 bg-card px-2 py-1.5 text-right text-sm tabular-nums text-foreground outline-none transition-colors duration-150 focus:border-foreground"
         />
       </div>
       <div className={`${CELL} flex-col items-stretch justify-center gap-1`}>
         <button
           type="button"
           onClick={() => void add()}
-          disabled={state === "loading"}
+          disabled={state === "loading" || outOfStock}
           aria-label={onRequest ? "Запросить индивидуальный расчет" : "Добавить в корзину"}
           className={`group flex w-full min-w-0 cursor-pointer items-center justify-center gap-2 overflow-hidden whitespace-nowrap rounded-sm px-3 py-2 text-xs font-semibold tabular-nums transition-all duration-200 disabled:cursor-not-allowed ${
-            state === "done"
+            outOfStock
+              ? "border border-[#E5E7EB] bg-[#F3F4F6] text-[#9CA3AF]"
+              : state === "done"
               ? "bg-[#10B981] text-white"
               : hasSum
                 ? "bg-[#F3F4F6] text-foreground hover:bg-primary hover:text-primary-foreground"
                 : "border border-[#D1D5DB] bg-[#F3F4F6] text-muted-foreground hover:border-primary hover:bg-primary hover:text-primary-foreground"
           }`}
         >
+
           {state === "loading" ? (
             <Loader2 className="size-4 shrink-0 animate-spin" strokeWidth={1.75} />
           ) : state === "done" ? (

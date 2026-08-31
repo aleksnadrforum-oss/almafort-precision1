@@ -138,6 +138,20 @@ function useRowState(p: Product, onAdd: Props["onAdd"]) {
     ? { label: palette[colorIndex]!.label, hex: palette[colorIndex]!.hex }
     : baseColorForProduct(p);
 
+  // Складской потолок: общий на артикул, уже занятое другими цветами вычитаем.
+  const limit = stockLimit(p.sku);
+  const limited = Number.isFinite(limit);
+  const maxQty = limited ? Math.max(0, limit - inCart) : Number.POSITIVE_INFINITY;
+  const outOfStock = limited && limit <= 0;
+  const atMax = limited && qty >= maxQty;
+
+  /** Автокоррекция ввода до доступного остатка + строгий фидбэк. */
+  const clampQty = (value: number) => {
+    if (!limited || value <= maxQty) return value;
+    toast.error(`Доступно для заказа только ${Math.max(0, maxQty).toLocaleString("ru-RU")} шт.`);
+    return Math.max(0, maxQty);
+  };
+
   const add = async () => {
     if (onRequest) {
       setQuote(true);
@@ -145,7 +159,13 @@ function useRowState(p: Product, onAdd: Props["onAdd"]) {
     }
     // Защита от дребезга: серия быстрых тапов не создаёт дубликаты позиций
     if (state !== "idle") return;
-    if (qty <= 0) {
+    if (outOfStock) {
+      toast.error("Нет в наличии");
+      return;
+    }
+    const safeQty = clampQty(qty);
+    if (safeQty !== qty) setQty(safeQty);
+    if (safeQty <= 0) {
       toast.error("Укажите количество");
       return;
     }
@@ -154,12 +174,13 @@ function useRowState(p: Product, onAdd: Props["onAdd"]) {
       const res = await fetch("/api/cart", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sku: p.sku, quantity: qty }),
+        body: JSON.stringify({ sku: p.sku, quantity: safeQty }),
       });
       if (!res.ok) throw new Error("cart");
       const data = (await res.json()) as { quantity: number };
-      onAdd(p, data.quantity, color);
-      trackAddToCart({ sku: p.sku, name: p.name, price: p.price, quantity: data.quantity });
+      const applied = clampQty(Math.max(1, Math.floor(data.quantity)));
+      onAdd(p, applied, color);
+      trackAddToCart({ sku: p.sku, name: p.name, price: p.price, quantity: applied });
       setState("done");
       window.setTimeout(() => setState("idle"), 2000);
     } catch {
@@ -169,6 +190,7 @@ function useRowState(p: Product, onAdd: Props["onAdd"]) {
   };
 
   const hasSum = !onRequest && qty > 0 && state !== "done";
+
   const label = onRequest
     ? "Расчёт"
 

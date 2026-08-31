@@ -354,7 +354,12 @@ export function ProductSheet({
                                         backgroundImage:
                                           "linear-gradient(135deg, #ffffff 45%, #cfcfcf 45%, #cfcfcf 55%, #ffffff 55%)",
                                       }
-                                    : { backgroundColor: sw.hex }
+                                    : {
+                                        backgroundColor: sw.hex,
+                                        ...(sw.borderColor
+                                          ? { borderColor: sw.borderColor }
+                                          : {}),
+                                      }
                                 }
                               />
                             </TooltipTrigger>

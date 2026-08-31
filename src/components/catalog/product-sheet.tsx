@@ -347,6 +347,7 @@ export function ProductSheet({
                     ["Габариты", product.dims],
                     ["Нагрузка", product.load],
                     ["Стандарт", product.gost],
+                    ...(product.features ? ([["Особенности", product.features]] as [string, string][]) : []),
                     ["Вес детали", `${(product.weight * 1000).toFixed(0)} г`],
                     [
                       "Наличие",

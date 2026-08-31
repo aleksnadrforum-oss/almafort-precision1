@@ -10,7 +10,12 @@ import { BulkRequestDialog } from "@/components/catalog/bulk-request-dialog";
 import { useAssetGroups } from "@/lib/asset-groups";
 import { useDebounce } from "@/hooks/use-debounce";
 import type { ShippingQuote } from "@/lib/logistics";
-type CadViewerProps = { glbUrl: string | null; category: string };
+type CadViewerProps = { glbUrl: string | null; category: string; color?: string };
+
+const PART_COLOR = { hex: "#000000", label: "Чёрный промышленный" } as const;
+
+const TETRAHEDRON_DESCRIPTION =
+  "Технологические пластиковые детали (тетрагедроны) для производственных линий по выпуску сэндвич-панелей. Разработаны специально для обеспечения правильной геометрии и технологического процесса на заводах-изготовителях панелей. Литьё из высокопрочного чёрного пластика с точным соблюдением допусков.";
 
 const loadCadViewer = createClientOnlyFn(async () => {
   const module = await import("@/components/catalog/cad-viewer");
@@ -153,6 +158,10 @@ export function ProductSheet({
                 </span>
               </DialogTitle>
             </DialogHeader>
+
+            <p className="-mt-1 max-w-[70ch] text-sm leading-[1.6] text-muted-foreground">
+              {TETRAHEDRON_DESCRIPTION}
+            </p>
 
             <div className="grid gap-8 lg:grid-cols-2">
               <div>

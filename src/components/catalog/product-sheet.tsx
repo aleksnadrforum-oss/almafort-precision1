@@ -299,7 +299,7 @@ export function ProductSheet({
                       />
                       <span className="text-sm font-medium text-foreground">{profile.colorLabel}</span>
                     </div>
-                  )
+                  )}
                 </div>
 
                 <p className="mt-3 text-xs text-muted-foreground">

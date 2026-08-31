@@ -205,7 +205,8 @@ export const PRODUCTS: Product[] = raw.map(
       model_dwg_url: `/api/public/cad/${sku}/dwg`,
       passport_pdf_url: `/api/public/cad/${sku}/pdf`,
     },
-  }),
+    };
+  },
 );
 
 /** Тир партии. Пороги берём из карточки товара — они разные по группам. */

@@ -9,6 +9,12 @@ import { QuoteRequestModal } from "@/components/catalog/quote-request-modal";
 import { ProductThumb } from "@/components/catalog/product-thumb";
 import { AssetLightbox } from "@/components/catalog/asset-lightbox";
 import { useAssetGroups, type AssetGroup } from "@/lib/asset-groups";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  baseColorForProduct,
+  paletteForProduct,
+  type ColorSwatch,
+} from "@/components/catalog/product-sheet";
 
 type Props = {
   query: string;

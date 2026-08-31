@@ -183,6 +183,22 @@ const SCREW_CAP_PROFILE: PartProfile = {
   palette: SCREW_CAP_PALETTE,
 };
 
+const ECCENTRIC_CAP_PALETTE: Swatch[] = [
+  { hex: "#000000", label: "Чёрный" },
+  { hex: "#382a24", label: "Тёмно-коричневый / Венге" },
+  { hex: "#722f37", label: "Красно-коричневый / Вишня" },
+  { hex: "#dcb98a", label: "Светло-бежевый / Песочный" },
+  { hex: "#1976d2", label: "Синий" },
+];
+
+const ECCENTRIC_CAP_PROFILE: PartProfile = {
+  colorLabel: "Чёрный",
+  material: { roughness: 0.25, metalness: 0.0 },
+  description:
+    "Пластиковая декоративная заглушка для эстетичной маскировки металлического барабана эксцентриковой стяжки (минификса). Плоский профиль с аккуратной фаской обеспечивает плотное прилегание к поверхности ЛДСП, делая монтажный узел визуально незаметным и защищая его от попадания пыли и влаги. На внутренней стороне расположен центрирующий цилиндрический штифт, который точно фиксируется в крестообразном шлице эксцентрика, исключая выпадение детали при эксплуатации мебели. Глянцевая фактура и точная колеровка позволяют подобрать заглушку в идеальный тон к ламинированному покрытию фасадов и корпусов.",
+  palette: ECCENTRIC_CAP_PALETTE,
+};
+
 const SKU_PROFILES: Record<string, PartProfile> = {
   "MK-LH": DOVETAIL_PROFILE,
   "MK-LHZ": DOVETAIL_CAP_PROFILE,
@@ -193,6 +209,7 @@ const SKU_PROFILES: Record<string, PartProfile> = {
   "MK-SHD": RODHOLDER_PROFILE,
   "ZGD-EV": EUROVINT_CAP_PROFILE,
   "ZGD-SM": SCREW_CAP_PROFILE,
+  "ZGD-EX": ECCENTRIC_CAP_PROFILE,
 };
 
 

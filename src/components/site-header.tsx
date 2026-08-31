@@ -56,7 +56,7 @@ export function SiteHeader() {
           <span className="text-xl font-extrabold tracking-tight text-primary">ALMAFORT</span>
         </a>
 
-        <nav className="hidden lg:flex lg:items-center lg:gap-5 xl:gap-7">
+        <nav className="hidden min-w-0 lg:flex lg:items-center lg:gap-5 xl:gap-7">
           {NAV.map((item) => (
             <a
               key={item.label}
@@ -69,7 +69,7 @@ export function SiteHeader() {
         </nav>
 
         <div className="hidden lg:flex lg:shrink-0 lg:items-center lg:gap-4 xl:gap-5">
-          <span className="hidden items-center gap-2 whitespace-nowrap text-[13px] leading-none text-muted-foreground xl:flex">
+          <span className="hidden items-center gap-2 whitespace-nowrap text-[13px] leading-none text-muted-foreground 2xl:flex">
             <Clock className="size-4 shrink-0" strokeWidth={1.5} />
             Пн-Пт 08:00–19:00 (МСК+4)
           </span>
@@ -80,7 +80,7 @@ export function SiteHeader() {
           <a
             href="tel:+79029229734"
             onClick={() => trackContact("phone_click")}
-            className="flex shrink-0 items-center gap-2 whitespace-nowrap text-[14px] font-semibold leading-none text-foreground hover:text-primary"
+            className="hidden shrink-0 items-center gap-2 whitespace-nowrap text-[14px] font-semibold leading-none text-foreground hover:text-primary xl:flex"
             style={{ whiteSpace: "nowrap" }}
           >
             <Phone className="size-4 shrink-0" strokeWidth={1.5} />

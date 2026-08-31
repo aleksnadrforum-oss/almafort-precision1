@@ -207,7 +207,7 @@
 @utility catalog-grid-parent {
   display: grid;
   grid-template-columns:
-    40px 60px minmax(220px, 3fr) 120px 130px 110px 110px 110px 110px 150px;
+    40px 60px minmax(220px, 3fr) 120px 130px 104px 104px 104px 104px 176px;
   width: 100%;
   min-width: 1080px;
 }
@@ -217,7 +217,7 @@
 @utility catalog-grid-header {
   display: grid;
   grid-template-columns:
-    40px 60px minmax(220px, 3fr) 120px 130px 110px 110px 110px 110px 150px;
+    40px 60px minmax(220px, 3fr) 120px 130px 104px 104px 104px 104px 176px;
   width: 100%;
   min-width: 1080px;
 }

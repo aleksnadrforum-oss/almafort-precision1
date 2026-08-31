@@ -28,6 +28,9 @@ export type Product = {
   load: string;
   /** Доп. характеристика (напр. «Антискрип»). Выводится в сетке при наличии. */
   features?: string;
+  /** Кастомные строки технической сетки для конкретного SKU (метка/значение).
+   *  Если задано, заменяют блок Материал/Нагрузка/Стандарт/Особенности. */
+  specRows?: [string, string][];
   weight: number; // kg, вес единицы
   volume: number; // m3, объём единицы в упаковке
   stock: Stock;
@@ -168,6 +171,16 @@ const SKU_SPECS: Partial<
   },
 };
 
+/** Полностью кастомные строки технической сетки (метка, значение) для SKU,
+ *  у которых набор характеристик отличается от стандартного блока. */
+const SKU_SPEC_ROWS: Record<string, [string, string][]> = {
+  "MK-SD": [
+    ["Материал", "Ударопрочный пластик (амортизирующий)"],
+    ["Назначение", "Фиксация стекол и зеркал (до 4–5 мм)"],
+    ["Конструкция", "С интегрированной заглушкой под саморез"],
+  ],
+};
+
 export const PRODUCTS: Product[] = raw.map(
   ([sku, name, parent, category, dims, color, price, qty, weight, volume, tier1, tier2]) => {
     const spec = SKU_SPECS[sku];
@@ -183,6 +196,7 @@ export const PRODUCTS: Product[] = raw.map(
     gost: spec?.gost ?? "ГОСТ 26996-86 / ТУ 22.29.29",
     load: spec?.load ?? "до 240 кг статической нагрузки",
     ...(spec?.features ? { features: spec.features } : {}),
+    ...(SKU_SPEC_ROWS[sku] ? { specRows: SKU_SPEC_ROWS[sku] } : {}),
     weight,
     volume,
     stock:

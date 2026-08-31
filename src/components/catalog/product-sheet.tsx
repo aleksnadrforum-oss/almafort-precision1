@@ -20,7 +20,7 @@ type CadViewerProps = {
   material?: PartMaterial;
 };
 
-type Swatch = { hex: string; label: string; opacity?: number };
+type Swatch = { hex: string; label: string; opacity?: number; roughness?: number };
 
 type PartProfile = {
   colorLabel: string;
@@ -76,10 +76,29 @@ const LATHOLDER_PROFILE: PartProfile = {
   palette: LATHOLDER_PALETTE,
 };
 
+const GLASSHOLDER_PALETTE: Swatch[] = [
+  { hex: "#1c3aa9", label: "Синий" },
+  { hex: "#4ebaaa", label: "Мятный / Бирюзовый" },
+  { hex: "#ffffff", label: "Белый" },
+  { hex: "#dcb98a", label: "Бежевый" },
+  { hex: "#8c9091", label: "Серый" },
+  { hex: "#382a24", label: "Тёмно-коричневый" },
+  { hex: "#f0f0f0", label: "Полупрозрачный / Матовый", opacity: 0.6, roughness: 0.2 },
+];
+
+const GLASSHOLDER_PROFILE: PartProfile = {
+  colorLabel: "Синий",
+  material: { roughness: 0.5, metalness: 0.0 },
+  description:
+    "Специализированный пластиковый крепёж (стеклодержатель) с интегрированной декоративной крышкой для безопасной фиксации стекол и зеркал к мебельным фасадам. Конструкция детали состоит из базового прижимного элемента и откидной заглушки. Упругий полимер обеспечивает плотное прилегание к хрупкому материалу, амортизирует микровибрации и полностью исключает риск образования сколов при затягивании самореза. После монтажа крышка защёлкивается, скрывая металлическую шляпку метиза и образуя аккуратный, законченный узел. Широкий выбор оттенков, включая полупрозрачный вариант, позволяет сделать фурнитуру максимально незаметной на любом фоне.",
+  palette: GLASSHOLDER_PALETTE,
+};
+
 const SKU_PROFILES: Record<string, PartProfile> = {
   "MK-LH": DOVETAIL_PROFILE,
   "MK-LHZ": DOVETAIL_CAP_PROFILE,
   "MK-LD": LATHOLDER_PROFILE,
+  "MK-SD": GLASSHOLDER_PROFILE,
 };
 
 
@@ -138,7 +157,11 @@ export function ProductSheet({
   const activeSwatch = profile.palette?.[swatchIndex];
   const partColor = activeSwatch?.hex ?? PART_COLOR_HEX;
   const partMaterial = activeSwatch
-    ? { ...profile.material, opacity: activeSwatch.opacity ?? 1 }
+    ? {
+        ...profile.material,
+        ...(activeSwatch.roughness !== undefined ? { roughness: activeSwatch.roughness } : {}),
+        opacity: activeSwatch.opacity ?? 1,
+      }
     : profile.material;
   const [bulkOpen, setBulkOpen] = useState(false);
   const [CadViewer, setCadViewer] = useState<ComponentType<CadViewerProps> | null>(null);
@@ -342,20 +365,36 @@ export function ProductSheet({
 
               <div>
                 <dl className="grid grid-cols-2 gap-x-6 gap-y-3 border-b border-border pb-6 text-sm">
-                  {[
-                    ["Материал", product.material],
-                    ["Габариты", product.dims],
-                    ["Нагрузка", product.load],
-                    ["Стандарт", product.gost],
-                    ...(product.features ? ([["Особенности", product.features]] as [string, string][]) : []),
-                    ["Вес детали", `${(product.weight * 1000).toFixed(0)} г`],
-                    [
-                      "Наличие",
-                      product.stock.qty > 0
-                        ? `${product.stock.qty.toLocaleString("ru-RU")} шт`
-                        : product.stock.lead!,
-                    ],
-                  ].map(([k, v]) => (
+                  {(
+                    product.specRows
+                      ? [
+                          ...product.specRows,
+                          ["Габариты", product.dims],
+                          ["Вес детали", `${(product.weight * 1000).toFixed(0)} г`],
+                          [
+                            "Наличие",
+                            product.stock.qty > 0
+                              ? `${product.stock.qty.toLocaleString("ru-RU")} шт`
+                              : product.stock.lead!,
+                          ],
+                        ]
+                      : [
+                          ["Материал", product.material],
+                          ["Габариты", product.dims],
+                          ["Нагрузка", product.load],
+                          ["Стандарт", product.gost],
+                          ...(product.features
+                            ? ([["Особенности", product.features]] as [string, string][])
+                            : []),
+                          ["Вес детали", `${(product.weight * 1000).toFixed(0)} г`],
+                          [
+                            "Наличие",
+                            product.stock.qty > 0
+                              ? `${product.stock.qty.toLocaleString("ru-RU")} шт`
+                              : product.stock.lead!,
+                          ],
+                        ]
+                  ).map(([k, v]) => (
                     <div key={k}>
                       <dt className="text-xs uppercase tracking-wider text-muted-foreground">{k}</dt>
                       <dd className="mt-0.5 font-medium text-foreground">{v}</dd>

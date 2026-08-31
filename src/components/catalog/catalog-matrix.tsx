@@ -250,34 +250,60 @@ function MobileCard({
   return (
     <li className="rounded-lg border border-border bg-card p-4">
       <div className="flex gap-3">
-        <button
-          type="button"
-          onClick={() => (thumb ? setLightbox(true) : onOpenProduct(p))}
-          aria-label={`Открыть ${p.sku}`}
-          className="grid size-16 shrink-0 place-items-center overflow-hidden rounded-md border border-border bg-white p-1"
-        >
-          {thumb ? (
-            <img
-              src={thumb}
-              alt={p.name}
-              width={64}
-              height={64}
-              loading="lazy"
-              className="size-full object-contain"
-            />
-          ) : (
-            <ProductThumb src={p.image_url} alt={p.name} />
-          )}
-        </button>
-
-        <div className="min-w-0 flex-1">
+        {onRequest ? (
+          <span
+            aria-hidden
+            className="grid size-16 shrink-0 place-items-center overflow-hidden rounded-md border border-border bg-white p-1"
+          >
+            {thumb ? (
+              <img
+                src={thumb}
+                alt={p.name}
+                width={64}
+                height={64}
+                loading="lazy"
+                className="size-full object-contain"
+              />
+            ) : (
+              <ProductThumb src={p.image_url} alt={p.name} />
+            )}
+          </span>
+        ) : (
           <button
             type="button"
-            onClick={() => onOpenProduct(p, palette?.[colorIndex]?.hex)}
-            className="tap-sm block w-full break-words text-left text-[15px] font-semibold leading-tight text-foreground [overflow-wrap:anywhere]"
+            onClick={() => (thumb ? setLightbox(true) : onOpenProduct(p))}
+            aria-label={`Открыть ${p.sku}`}
+            className="grid size-16 shrink-0 place-items-center overflow-hidden rounded-md border border-border bg-white p-1"
           >
-            {p.name}
+            {thumb ? (
+              <img
+                src={thumb}
+                alt={p.name}
+                width={64}
+                height={64}
+                loading="lazy"
+                className="size-full object-contain"
+              />
+            ) : (
+              <ProductThumb src={p.image_url} alt={p.name} />
+            )}
           </button>
+        )}
+
+        <div className="min-w-0 flex-1">
+          {onRequest ? (
+            <span className="tap-sm block w-full break-words text-left text-[15px] font-semibold leading-tight text-foreground [overflow-wrap:anywhere]">
+              {p.name}
+            </span>
+          ) : (
+            <button
+              type="button"
+              onClick={() => onOpenProduct(p, palette?.[colorIndex]?.hex)}
+              className="tap-sm block w-full break-words text-left text-[15px] font-semibold leading-tight text-foreground [overflow-wrap:anywhere]"
+            >
+              {p.name}
+            </button>
+          )}
           <p className="mt-1 text-xs tabular-nums text-muted-foreground">{p.sku}</p>
           <p className="mt-1 text-xs leading-[1.35] text-muted-foreground">{p.dims}</p>
           {palette && (

@@ -14,8 +14,19 @@ function attachDraco(loader: { setDRACOLoader: (l: DRACOLoader) => void }) {
 
 const PLASTIC = { roughness: 0.52, metalness: 0.12 } as const;
 export const DEFAULT_PART_COLOR = "#000000";
+export type PartMaterial = { roughness: number; metalness: number };
 
-function GltfModel({ url, wire, color }: { url: string; wire: boolean; color: string }) {
+function GltfModel({
+  url,
+  wire,
+  color,
+  material,
+}: {
+  url: string;
+  wire: boolean;
+  color: string;
+  material: PartMaterial;
+}) {
   const { scene } = useGLTF(url, true, undefined, attachDraco as never);
   const cloned = useMemo(() => {
     const s = scene.clone(true);
@@ -29,14 +40,14 @@ function GltfModel({ url, wire, color }: { url: string; wire: boolean; color: st
           color?: { set: (c: string) => void };
         };
         mat.wireframe = wire;
-        mat.roughness = PLASTIC.roughness;
-        mat.metalness = PLASTIC.metalness;
+        mat.roughness = material.roughness;
+        mat.metalness = material.metalness;
         mat.color?.set(color);
         m.material = mat as never;
       }
     });
     return s;
-  }, [scene, wire, color]);
+  }, [scene, wire, color, material]);
   return <primitive object={cloned} />;
 }
 
@@ -44,8 +55,18 @@ function GltfModel({ url, wire, color }: { url: string; wire: boolean; color: st
  * Параметрический прокси-меш: используется, пока в S3 нет Draco-модели артикула.
  * Геометрия строится по категории, поэтому вьювер всегда показывает узел, а не пустой холст.
  */
-function ProxyModel({ category, wire, color }: { category: string; wire: boolean; color: string }) {
-  const mat = <meshStandardMaterial {...PLASTIC} color={color} wireframe={wire} />;
+function ProxyModel({
+  category,
+  wire,
+  color,
+  material,
+}: {
+  category: string;
+  wire: boolean;
+  color: string;
+  material: PartMaterial;
+}) {
+  const mat = <meshStandardMaterial {...material} color={color} wireframe={wire} />;
 
   if (category.includes("Колпач")) {
     return (
@@ -166,10 +187,12 @@ export function CadViewer({
   glbUrl,
   category,
   color = DEFAULT_PART_COLOR,
+  material = PLASTIC,
 }: {
   glbUrl: string | null;
   category: string;
   color?: string;
+  material?: PartMaterial;
 }) {
   const [wire, setWire] = useState(false);
   const [auto, setAuto] = useState(true);
@@ -189,9 +212,9 @@ export function CadViewer({
           <Center>
             <Spin enabled={auto}>
               {glbUrl ? (
-                <GltfModel url={glbUrl} wire={wire} color={color} />
+                <GltfModel url={glbUrl} wire={wire} color={color} material={material} />
               ) : (
-                <ProxyModel category={category} wire={wire} color={color} />
+                <ProxyModel category={category} wire={wire} color={color} material={material} />
               )}
             </Spin>
           </Center>

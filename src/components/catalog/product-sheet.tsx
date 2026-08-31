@@ -10,12 +10,45 @@ import { BulkRequestDialog } from "@/components/catalog/bulk-request-dialog";
 import { useAssetGroups } from "@/lib/asset-groups";
 import { useDebounce } from "@/hooks/use-debounce";
 import type { ShippingQuote } from "@/lib/logistics";
-type CadViewerProps = { glbUrl: string | null; category: string; color?: string };
+type CadViewerProps = {
+  glbUrl: string | null;
+  category: string;
+  color?: string;
+  material?: { roughness: number; metalness: number };
+};
 
-const PART_COLOR = { hex: "#000000", label: "Чёрный промышленный" } as const;
+type PartProfile = {
+  colorLabel: string;
+  material: { roughness: number; metalness: number };
+  description: string;
+};
 
 const TETRAHEDRON_DESCRIPTION =
   "Технологические пластиковые детали (тетрагедроны) для производственных линий по выпуску сэндвич-панелей. Разработаны специально для обеспечения правильной геометрии и технологического процесса на заводах-изготовителях панелей. Литьё из высокопрочного чёрного пластика с точным соблюдением допусков.";
+
+const PART_COLOR_HEX = "#000000" as const;
+
+const PROFILES: Record<string, PartProfile> = {
+  // Кляймер ДПК — матовый уличный пластик, УФ-стойкий
+  "Комплектующие для ДПК": {
+    colorLabel: "Чёрный (УФ-стойкий)",
+    material: { roughness: 0.88, metalness: 0.0 },
+    description:
+      "Пластиковые комплектующие для монтажа террасной доски и заборов из ДПК. Кляймеры для скрытого монтажа ДПК (обеспечивают надёжную фиксацию и правильный технологический зазор). Материал устойчив к перепадам температур, влаге и УФ-лучам (не трескается на морозе).",
+  },
+  // Тетрагедроны — литой промышленный пластик
+  "Для производства сэндвич-панелей": {
+    colorLabel: "Чёрный промышленный",
+    material: { roughness: 0.52, metalness: 0.12 },
+    description: TETRAHEDRON_DESCRIPTION,
+  },
+};
+
+const DEFAULT_PROFILE: PartProfile = {
+  colorLabel: "Чёрный промышленный",
+  material: { roughness: 0.52, metalness: 0.12 },
+  description: TETRAHEDRON_DESCRIPTION,
+};
 
 const loadCadViewer = createClientOnlyFn(async () => {
   const module = await import("@/components/catalog/cad-viewer");
@@ -35,6 +68,9 @@ export function ProductSheet({
   const [calcState, setCalcState] = useState<"idle" | "loading" | "ready" | "failed">("idle");
   const assets = useAssetGroups();
   const assetGroup = product ? assets.get(product.sku) : undefined;
+  const profile = product
+    ? PROFILES[product.category] ?? DEFAULT_PROFILE
+    : DEFAULT_PROFILE;
   const [bulkOpen, setBulkOpen] = useState(false);
   const [CadViewer, setCadViewer] = useState<ComponentType<CadViewerProps> | null>(null);
 
@@ -160,7 +196,7 @@ export function ProductSheet({
             </DialogHeader>
 
             <p className="-mt-1 max-w-[70ch] text-sm leading-[1.6] text-muted-foreground">
-              {TETRAHEDRON_DESCRIPTION}
+              {profile.description}
             </p>
 
             <div className="grid gap-8 lg:grid-cols-2">
@@ -170,7 +206,8 @@ export function ProductSheet({
                     <CadViewer
                       glbUrl={product.engineering_assets.model_glb_url}
                       category={product.category}
-                      color={PART_COLOR.hex}
+                      color={PART_COLOR_HEX}
+                      material={profile.material}
                     />
                   ) : (
                     <CadViewerPlaceholder />
@@ -185,9 +222,9 @@ export function ProductSheet({
                     <span
                       aria-hidden
                       className="size-7 rounded-full border-2 border-foreground ring-2 ring-background"
-                      style={{ backgroundColor: PART_COLOR.hex }}
+                      style={{ backgroundColor: PART_COLOR_HEX }}
                     />
-                    <span className="text-sm font-medium text-foreground">{PART_COLOR.label}</span>
+                    <span className="text-sm font-medium text-foreground">{profile.colorLabel}</span>
                   </div>
                 </div>
 

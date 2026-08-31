@@ -112,7 +112,12 @@ async function generateInvoicePdfImpl({
     body.push([
       { text: String(i + 1) },
       { text: safeText(l.sku, 40) },
-      { text: safeText(productBySku(l.sku)?.name ?? l.name, 160) },
+      {
+        text: safeText(
+          `${productBySku(l.sku)?.name ?? l.name}${l.color ? ` (цвет: ${l.color.label})` : ""}`,
+          200,
+        ),
+      },
       { text: l.quantity.toLocaleString("ru-RU"), alignment: "right" },
       { text: money(unit), alignment: "right" },
       { text: money(sum), alignment: "right" },

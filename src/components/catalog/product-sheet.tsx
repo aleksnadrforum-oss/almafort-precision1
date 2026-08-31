@@ -166,6 +166,23 @@ const EUROVINT_CAP_PROFILE: PartProfile = {
   palette: EUROVINT_CAP_PALETTE,
 };
 
+const SCREW_CAP_PALETTE: Swatch[] = [
+  { hex: "#a05a45", label: "Светло-коричневый / Медный" },
+  { hex: "#4a2c11", label: "Тёмно-коричневый" },
+  { hex: "#ffffff", label: "Белый", borderColor: "#e5e7eb" },
+  { hex: "#000000", label: "Чёрный" },
+  { hex: "#808080", label: "Серый" },
+  { hex: "#e8d5c4", label: "Бежевый" },
+];
+
+const SCREW_CAP_PROFILE: PartProfile = {
+  colorLabel: "Светло-коричневый / Медный",
+  material: { roughness: 0.75, metalness: 0.0 },
+  description:
+    "Универсальная пластиковая заглушка для декоративной маскировки крепёжных узлов. Оснащена центральным фиксирующим штифтом, который плотно вставляется в крестообразный шлиц самореза (PZ или PH), обеспечивая надёжную фиксацию без использования клея. Внешняя полусферическая поверхность имеет лёгкую шагреневую текстуру (матовую шероховатость), благодаря чему деталь не бликует при освещении и органично сливается с текстурой ЛДСП, МДФ или натурального дерева. Эффективно защищает металлический метиз от коррозии и придаёт мебели законченный, эстетичный вид.",
+  palette: SCREW_CAP_PALETTE,
+};
+
 const SKU_PROFILES: Record<string, PartProfile> = {
   "MK-LH": DOVETAIL_PROFILE,
   "MK-LHZ": DOVETAIL_CAP_PROFILE,

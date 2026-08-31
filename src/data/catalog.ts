@@ -182,7 +182,7 @@ export const PRODUCTS: Product[] = raw.map(
     material: spec?.material ?? "Полипропилен PP, ударопрочный",
     gost: spec?.gost ?? "ГОСТ 26996-86 / ТУ 22.29.29",
     load: spec?.load ?? "до 240 кг статической нагрузки",
-    features: spec?.features,
+    ...(spec?.features ? { features: spec.features } : {}),
     weight,
     volume,
     stock:

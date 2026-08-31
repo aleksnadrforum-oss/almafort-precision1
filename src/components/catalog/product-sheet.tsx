@@ -27,6 +27,7 @@ type PartProfile = {
   material: PartMaterial;
   description: string;
   palette?: Swatch[];
+  disclaimer?: string;
 };
 
 const DOVETAIL_PALETTE: Swatch[] = [
@@ -199,6 +200,20 @@ const ECCENTRIC_CAP_PROFILE: PartProfile = {
   palette: ECCENTRIC_CAP_PALETTE,
 };
 
+const KREPSS_PALETTE: Swatch[] = [
+  { hex: "#ffffff", label: "Белый", borderColor: "#e5e7eb" },
+];
+
+const KREPSS_PROFILE: PartProfile = {
+  colorLabel: "Белый",
+  material: { roughness: 0.75, metalness: 0.0 },
+  description:
+    "Профессиональный крепёжный узел «КРЕПСС» для сэндвич-панелей с любым типом наполнителя (PIR, PUR, минеральная вата). Главное технологическое преимущество — 100% терморазрыв: прочный пластиковый корпус полностью прерывает контакт между металлическими элементами, исключая появление мостиков холода, конденсата, промерзания и ржавчины. Крепёж обеспечивает абсолютную свободу проектирования, позволяя монтировать оборудование в любую точку стены или потолка без привязки к скрытому несущему металлокаркасу. Сохраняет идеальную эстетику чистовых помещений без использования нащельников, дополнительных заглушек и подкраски. Оптимален для фиксации сплит-систем, вентиляционных трасс, кабельных лотков, профилей вентфасадов и подвесных потолков на холодильных складах и в вахтовых бытовках.",
+  disclaimer:
+    "* Внимание: металлическая резьбовая шпилька в комплект поставки не входит. Длина шпильки подбирается и отрезается монтажниками индивидуально под фактическую толщину панели.",
+  palette: KREPSS_PALETTE,
+};
+
 const SUPPORT_PALETTE: Swatch[] = [
   { hex: "#000000", label: "Чёрный" },
   { hex: "#4a2c11", label: "Коричневый" },
@@ -272,6 +287,7 @@ const SKU_PROFILES: Record<string, PartProfile> = {
   "ZGV-D20": ROUND_TUBE_PLUG_PROFILE,
   "ZGV-D22": ROUND_TUBE_PLUG_PROFILE,
   "ZGV-D25": ROUND_TUBE_PLUG_PROFILE,
+  "KREPSS-PRO": KREPSS_PROFILE,
 };
 
 
@@ -465,6 +481,12 @@ export function ProductSheet({
             <p className="-mt-1 max-w-[70ch] text-sm leading-[1.6] text-muted-foreground">
               {profile.description}
             </p>
+
+            {profile.disclaimer && (
+              <p className="-mt-2 max-w-[70ch] text-xs italic leading-[1.5] text-gray-400">
+                {profile.disclaimer}
+              </p>
+            )}
 
             <div className="grid gap-8 lg:grid-cols-2">
               <div>

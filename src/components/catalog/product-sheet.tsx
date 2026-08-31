@@ -199,6 +199,19 @@ const ECCENTRIC_CAP_PROFILE: PartProfile = {
   palette: ECCENTRIC_CAP_PALETTE,
 };
 
+const SUPPORT_PALETTE: Swatch[] = [
+  { hex: "#000000", label: "Чёрный" },
+  { hex: "#4a2c11", label: "Коричневый" },
+];
+
+const SUPPORT_PROFILE: PartProfile = {
+  colorLabel: "Чёрный",
+  material: { roughness: 0.8, metalness: 0.0 },
+  description:
+    "Универсальная пластиковая опора для корпусной и мягкой мебели. Обеспечивает надёжную устойчивость конструкции, равномерно распределяет статические нагрузки и защищает напольное покрытие от царапин, вмятин и воздействия влаги при влажной уборке. В товарную матрицу входят стандартные нерегулируемые опоры различной высоты (15, 20, 35 и 50 мм), декоративные шаровые модели (h50 мм) для эстетичных видимых узлов, а также специализированные регулируемые опоры с металлической резьбой М8 (h28 мм) для точной компенсации кривизны пола. Изделия отливаются из сверхпрочного полимера, устойчивого к деформациям и растрескиванию под весом тяжёлых шкафов или диванов.",
+  palette: SUPPORT_PALETTE,
+};
+
 const SKU_PROFILES: Record<string, PartProfile> = {
   "MK-LH": DOVETAIL_PROFILE,
   "MK-LHZ": DOVETAIL_CAP_PROFILE,
@@ -210,6 +223,15 @@ const SKU_PROFILES: Record<string, PartProfile> = {
   "ZGD-EV": EUROVINT_CAP_PROFILE,
   "ZGD-SM": SCREW_CAP_PROFILE,
   "ZGD-EX": ECCENTRIC_CAP_PROFILE,
+  "OP-H15": SUPPORT_PROFILE,
+  "OP-H20": SUPPORT_PROFILE,
+  "OP-H35": SUPPORT_PROFILE,
+  "OP-H50": SUPPORT_PROFILE,
+  "OP-SH-H50": SUPPORT_PROFILE,
+  "OP-M6-H28": SUPPORT_PROFILE,
+  "OP-PM-20": SUPPORT_PROFILE,
+  "OP-PM-25": SUPPORT_PROFILE,
+  "OP-P-STD": SUPPORT_PROFILE,
 };
 
 

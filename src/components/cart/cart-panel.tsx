@@ -411,8 +411,10 @@ export function CartPanel() {
         {lines.map((l) => {
           const { base, unit, tier, sum } = linePrice(l.sku, l.quantity);
           const discounted = tier > 0;
+          // Ключ строки — артикул + цвет: количество жёлтых не влияет на синие.
+          const key = lineKey(l);
           return (
-            <SwipeToDelete key={l.sku} onDelete={() => removeLine(l.sku)}>
+            <SwipeToDelete key={key} onDelete={() => removeLine(key)}>
             <div
               className="cart-table-grid border-b border-border px-4 py-4 last:border-b-0 md:px-5 md:py-3"
             >
@@ -453,7 +455,7 @@ export function CartPanel() {
                 </div>
                 <button
                   type="button"
-                  onClick={() => removeLine(l.sku)}
+                  onClick={() => removeLine(key)}
                   aria-label="Удалить позицию"
                   className="grid size-11 shrink-0 cursor-pointer place-items-center rounded-sm text-muted-foreground transition-colors active:scale-95 md:hidden"
                 >
@@ -466,7 +468,7 @@ export function CartPanel() {
                 <button
                   type="button"
                   aria-label="Уменьшить количество"
-                  onClick={() => setQuantity(l.sku, Math.max(1, l.quantity - 100))}
+                  onClick={() => setQuantity(key, Math.max(1, l.quantity - 100))}
                   className="grid h-11 place-items-center rounded-md border border-[#D1D5DB] text-foreground active:scale-95 md:hidden"
                 >
                   −
@@ -475,14 +477,14 @@ export function CartPanel() {
                   inputMode="numeric"
                   value={l.quantity}
                   onChange={(e) =>
-                    setQuantity(l.sku, Number(e.target.value.replace(/\D/g, "")) || 1)
+                    setQuantity(key, Number(e.target.value.replace(/\D/g, "")) || 1)
                   }
                   className="h-11 w-full rounded-md border border-[#D1D5DB] px-2 text-center tabular-nums outline-none transition-colors focus:border-foreground md:h-auto md:rounded-sm md:py-1.5 md:text-right md:text-sm"
                 />
                 <button
                   type="button"
                   aria-label="Увеличить количество"
-                  onClick={() => setQuantity(l.sku, l.quantity + 100)}
+                  onClick={() => setQuantity(key, l.quantity + 100)}
                   className="grid h-11 place-items-center rounded-md border border-[#D1D5DB] text-foreground active:scale-95 md:hidden"
                 >
                   +
@@ -517,7 +519,7 @@ export function CartPanel() {
 
               <button
                 type="button"
-                onClick={() => removeLine(l.sku)}
+                onClick={() => removeLine(key)}
                 aria-label="Удалить позицию"
                 className="hidden size-8 cursor-pointer place-items-center rounded-sm text-muted-foreground transition-all duration-200 hover:scale-110 hover:bg-primary hover:text-primary-foreground active:scale-95 md:grid"
               >

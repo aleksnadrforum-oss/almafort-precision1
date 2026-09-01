@@ -62,6 +62,7 @@ export async function pushToCrm(order: CrmOrder): Promise<CrmResult> {
 async function bitrix(order: CrmOrder, hook: string): Promise<CrmResult> {
   const base = hook.replace(/\/+$/, "");
   const contact = await fetch(`${base}/crm.contact.add.json`, {
+    signal: AbortSignal.timeout(15_000),
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -85,6 +86,7 @@ async function bitrix(order: CrmOrder, hook: string): Promise<CrmResult> {
   }
 
   const deal = await fetch(`${base}/crm.deal.add.json`, {
+    signal: AbortSignal.timeout(15_000),
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -111,6 +113,7 @@ async function bitrix(order: CrmOrder, hook: string): Promise<CrmResult> {
 async function amo(order: CrmOrder, baseUrl: string, token: string): Promise<CrmResult> {
   const base = baseUrl.replace(/\/+$/, "");
   const res = await fetch(`${base}/api/v4/leads/complex`, {
+    signal: AbortSignal.timeout(15_000),
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
     body: JSON.stringify([

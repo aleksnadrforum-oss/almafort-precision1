@@ -31,6 +31,7 @@ export const Route = createFileRoute("/api/dadata/city")({
             const res = await fetch(
               "https://suggestions.dadata.ru/suggestions/api/4_1/rs/suggest/address",
               {
+    signal: AbortSignal.timeout(15_000),
                 method: "POST",
                 headers: {
                   "Content-Type": "application/json",

@@ -90,6 +90,7 @@ export async function uploadObject(
   const signature = hex(await hmac(signingKey, stringToSign));
 
   const res = await fetch(url, {
+    signal: AbortSignal.timeout(15_000),
     method: "PUT",
     headers: {
       "Content-Type": contentType,

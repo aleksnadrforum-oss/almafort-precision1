@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { clearSession, isAuthed, onAuthChange } from "@/lib/session";
+import { clearSession, getServerSession, isAuthed, onAuthChange } from "@/lib/session";
 import { useCart } from "@/store/cart-store";
 import { mergeSavedCart, saveCart } from "@/lib/cart-sync.functions";
 
@@ -24,19 +24,13 @@ export function CartSync() {
   useEffect(() => {
     // Кука HttpOnly недоступна JS, поэтому сначала спрашиваем сервер:
     // без этого протухшая сессия давала 401 от защищённой server-функции.
-    const hasServerSession = async () => {
-      try {
-        const res = await fetch("/api/auth/session", {
-        signal: AbortSignal.timeout(20_000), credentials: "same-origin" });
-        const json = (await res.json()) as { authed?: boolean };
-        return Boolean(json?.authed);
-      } catch {
-        return false;
-      }
-    };
-
     const run = async () => {
-      if (!(await hasServerSession())) {
+      const serverSession = await getServerSession(20_000);
+      if (!serverSession.checked) {
+        signedIn.current = false;
+        return;
+      }
+      if (!serverSession.authed) {
         // Снимок профиля в localStorage пережил куку: тихо разлогиниваем.
         signedIn.current = false;
         if (isAuthed()) clearSession();

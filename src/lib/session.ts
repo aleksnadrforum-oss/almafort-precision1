@@ -17,6 +17,7 @@ export type Session = { user: SessionUser; expiresAt: number; token?: string };
 
 export type ServerSession = {
   authed: boolean;
+  checked: boolean;
   user?: SessionUser;
   expiresAt?: number;
 };
@@ -76,14 +77,16 @@ export async function getServerSession(timeoutMs = 12_000): Promise<ServerSessio
       cache: "no-store",
       signal: controller.signal,
     });
-    if (!response.ok) return { authed: false };
+    if (!response.ok) return { authed: false, checked: true };
     const session = (await response.json()) as ServerSession;
     if (session.authed && session.user && session.expiresAt) {
       writeSession({ user: session.user, expiresAt: session.expiresAt });
     }
-    return session;
+    return { ...session, checked: true };
   } catch {
-    return { authed: false };
+    // Сетевой сбой не равен выходу: не уничтожаем рабочую cookie из-за
+    // кратковременного обрыва мобильной сети.
+    return { authed: false, checked: false };
   } finally {
     window.clearTimeout(timer);
   }

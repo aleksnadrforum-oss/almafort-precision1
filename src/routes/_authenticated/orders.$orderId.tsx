@@ -212,7 +212,15 @@ function OrderPage() {
                   </li>
                 ))}
               </ul>
+              {/* Комментарий выводим только при наличии — пустых блоков быть не должно. */}
+              {typeof data.order.comment === "string" && data.order.comment.trim() !== "" && (
+                <div className="mt-4 border-l-4 border-zinc-300 bg-zinc-50 p-3 text-sm text-zinc-700">
+                  <p className="font-semibold">Ваш комментарий к заявке</p>
+                  <p className="mt-1 whitespace-pre-line">{data.order.comment.trim()}</p>
+                </div>
+              )}
             </section>
+
           </>
         )}
       </main>

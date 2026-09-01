@@ -8,11 +8,10 @@
  * переменными окружения, а код вызова остаётся один.
  *
  * Переменные (.env):
- *   AI_PROVIDER              = lovable | openai | gemini      (общий режим)
+ *   AI_PROVIDER              = openai | gemini                 (общий режим)
  *   AI_PROVIDER_VISION       = ...                            (переопределение для ИИ-камеры)
  *   AI_PROVIDER_CONFIGURATOR = ...                            (переопределение для конфигуратора)
  *
- *   LOVABLE_API_KEY   / LOVABLE_BASE_URL
  *   OPENAI_API_KEY    / OPENAI_BASE_URL    / OPENAI_MODEL     / OPENAI_VISION_MODEL
  *   GEMINI_API_KEY    / GEMINI_BASE_URL    / GEMINI_MODEL     / GEMINI_VISION_MODEL
  *
@@ -22,7 +21,7 @@
 import { secretValue } from "@/lib/vault.server";
 
 export type AiTask = "vision" | "configurator";
-export type AiProviderId = "lovable" | "openai" | "gemini";
+export type AiProviderId = "openai" | "gemini";
 
 export type AiUsage = { prompt_tokens: number; completion_tokens: number };
 
@@ -70,11 +69,6 @@ export class AiGatewayError extends Error {
 }
 
 const DEFAULTS = {
-  lovable: {
-    baseUrl: "https://ai.gateway.lovable.dev/v1",
-    model: "openai/gpt-5.6-sol",
-    visionModel: "google/gemini-3.6-flash",
-  },
   openai: {
     // Рег.облако (Reg.ru Cloud AI) — OpenAI-совместимый шлюз.
     // Пустое значение намеренно: resolveAi требует OPENAI_BASE_URL и никогда
@@ -98,11 +92,10 @@ const trimSlash = (url: string) => url.replace(/\/+$/, "");
 function providerFor(task: AiTask): AiProviderId {
   const explicit =
     env(task === "vision" ? "AI_PROVIDER_VISION" : "AI_PROVIDER_CONFIGURATOR") ?? env("AI_PROVIDER");
-  // По умолчанию — Рег.облако (OpenAI-совместимый режим), как только заданы
-  // OPENAI_BASE_URL/OPENAI_API_KEY. Шлюз Lovable остаётся запасным вариантом.
-  const fallback = env("OPENAI_BASE_URL") || env("OPENAI_API_KEY") ? "openai" : "lovable";
-  const raw = (explicit ?? fallback).toLowerCase();
-  return raw === "openai" || raw === "gemini" ? raw : "lovable";
+  // Единственный режим по умолчанию — собственный OpenAI-совместимый шлюз
+  // (OPENAI_BASE_URL + OPENAI_API_KEY). Платформенных фолбэков нет.
+  const raw = (explicit ?? "openai").toLowerCase();
+  return raw === "gemini" ? "gemini" : "openai";
 }
 
 type Resolved = {
@@ -146,15 +139,8 @@ export async function resolveAi(task: AiTask): Promise<Resolved> {
     };
   }
 
-  const apiKey = await secretValue("LOVABLE_API_KEY");
-  if (!apiKey) throw new AiUnavailableError();
-  return {
-    provider,
-    apiKey,
-    baseUrl: trimSlash(env("LOVABLE_BASE_URL") ?? d.baseUrl),
-    model: (isVision ? env("LOVABLE_VISION_MODEL") : null) ?? env("LOVABLE_MODEL") ??
-      (isVision ? d.visionModel : d.model),
-  };
+  // Недостижимо: providerFor возвращает только openai | gemini.
+  throw new AiUnavailableError();
 }
 
 /** Быстрая проверка для UI: сконфигурирован ли ИИ вообще. */
@@ -168,13 +154,6 @@ export async function aiConfigured(task: AiTask): Promise<boolean> {
 }
 
 function authHeaders(r: Resolved): Record<string, string> {
-  if (r.provider === "lovable") {
-    return {
-      Authorization: `Bearer ${r.apiKey}`,
-      "Lovable-API-Key": r.apiKey,
-      "X-Lovable-AIG-SDK": "fetch",
-    };
-  }
   // OpenAI и OpenAI-совместимые шлюзы (в т.ч. российские прокси и Gemini-compat).
   return { Authorization: `Bearer ${r.apiKey}` };
 }
@@ -275,78 +254,6 @@ async function chatCompletions(r: Resolved, req: AiRequest): Promise<AiResponse>
   };
 }
 
-/* ── Стратегия 2: Lovable AI Gateway /responses (SSE) ──────────────── */
-
-function asInputText(content: AiContent): string {
-  if (typeof content === "string") return content;
-  return content
-    .filter((p): p is AiTextPart => p.type === "text")
-    .map((p) => p.text)
-    .join("\n\n");
-}
-
-async function lovableResponses(r: Resolved, req: AiRequest): Promise<AiResponse> {
-  const body: Record<string, unknown> = {
-    model: r.model,
-    stream: true,
-    instructions: req.system,
-    input: [{ role: "user", content: [{ type: "input_text", text: asInputText(req.content) }] }],
-  };
-  if (req.jsonSchema) {
-    body["text"] = {
-      format: {
-        type: "json_schema",
-        name: req.jsonSchema.name,
-        strict: true,
-        schema: req.jsonSchema.schema,
-      },
-    };
-  }
-
-  const res = await postJson(r, "/responses", body, req.timeoutMs ?? 30_000, req.task);
-  if (!res.body) throw new AiGatewayError("Сервис конфигуратора временно недоступен", 502);
-
-  const reader = res.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = "";
-  let text = "";
-  const usage: AiUsage = { prompt_tokens: 0, completion_tokens: 0 };
-
-  for (;;) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    buffer += decoder.decode(value, { stream: true });
-    const lines = buffer.split("\n");
-    buffer = lines.pop() ?? "";
-    for (const line of lines) {
-      if (!line.startsWith("data:")) continue;
-      const payload = line.slice(5).trim();
-      if (!payload || payload === "[DONE]") continue;
-      try {
-        const event = JSON.parse(payload) as {
-          type?: string;
-          delta?: string;
-          response?: {
-            output_text?: string;
-            usage?: { input_tokens?: number; output_tokens?: number };
-          };
-        };
-        if (event.type === "response.output_text.delta" && typeof event.delta === "string") {
-          text += event.delta;
-        } else if (event.type === "response.completed") {
-          if (!text) text = event.response?.output_text ?? "";
-          usage.prompt_tokens = event.response?.usage?.input_tokens ?? usage.prompt_tokens;
-          usage.completion_tokens = event.response?.usage?.output_tokens ?? usage.completion_tokens;
-        }
-      } catch {
-        /* незакрытый фрагмент SSE */
-      }
-    }
-  }
-
-  return { text: text.trim(), usage, model: r.model, provider: r.provider };
-}
-
 /* ── Публичный вызов ───────────────────────────────────────────────── */
 
 /**
@@ -355,8 +262,6 @@ async function lovableResponses(r: Resolved, req: AiRequest): Promise<AiResponse
  */
 export async function aiComplete(req: AiRequest): Promise<AiResponse> {
   const r = await resolveAi(req.task);
-  // Мультимодальный вход и «сырые» шлюзы удобнее гонять через chat/completions;
-  // /responses оставляем только для конфигуратора на шлюзе Lovable.
-  if (r.provider === "lovable" && req.task === "configurator") return lovableResponses(r, req);
+  // Все вызовы идут единым OpenAI-совместимым протоколом /chat/completions.
   return chatCompletions(r, req);
 }

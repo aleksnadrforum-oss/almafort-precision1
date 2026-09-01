@@ -798,11 +798,11 @@ export function ProductSheet({
                   {calcState === "ready" && (
                     <ul className="mt-3 space-y-2 text-sm">
                       {logistics.map((l) => (
-                        <li key={l.carrier} className="flex justify-between gap-4">
-                          <span className="text-muted-foreground">
+                        <li key={l.carrier} className="flex items-center justify-between gap-2">
+                          <span className="min-w-0 flex-1 text-muted-foreground">
                             {l.label} · {l.days} дн.
                           </span>
-                          <span className="font-medium tabular-nums text-foreground">
+                          <span className="whitespace-nowrap flex-shrink-0 font-medium tabular-nums text-foreground">
                             {l.price.toLocaleString("ru-RU")} ₽
                           </span>
                         </li>

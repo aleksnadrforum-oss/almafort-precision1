@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { X } from "lucide-react";
 
 /**
@@ -124,14 +125,13 @@ function PolicyModal({ onClose }: { onClose: () => void }) {
           >
             Понятно
           </button>
-          <a
-            href="/privacy"
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            to="/privacy"
+            onClick={onClose}
             className="text-sm font-medium underline underline-offset-2 hover:text-primary"
           >
             Полный текст политики
-          </a>
+          </Link>
         </div>
       </div>
     </div>

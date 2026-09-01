@@ -417,6 +417,8 @@ export function ProductSheet({
     toast.error(`Доступно для заказа только ${Math.max(0, maxBatch).toLocaleString("ru-RU")} шт.`);
     return Math.max(0, maxBatch);
   };
+  const ctaQty = Math.max(1, Math.floor(batch) || 1);
+  const ctaTotal = product ? lineTotal(product, ctaQty) : 0;
   const [bulkOpen, setBulkOpen] = useState(false);
   const [quoteOpen, setQuoteOpen] = useState(false);
   const [CadViewer, setCadViewer] = useState<ComponentType<CadViewerProps> | null>(null);

@@ -183,12 +183,24 @@
     {
       "id": "fbf6c744-4069-4a56-83b3-86c803ea1774",
       "created_at": "2026-08-22T14:34:50.592Z",
-      "updated_at": "2026-09-01T08:02:52.383Z",
+      "updated_at": "2026-09-01T08:11:14.701Z",
       "user_id": "7602a0fc-f63d-4482-9aa3-c50b6e3a7677",
       "lines": [
         {
           "sku": "ZGV-20x40",
           "quantity": 100
+        },
+        {
+          "sku": "ZGD-EX",
+          "quantity": 5000
+        },
+        {
+          "sku": "ZGD-EV",
+          "quantity": 20000
+        },
+        {
+          "sku": "OP-H50",
+          "quantity": 500
         }
       ]
     },

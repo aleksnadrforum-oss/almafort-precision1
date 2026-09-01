@@ -34,6 +34,7 @@ const TABLES = [
   "password_resets",
   "otp_codes",
   "crm_queue",
+  "inventory_holds",
 ] as const;
 
 function dbPath() {

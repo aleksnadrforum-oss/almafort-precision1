@@ -30,6 +30,7 @@ import {
   deliveryCost,
   linePrice,
   lineKey,
+  setServerAvailability,
   useCart,
   type Carrier,
   type PendingRow,

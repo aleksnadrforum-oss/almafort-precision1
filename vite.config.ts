@@ -57,7 +57,7 @@ export default defineConfig({
       injectRegister: null,
       filename: "sw.js",
       manifest: false,
-      outDir: "dist/client",
+      outDir: ".output/public",
       devOptions: { enabled: false },
       workbox: {
         globPatterns: ["**/*.{js,css,woff2,png,svg,webp,ico}"],
@@ -68,15 +68,10 @@ export default defineConfig({
         clientsClaim: true,
         skipWaiting: true,
         runtimeCaching: [
-          {
-            urlPattern: ({ request }: { request: Request }) => request.mode === "navigate",
-            handler: "NetworkFirst",
-            options: {
-              cacheName: "almafort-pages",
-              networkTimeoutSeconds: 5,
-              expiration: { maxEntries: 40, maxAgeSeconds: 60 * 60 * 24 },
-            },
-          },
+          // HTML-навигации НИКОГДА не кешируются: страницы отдаются SSR-стримом,
+          // и повторная выдача сохранённого/усечённого ответа ломает Safari
+          // («не удаётся произвести анализ ответа») при переходе в /catalog.
+
           {
             urlPattern: ({ request }: { request: Request }) =>
               ["style", "script", "worker", "font"].includes(request.destination),

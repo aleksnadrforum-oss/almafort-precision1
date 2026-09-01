@@ -33,8 +33,15 @@ async function unregisterAppWorkers() {
   );
 }
 
+/** Сносит кеш HTML-навигаций от старых версий воркера (ломал Safari). */
+async function dropLegacyPageCache() {
+  if (typeof caches === "undefined") return;
+  await caches.delete("almafort-pages").catch(() => undefined);
+}
+
 export function registerServiceWorker() {
   if (typeof window === "undefined" || !("serviceWorker" in navigator)) return;
+  void dropLegacyPageCache();
   if (isBlockedContext()) {
     void unregisterAppWorkers();
     return;
@@ -43,3 +50,4 @@ export function registerServiceWorker() {
     void navigator.serviceWorker.register(SW_URL, { scope: "/" }).catch(() => undefined);
   });
 }
+

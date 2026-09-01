@@ -86,7 +86,8 @@ function CatalogPage() {
   useEffect(() => {
     const sync = () => {
       const params = new URLSearchParams(window.location.search);
-      const sku = params.get("product");
+      const sku = params.get("product") ?? params.get("sku") ?? params.get("item");
+
       if (!sku) {
         setProduct(null);
         setColorHex(undefined);

@@ -209,7 +209,8 @@ export function SpecReview() {
         )}
       </div>
 
-      <ul className="divide-y divide-border">
+      {/* Мобильные карточки (<md) / классические строки спецификации (>=md) */}
+      <ul className="px-4 py-3 md:divide-y md:divide-border md:px-0 md:py-0">
         {rows.map((r) => {
           const status = r.uiStatus ?? deriveUiStatus(r);
           const stock = stockOf(r.sku);
@@ -218,11 +219,16 @@ export function SpecReview() {
           const partial = Boolean(r.sku) && r.quantity > stock;
           const selectClass = `${STATUS_SELECT[status]} mt-2 h-11 w-full max-w-xs rounded-sm bg-background px-2 text-base`;
           return (
-            <li key={r.id} className={`px-5 py-4 ${STATUS_BG[status]}`}>
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm text-muted-foreground">{r.originalString}</p>
-                  <p className="mt-0.5 text-base font-semibold text-foreground">
+            <li
+              key={r.id}
+              className={`mb-3 rounded-xl border border-gray-100 p-4 shadow-sm md:mb-0 md:rounded-none md:border-0 md:px-5 md:py-4 md:shadow-none ${STATUS_BG[status]}`}
+            >
+              <div className="flex flex-col md:flex-row md:flex-wrap md:items-start md:justify-between md:gap-3">
+                <div className="w-full min-w-0 md:w-auto md:flex-1">
+                  <p className="break-words text-left text-sm leading-snug text-muted-foreground [overflow-wrap:break-word] [word-break:normal]">
+                    {r.originalString}
+                  </p>
+                  <p className="mt-0.5 w-full break-words text-left text-sm font-medium leading-snug text-foreground [overflow-wrap:break-word] [word-break:normal] md:text-base md:font-semibold">
                     {r.sku ? `${r.name} (${r.sku})` : "Позиция не найдена в каталоге"}
                   </p>
                   {r.sku && r.color && (
@@ -302,21 +308,22 @@ export function SpecReview() {
                   )}
                 </div>
 
-                <div className="flex items-center gap-3">
+                {/* Нижняя панель карточки на мобильных: количество, сумма, удаление */}
+                <div className="mt-3 flex items-center justify-between gap-2 border-t border-gray-100 pt-2.5 md:mt-0 md:justify-end md:gap-3 md:border-0 md:pt-0">
                   <input
-                    className="h-11 w-28 rounded-sm border border-[#D1D5DB] bg-background px-2 text-base"
+                    className="h-9 w-24 rounded-lg border border-gray-200 bg-background px-2 text-center text-sm md:h-11 md:w-28 md:rounded-sm md:border-[#D1D5DB] md:text-base"
                     inputMode="numeric"
                     type="text"
                     value={r.quantity ? String(r.quantity) : ""}
                     onChange={(e) => setQty(r, e.target.value)}
                     aria-label="Количество"
                   />
-                  <span className="w-28 text-right text-sm font-semibold text-foreground">
+                  <span className="whitespace-nowrap text-base font-semibold text-foreground md:w-32 md:text-right md:text-sm">
                     {r.sku ? formatPrice(linePrice(r.sku, r.quantity).sum) : "—"}
                   </span>
                   <button
                     type="button"
-                    className="text-muted-foreground transition-colors hover:text-primary"
+                    className="p-2 text-gray-400 transition hover:text-red-600 active:scale-95"
                     onClick={() => remove(r.id)}
                     aria-label="Удалить строку"
                   >

@@ -69,7 +69,7 @@ export default defineConfig({
     localAssetsPlugin,
     tailwindcss(),
     tsConfigPaths({ projects: ["./tsconfig.json"] }),
-    tanstackStart({ ssr: true }),
+    tanstackStart(),
     nitro({ preset: process.env["NITRO_PRESET"] || "node-server" }),
     viteReact(),
     VitePWA({

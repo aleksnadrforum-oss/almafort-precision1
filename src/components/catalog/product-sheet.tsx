@@ -841,7 +841,7 @@ export function ProductSheet({
                         }`,
                       );
                     }}
-                    className={`inline-flex min-h-[48px] w-full cursor-pointer items-center justify-center rounded-xl px-4 text-sm font-semibold transition-colors duration-200 md:mt-6 disabled:cursor-not-allowed ${
+                    className={`inline-flex min-h-[48px] w-full cursor-pointer items-center justify-center rounded-xl px-4 text-sm font-semibold transition-colors duration-200 md:mt-6 md:rounded-sm md:px-6 disabled:cursor-not-allowed ${
                       outOfStock
                         ? "bg-[#E5E7EB] text-[#9CA3AF]"
                         : "bg-primary text-primary-foreground hover:opacity-90"

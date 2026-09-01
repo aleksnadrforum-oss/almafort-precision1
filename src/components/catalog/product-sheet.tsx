@@ -677,7 +677,7 @@ export function ProductSheet({
               </div>
 
 
-              <div>
+              <div className="max-md:pb-28">
                 <dl className="scrollbar-thin grid max-h-[350px] grid-cols-2 gap-x-6 gap-y-3 overflow-y-auto border-b border-border pb-6 pr-1 text-sm">
                   {normalizeSpecs(
                     (product.specRows

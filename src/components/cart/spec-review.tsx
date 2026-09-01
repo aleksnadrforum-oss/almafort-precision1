@@ -353,18 +353,20 @@ export function SpecReview() {
       </footer>
 
       <Dialog open={conflict} onOpenChange={(o) => !o && setConflict(false)}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>В вашей корзине уже есть товары</DialogTitle>
+            <DialogTitle className="text-left text-base font-bold leading-snug pr-3">
+              В вашей корзине уже есть товары
+            </DialogTitle>
           </DialogHeader>
-          <p className="text-sm text-muted-foreground">
+          <DialogBody className="py-2 text-sm text-muted-foreground">
             Очистить текущую корзину или добавить позиции из спецификации к существующим? Совпадающие
             артикулы будут просуммированы.
-          </p>
-          <div className="mt-4 flex flex-wrap gap-2">
+          </DialogBody>
+          <DialogFooter className="sm:flex-col">
             <button
               type="button"
-              className={`${btn} bg-primary text-primary-foreground`}
+              className="h-11 w-full cursor-pointer rounded-xl bg-red-600 text-sm font-medium text-white transition-colors active:bg-red-700"
               onClick={() => {
                 setConflict(false);
                 doCommit("merge");
@@ -374,7 +376,7 @@ export function SpecReview() {
             </button>
             <button
               type="button"
-              className={`${btn} border border-border bg-background text-foreground`}
+              className="h-11 w-full cursor-pointer rounded-xl border border-gray-200 bg-white text-sm font-medium text-gray-700 transition-colors active:bg-gray-100"
               onClick={() => {
                 setConflict(false);
                 doCommit("replace");
@@ -382,7 +384,8 @@ export function SpecReview() {
             >
               Очистить и заменить
             </button>
-          </div>
+          </DialogFooter>
+
         </DialogContent>
       </Dialog>
 

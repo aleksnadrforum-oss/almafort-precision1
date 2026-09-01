@@ -284,11 +284,13 @@ export function CadViewer({
   const glRef = useRef<{
     dispose: () => void;
     forceContextLoss?: () => void;
+    getContext?: () => (WebGLRenderingContext | WebGL2RenderingContext) | null;
     renderLists?: { dispose: () => void };
   } | null>(null);
 
   // Без ручной очистки серия открытий карточек выжирает WebGL-контексты на мобильных.
   // Освобождаем контекст асинхронно: drei успевает удалить свои render-target'ы.
+  // Проверка isContextLost исключает ошибку "context already lost" в консоли.
   useEffect(
     () => () => {
       const gl = glRef.current;
@@ -296,6 +298,8 @@ export function CadViewer({
       if (!gl) return;
       setTimeout(() => {
         try {
+          const ctx = gl.getContext?.();
+          if (ctx && ctx.isContextLost()) return;
           gl.renderLists?.dispose();
           gl.dispose();
           gl.forceContextLoss?.();

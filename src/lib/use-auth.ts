@@ -7,9 +7,11 @@
  */
 import { useCallback, useEffect, useState } from "react";
 import {
+  clearSession,
   currentUser,
   getServerSession,
   onAuthChange,
+  writeSession,
   type ServerSession,
   type SessionUser,
 } from "@/lib/session";

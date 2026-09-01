@@ -15,6 +15,7 @@ export const Route = createFileRoute("/api/auth/otp-verify")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        try {
         let raw: unknown;
         try {
           raw = await request.json();
@@ -27,7 +28,14 @@ export const Route = createFileRoute("/api/auth/otp-verify")({
         }
 
         const { verifyOtp } = await import("@/lib/otp.server");
-        const result = await verifyOtp(parsed.data.email, parsed.data.code);
+        // Жёсткий предохранитель: проверка кода — операция на доли секунды.
+        // Если хранилище зависло, отвечаем ошибкой, а не держим соединение.
+        const result = await Promise.race([
+          verifyOtp(parsed.data.email, parsed.data.code),
+          new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error("verify-timeout")), 8000),
+          ),
+        ]);
 
         if (result.status === "expired") {
           return Response.json(
@@ -54,6 +62,7 @@ export const Route = createFileRoute("/api/auth/otp-verify")({
 
         return Response.json(
           {
+            success: true,
             status: "ok",
             isNew: result.isNew,
             expiresAt: result.expiresAt,
@@ -66,6 +75,13 @@ export const Route = createFileRoute("/api/auth/otp-verify")({
             },
           },
         );
+        } catch (e) {
+          console.error("[otp-verify] сбой проверки кода", e);
+          return Response.json(
+            { success: false, status: "error", error: "Неверный или устаревший код" },
+            { status: 500 },
+          );
+        }
       },
     },
   },

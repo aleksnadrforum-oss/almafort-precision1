@@ -44,6 +44,15 @@
       "password_hash": "scrypt:f239944b5492287bf74bb1265ee1bbf8:3901032e7d2aaf607ed16f65fdc70ffa4d64eace23d0f128992fa2ba404e36af71cc56172b0a87cd1fac229001797b0ac9876cf261f5ac0dbd7de56ce1434110",
       "full_name": null,
       "email_verified": true
+    },
+    {
+      "id": "e799de24-b9eb-4cd4-b4c1-45c352673a43",
+      "created_at": "2026-09-01T15:36:44.117Z",
+      "updated_at": "2026-09-01T15:36:44.117Z",
+      "email": "qa-test@example.com",
+      "password_hash": "scrypt:de2d59b911731b78e3e5a831353b0499:a09d99cd717a631af09808d6a8eca78f350be5ea76dd02b18d2898b0d5bd3236fde360eb266e61630f790d8669214ddebb1abcab6a71f46cc9aeea9f37356117",
+      "full_name": null,
+      "email_verified": true
     }
   ],
   "profiles": [
@@ -79,6 +88,13 @@
       "id": "f54d8aea-02ae-4b9d-b333-f58d2baa228d",
       "created_at": "2026-08-22T16:44:11.488Z",
       "updated_at": "2026-08-22T16:44:11.488Z",
+      "full_name": null,
+      "phone": null
+    },
+    {
+      "id": "e799de24-b9eb-4cd4-b4c1-45c352673a43",
+      "created_at": "2026-09-01T15:36:44.121Z",
+      "updated_at": "2026-09-01T15:36:44.121Z",
       "full_name": null,
       "phone": null
     }
@@ -183,7 +199,7 @@
     {
       "id": "fbf6c744-4069-4a56-83b3-86c803ea1774",
       "created_at": "2026-08-22T14:34:50.592Z",
-      "updated_at": "2026-09-01T15:21:04.715Z",
+      "updated_at": "2026-09-01T15:34:33.023Z",
       "user_id": "7602a0fc-f63d-4482-9aa3-c50b6e3a7677",
       "lines": [
         {
@@ -795,19 +811,7 @@
       "used": false
     }
   ],
-  "otp_codes": [
-    {
-      "id": "fedf4b5d-906b-466e-a949-7b40db5331f7",
-      "created_at": "2026-09-01T13:15:50.530Z",
-      "updated_at": "2026-09-01T13:15:50.530Z",
-      "email": "sashamoskalenko0@gmail.com",
-      "ip": "195.200.17.34",
-      "salt": "e2a7d67e9a10c661266d4a3ff3086eb3",
-      "code_hash": "3629484e3ec70ac3624b808d58c202b0eb2bee65428ee844b25707259eb285c0c50787147c6a579921cbe6485f8ba0ea1da81fa390fc39b84068c43894ab02c2",
-      "attempts": 0,
-      "expires_at": "2026-09-01T13:20:50.530Z"
-    }
-  ],
+  "otp_codes": [],
   "crm_queue": [],
   "inventory_holds": [
     {

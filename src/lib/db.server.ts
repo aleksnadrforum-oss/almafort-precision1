@@ -70,11 +70,18 @@ async function persist() {
   await rename(tmp, target);
 }
 
-/** Записи сериализуются, чтобы параллельные запросы не затирали файл. */
+/**
+ * Записи сериализуются, чтобы параллельные запросы не затирали файл.
+ * Сбой диска (нет прав на DATA_DIR, кончилось место) НЕ должен ронять
+ * или подвешивать HTTP-обработчик: данные остаются в памяти, ошибка — в лог.
+ */
 function queueWrite() {
-  writeChain = writeChain.then(persist, persist);
+  writeChain = writeChain.then(persist, persist).catch((e) => {
+    console.error("[db] не удалось записать хранилище:", (e as Error)?.message);
+  });
   return writeChain;
 }
+
 
 export type DbResult<T> = { data: T; error: { message: string } | null; count?: number };
 

@@ -148,13 +148,14 @@ function AuthPage() {
       });
       window.clearTimeout(timer);
       const body = (await res.json().catch(() => ({}))) as {
+        success?: boolean;
         status?: string;
         error?: string;
         user?: SessionUser;
         expiresAt?: number;
       };
 
-      if (body.status === "ok" && body.user && body.expiresAt) {
+      if ((body.success || body.status === "ok") && body.user && body.expiresAt) {
         writeSession({ user: body.user, expiresAt: body.expiresAt });
         invalidateSessionCache();
         // Жёсткий переход: браузер гарантированно отправит cookie almafort_session

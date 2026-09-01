@@ -250,6 +250,45 @@ function FacetPage() {
   const base = facets.path;
   const assetGroups = useAssetGroups();
 
+  // Deep linking: ?sku=ZGV-20x40 открывает карточку товара при загрузке.
+  const [active, setActive] = useState<Product | null>(null);
+
+  const openProduct = useCallback((p: Product) => {
+    setActive(p);
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      url.searchParams.set("sku", p.sku);
+      window.history.replaceState({}, "", `${url.pathname}${url.search}`);
+    }
+  }, []);
+
+  const closeProduct = useCallback(() => {
+    setActive(null);
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      url.searchParams.delete("sku");
+      window.history.replaceState({}, "", `${url.pathname}${url.search}`);
+    }
+  }, []);
+
+  useEffect(() => {
+    const sync = () => {
+      const sku = new URLSearchParams(window.location.search).get("sku");
+      if (!sku) {
+        setActive(null);
+        return;
+      }
+      const found =
+        items.find((p) => p.sku.toLowerCase() === sku.toLowerCase()) ??
+        PRODUCTS.find((p) => p.sku.toLowerCase() === sku.toLowerCase());
+      if (found) setActive(found);
+    };
+    sync();
+    window.addEventListener("popstate", sync);
+    return () => window.removeEventListener("popstate", sync);
+  }, [items]);
+
+
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <SiteHeader />

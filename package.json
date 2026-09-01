@@ -44,6 +44,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
+    "@lovable": {},
     "@lovable.dev/vite-tanstack-config": "2.13.1",
     "@types/node": "^22.16.5",
     "@types/pdfmake": "^0.3.3",

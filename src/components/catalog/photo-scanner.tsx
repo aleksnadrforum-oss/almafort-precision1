@@ -38,6 +38,8 @@ type Verdict = {
   hands_present: boolean;
   low_light: boolean;
   markers: string[];
+  /** В кадре несколько разных деталей — точное распознавание невозможно. */
+  multiple_objects_detected?: boolean;
 };
 
 type Result =
@@ -275,7 +277,15 @@ export function PhotoScanner({ open, onClose }: { open: boolean; onClose: () => 
       if (!json) throw new Error("Сервер вернул некорректный ответ");
       const data = json as unknown as Result;
       setResult(data);
-      if (data.scenario === "notfound") {
+      if (data.verdict?.multiple_objects_detected) {
+        toast(
+          "В кадре слишком много объектов. Пожалуйста, оставьте только одну деталь для точного распознавания.",
+          {
+            duration: 9000,
+            className: "!bg-amber-50 !border !border-amber-200 !text-amber-900",
+          },
+        );
+      } else if (data.scenario === "notfound") {
         // Строгий серый B2B-тост: рандомный товар вместо отказа выдавать запрещено.
         toast(NOT_RECOGNIZED, {
           duration: 9000,

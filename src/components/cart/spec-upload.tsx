@@ -47,6 +47,7 @@ async function signatureOk(file: File, ext: string): Promise<boolean> {
 
 export function SpecUpload({ compact = false }: { compact?: boolean }) {
   const setParsing = useCart((s) => s.setParsing);
+  const setProgress = useCart((s) => s.setParseProgress);
   const setReview = useCart((s) => s.setReview);
   const parsing = useCart((s) => s.parsing);
 
@@ -70,19 +71,47 @@ export function SpecUpload({ compact = false }: { compact?: boolean }) {
         return;
       }
       setParsing(true);
+      setProgress(2);
+      // Загрузка и разбор идут в фоне: интерфейс не блокируется, а прогресс
+      // считается по реально отправленным байтам, затем — по фазе анализа.
+      let tick: ReturnType<typeof setInterval> | null = null;
       try {
         const body = new FormData();
         body.append("file", file);
-        const res = await fetch("/api/parser/upload", { method: "POST", body });
-        const json = await res.json();
-        if (!res.ok) throw new Error(json?.error ?? BAD_FORMAT);
+        const json = await new Promise<Record<string, unknown> & { error?: string }>((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          xhr.open("POST", "/api/parser/upload");
+          xhr.upload.onprogress = (e) => {
+            if (e.lengthComputable) setProgress(2 + (e.loaded / e.total) * 38);
+          };
+          xhr.upload.onload = () => {
+            let p = 40;
+            tick = setInterval(() => {
+              p = Math.min(95, p + Math.max(0.6, (95 - p) * 0.08));
+              setProgress(p);
+            }, 220);
+          };
+          xhr.onerror = () => reject(new Error(BAD_FORMAT));
+          xhr.onload = () => {
+            if (tick) clearInterval(tick);
+            try {
+              const parsed = JSON.parse(xhr.responseText || "{}");
+              if (xhr.status >= 200 && xhr.status < 300) resolve(parsed);
+              else reject(new Error(parsed?.error ?? BAD_FORMAT));
+            } catch {
+              reject(new Error(BAD_FORMAT));
+            }
+          };
+          xhr.send(body);
+        });
+        setProgress(100);
         setReview({
-          fileName: json.fileName ?? file.name,
+          fileName: (json.fileName as string) ?? file.name,
           truncated: Boolean(json.truncated),
           columnMap: json.columnMap ?? null,
           rows: json.rows ?? [],
         });
-        const { matched = 0, rowsScanned = 0 } = json;
+        const { matched = 0, rowsScanned = 0 } = json as { matched?: number; rowsScanned?: number };
         toast.success(`Обработано ${rowsScanned} строк: ${matched} распознано`, {
           description: "Проверьте позиции перед переносом в корзину.",
           action: {
@@ -93,11 +122,12 @@ export function SpecUpload({ compact = false }: { compact?: boolean }) {
           },
         });
       } catch (e) {
+        if (tick) clearInterval(tick);
         setParsing(false);
         toast.error(e instanceof Error ? e.message : BAD_FORMAT);
       }
     },
-    [setReview, setParsing],
+    [setReview, setParsing, setProgress],
   );
 
   const onDropRejected = useCallback((rejections: FileRejection[]) => {
@@ -174,9 +204,18 @@ export function SpecUpload({ compact = false }: { compact?: boolean }) {
 }
 
 export function ParsingSkeleton() {
+  const progress = useCart((s) => s.parseProgress);
   return (
     <div className="rounded-lg border border-border bg-card p-6">
-      <p className="text-sm font-semibold text-foreground">Распознаем номенклатуру...</p>
+      <p className="text-sm font-semibold text-foreground">
+        Анализ спецификации: {Math.round(progress)}%
+      </p>
+      <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-[#E5E7EB]">
+        <div
+          className="h-full rounded-full bg-primary transition-[width] duration-200"
+          style={{ width: `${Math.max(3, Math.min(100, progress))}%` }}
+        />
+      </div>
       <div className="mt-5 space-y-3">
         {[0, 1, 2, 3, 4].map((i) => (
           <div key={i} className="flex items-center gap-4">

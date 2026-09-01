@@ -165,6 +165,8 @@ type State = {
   /** Сотрудник, удерживающий блокировку редактирования спецификации. */
   lockedBy: string | null;
   parsing: boolean;
+  /** Прогресс разбора спецификации, 0–100. */
+  parseProgress: number;
   lines: CartLine[];
   pending: PendingRow[];
   review: ReviewState | null;
@@ -178,6 +180,7 @@ type State = {
   setQuoting: (v: boolean) => void;
   setQuoteError: (e: string | null) => void;
   setParsing: (v: boolean) => void;
+  setParseProgress: (v: number) => void;
   bindOrganization: (organizationId: string | null, userId: string | null) => void;
   applyParse: (payload: ParsePayload) => void;
   setReview: (r: ReviewState | null) => void;
@@ -218,6 +221,7 @@ export const useCart = create<State>()(
   organizationId: null,
   lockedBy: null,
   parsing: false,
+  parseProgress: 0,
   lines: [],
   pending: [],
   review: null,
@@ -262,7 +266,9 @@ export const useCart = create<State>()(
   setQuoting: (quoting) => set({ quoting }),
   setQuoteError: (quoteError) => set({ quoteError, quotes: [] }),
 
-  setParsing: (v) => set({ parsing: v }),
+  setParsing: (v) => set({ parsing: v, parseProgress: v ? 0 : 100 }),
+
+  setParseProgress: (v) => set({ parseProgress: Math.max(0, Math.min(100, Math.round(v))) }),
 
   bindOrganization: (organizationId, userId) =>
     set((s) => ({

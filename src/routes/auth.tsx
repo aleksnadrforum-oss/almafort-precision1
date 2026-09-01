@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { Loader2, Mail, ShieldCheck } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { BackLink } from "@/components/back-link";
-import { readSession, writeSession, type SessionUser } from "@/lib/session";
+import { getServerSession, writeSession, type SessionUser } from "@/lib/session";
 import { ConsentCheckbox } from "@/components/consent-checkbox";
 
 const emailOk = (v: string) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v.trim());
@@ -45,7 +45,13 @@ function AuthPage() {
   const inputs = useRef<Array<HTMLInputElement | null>>([]);
 
   useEffect(() => {
-    if (readSession()) window.location.replace("/cabinet");
+    let active = true;
+    void getServerSession().then((session) => {
+      if (active && session.authed) window.location.replace("/cabinet");
+    });
+    return () => {
+      active = false;
+    };
   }, []);
 
 
@@ -72,14 +78,16 @@ function AuthPage() {
     }
     setBusy(true);
     try {
+      const controller = new AbortController();
+      const timer = window.setTimeout(() => controller.abort(), 30_000);
       const res = await fetch("/api/auth/otp-request", {
         method: "POST",
         headers: { "content-type": "application/json" },
         credentials: "same-origin",
-        // Без таймаута зависшая сеть = вечный спиннер на кнопке.
-        signal: AbortSignal.timeout(30_000),
+        signal: controller.signal,
         body: JSON.stringify({ email: email.trim().toLowerCase() }),
       });
+      window.clearTimeout(timer);
       const body = (await res.json().catch(() => ({}))) as {
         error?: string;
         retryAfter?: number;
@@ -99,7 +107,7 @@ function AuthPage() {
       setStep("code");
       toast.success(`Код отправлен на ${email.trim()}`);
     } catch (e) {
-      const slow = (e as Error)?.name === "TimeoutError";
+      const slow = (e as Error)?.name === "TimeoutError" || (e as Error)?.name === "AbortError";
       toast.error(
         slow
           ? "Сервер не ответил за 30 секунд. Повторите попытку."
@@ -128,13 +136,16 @@ function AuthPage() {
     setBusy(true);
     setCodeError(null);
     try {
+      const controller = new AbortController();
+      const timer = window.setTimeout(() => controller.abort(), 30_000);
       const res = await fetch("/api/auth/otp-verify", {
         method: "POST",
         headers: { "content-type": "application/json" },
         credentials: "same-origin",
-        signal: AbortSignal.timeout(30_000),
+        signal: controller.signal,
         body: JSON.stringify({ email: email.trim().toLowerCase(), code }),
       });
+      window.clearTimeout(timer);
       const body = (await res.json().catch(() => ({}))) as {
         status?: string;
         error?: string;
@@ -161,7 +172,7 @@ function AuthPage() {
       failCode(body.error ?? "Неверный код");
     } catch (e) {
       failCode(
-        (e as Error)?.name === "TimeoutError"
+        (e as Error)?.name === "TimeoutError" || (e as Error)?.name === "AbortError"
           ? "Сервер не ответил за 30 секунд. Повторите попытку."
           : "Сеть недоступна. Повторите попытку.",
       );

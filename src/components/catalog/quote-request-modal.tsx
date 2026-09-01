@@ -71,7 +71,7 @@ export function QuoteRequestModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+      className="fixed inset-0 z-[100] flex flex-col justify-end bg-black/60 p-0 backdrop-blur-sm sm:justify-center sm:items-center sm:p-4"
       role="presentation"
       onClick={onClose}
     >
@@ -80,17 +80,17 @@ export function QuoteRequestModal({
         aria-modal="true"
         aria-label="Запросить индивидуальный расчет"
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-[420px] rounded-lg bg-card p-7"
+        className="relative flex max-h-[92dvh] w-full flex-col overflow-y-auto overscroll-contain rounded-t-2xl bg-card p-5 pb-[max(20px,env(safe-area-inset-bottom))] shadow-2xl sm:max-w-[420px] sm:rounded-2xl sm:p-7"
       >
         <button
           type="button"
           aria-label="Закрыть"
           onClick={onClose}
-          className="absolute right-4 top-4 cursor-pointer text-muted-foreground hover:text-foreground"
+          className="absolute right-4 top-4 grid h-9 w-9 !min-h-0 cursor-pointer place-items-center rounded-full bg-gray-100 text-gray-500 transition-all hover:text-gray-800 active:scale-95"
         >
           <X className="size-5" strokeWidth={1.75} />
         </button>
-        <h3 className="pr-8 text-lg font-bold text-foreground [overflow-wrap:anywhere]">
+        <h3 className="pr-12 text-left text-base font-bold leading-snug text-foreground sm:text-lg [overflow-wrap:anywhere]">
           Запросить индивидуальный расчет
         </h3>
         <p className="mt-2 text-sm text-muted-foreground [overflow-wrap:anywhere]">
@@ -161,7 +161,7 @@ export function QuoteRequestModal({
           type="button"
           onClick={() => void submit()}
           disabled={busy}
-          className="mt-5 flex w-full cursor-pointer items-center justify-center gap-2 rounded-sm bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+          className="mt-5 flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-primary px-4 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {busy && <Loader2 className="size-4 animate-spin" strokeWidth={2} />}
           Отправить запрос

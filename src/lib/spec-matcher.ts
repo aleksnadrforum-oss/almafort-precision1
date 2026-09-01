@@ -275,11 +275,9 @@ export function matchRow(rawName: string, quantity: number): MatchResult {
     const hit = triggers.find((t) => triggerHit(query, t));
     if (!hit) continue;
     if (leadGroup) {
-      const at = query.indexOf(hit);
-      // «под евровинт», «для эксцентрика» — это признак совместимости, а не сам артикул.
-      const prefix = at > 0 ? query.slice(Math.max(0, at - 5), at) : "";
-      if (/(под|для)\s$/.test(prefix)) continue;
       const direct = bySku.get(sku.toLowerCase());
+      // Товар из другого семейства: «под евровинт», «для профиля» — это признак
+      // совместимости, а не сам артикул.
       if (direct && !leadGroup.skus(direct)) continue;
     }
     const p = bySku.get(sku.toLowerCase());

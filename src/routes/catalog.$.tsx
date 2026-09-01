@@ -1,9 +1,10 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { useState } from "react";
-import { isOnRequest, type Product } from "@/data/catalog";
+import { useCallback, useEffect, useState } from "react";
+import { isOnRequest, PRODUCTS, type Product } from "@/data/catalog";
 import { BackLink } from "@/components/back-link";
 import { QuoteRequestModal } from "@/components/catalog/quote-request-modal";
 import { ProductThumb } from "@/components/catalog/product-thumb";
+import { ProductSheet } from "@/components/catalog/product-sheet";
 import { useAssetGroups } from "@/lib/asset-groups";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
@@ -24,14 +25,21 @@ import {
   slugify,
 } from "@/lib/seo";
 
-type Search = { page?: number | undefined; sort?: string | undefined; utm_source?: string | undefined };
+type Search = {
+  page?: number | undefined;
+  sort?: string | undefined;
+  utm_source?: string | undefined;
+  sku?: string | undefined;
+};
 
 export const Route = createFileRoute("/catalog/$")({
   validateSearch: (search: Record<string, unknown>): Search => ({
     page: search['page'] ? Number(search['page']) : undefined,
     sort: typeof search['sort'] === "string" ? search['sort'] : undefined,
     utm_source: typeof search['utm_source'] === "string" ? search['utm_source'] : undefined,
+    sku: typeof search['sku'] === "string" ? search['sku'] : undefined,
   }),
+
   loader: ({ params }): { facets: ReturnType<typeof parseFacetPath>; items: Product[] } => {
     const segments = (params._splat ?? "").split("/").filter(Boolean);
     const facets = parseFacetPath(segments);
@@ -98,14 +106,27 @@ function FacetNotFound() {
   );
 }
 
-function ProductCard({ p, thumb }: { p: Product; thumb?: string | null }) {
+function ProductCard({
+  p,
+  thumb,
+  onOpen,
+}: {
+  p: Product;
+  thumb?: string | null;
+  onOpen: (p: Product) => void;
+}) {
   const [quote, setQuote] = useState(false);
   const onRequest = isOnRequest(p) || p.is_service;
 
   return (
     <li className="flex flex-col justify-between rounded-2xl border border-border/80 bg-card p-4 shadow-sm transition-all duration-200 hover:shadow-md">
       <div>
-        <div className="mb-3 flex aspect-[4/3] w-full items-center justify-center overflow-hidden rounded-xl border border-border/70 bg-muted/40">
+        <button
+          type="button"
+          onClick={() => onOpen(p)}
+          aria-label={`Открыть карточку ${p.name}`}
+          className="mb-3 flex aspect-[4/3] w-full cursor-pointer items-center justify-center overflow-hidden rounded-xl border border-border/70 bg-muted/40 !min-h-0 p-0"
+        >
           {thumb ? (
             <img
               src={thumb}
@@ -116,18 +137,20 @@ function ProductCard({ p, thumb }: { p: Product; thumb?: string | null }) {
           ) : (
             <ProductThumb src={p.image_url} alt={p.name} className="max-h-full" />
           )}
-        </div>
+        </button>
 
         <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           {p.sku}
         </span>
 
         <h3
-          className="mt-1 line-clamp-3 text-base font-semibold leading-snug text-foreground"
+          className="mt-1 line-clamp-3 cursor-pointer text-base font-semibold leading-snug text-foreground transition-colors hover:text-primary"
           title={p.name}
+          onClick={() => onOpen(p)}
         >
           {p.name}
         </h3>
+
 
         <div className="mt-2.5 flex items-center justify-between gap-2 border-b border-border/70 pb-3 text-xs text-muted-foreground">
           <span className="min-w-0 truncate">{p.dims || "Габариты по запросу"}</span>
@@ -170,13 +193,15 @@ function ProductCard({ p, thumb }: { p: Product; thumb?: string | null }) {
             Запросить расчет
           </button>
         ) : (
-          <a
-            href={`/catalog?product=${encodeURIComponent(p.sku)}`}
+          <button
+            type="button"
+            onClick={() => onOpen(p)}
             className="flex h-10 shrink-0 items-center justify-center gap-1.5 rounded-xl bg-primary px-4 text-xs font-semibold text-primary-foreground shadow-sm transition-all duration-200 hover:opacity-90 active:scale-95"
           >
             Подробнее
-          </a>
+          </button>
         )}
+
       </div>
 
       {quote && <QuoteRequestModal sku={p.sku} name={p.name} onClose={() => setQuote(false)} />}
@@ -224,6 +249,45 @@ function FacetPage() {
   const page = Math.max(1, Number(Route.useSearch().page ?? 1) || 1);
   const base = facets.path;
   const assetGroups = useAssetGroups();
+
+  // Deep linking: ?sku=ZGV-20x40 открывает карточку товара при загрузке.
+  const [active, setActive] = useState<Product | null>(null);
+
+  const openProduct = useCallback((p: Product) => {
+    setActive(p);
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      url.searchParams.set("sku", p.sku);
+      window.history.replaceState({}, "", `${url.pathname}${url.search}`);
+    }
+  }, []);
+
+  const closeProduct = useCallback(() => {
+    setActive(null);
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      url.searchParams.delete("sku");
+      window.history.replaceState({}, "", `${url.pathname}${url.search}`);
+    }
+  }, []);
+
+  useEffect(() => {
+    const sync = () => {
+      const sku = new URLSearchParams(window.location.search).get("sku");
+      if (!sku) {
+        setActive(null);
+        return;
+      }
+      const found =
+        items.find((p) => p.sku.toLowerCase() === sku.toLowerCase()) ??
+        PRODUCTS.find((p) => p.sku.toLowerCase() === sku.toLowerCase());
+      if (found) setActive(found);
+    };
+    sync();
+    window.addEventListener("popstate", sync);
+    return () => window.removeEventListener("popstate", sync);
+  }, [items]);
+
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -290,7 +354,13 @@ function FacetPage() {
         <section className="mt-8" style={{ minHeight: 320 }} aria-label="Позиции раздела">
           <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 lg:gap-5 xl:grid-cols-4">
             {items.map((p) => (
-              <ProductCard key={p.sku} p={p} thumb={assetGroups.get(p.sku)?.images[0]?.thumb_url ?? null} />
+              <ProductCard
+                key={p.sku}
+                p={p}
+                thumb={assetGroups.get(p.sku)?.images[0]?.thumb_url ?? null}
+                onOpen={openProduct}
+              />
+
             ))}
           </ul>
         </section>
@@ -300,7 +370,9 @@ function FacetPage() {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd(crumbs)) }}
         />
       </main>
+      <ProductSheet product={active} onClose={closeProduct} />
       <SiteFooter />
+
     </div>
   );
 }

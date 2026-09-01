@@ -546,330 +546,344 @@ export function ProductSheet({
   return (
     <Dialog open={!!product} onOpenChange={(o) => !o && onClose()}>
       <DialogContent
-        className="max-h-[90dvh] max-w-6xl overflow-y-auto overscroll-contain max-md:inset-x-0 max-md:bottom-0 max-md:top-auto max-md:max-h-[92dvh] max-md:w-full max-md:max-w-none max-md:translate-x-0 max-md:translate-y-0 max-md:rounded-t-2xl max-md:rounded-b-none max-md:p-4 max-md:pb-0 max-md:data-[state=closed]:slide-out-to-bottom max-md:data-[state=open]:slide-in-from-bottom"
+        className="flex h-[90dvh] max-h-[90dvh] max-w-6xl flex-col overflow-hidden p-0 max-md:h-[92dvh] max-md:max-h-[92dvh] max-md:inset-x-0 max-md:bottom-0 max-md:top-auto max-md:w-full max-md:max-w-none max-md:translate-x-0 max-md:translate-y-0 max-md:rounded-t-2xl max-md:rounded-b-none max-md:data-[state=closed]:slide-out-to-bottom max-md:data-[state=open]:slide-in-from-bottom"
       >
-        {/* Индикатор шторки: подсказывает жест «свайп вниз» на мобильных */}
-        <div aria-hidden className="mx-auto -mt-1 h-1.5 w-12 shrink-0 rounded-full bg-border md:hidden" />
         {product && service && (
-          <>
-            <DialogHeader className="pr-14 text-left">
-              <DialogTitle className="text-left text-xl font-extrabold text-foreground">
-                {product.name}
-                <span className="ml-2 block text-sm font-normal text-muted-foreground sm:inline">
-                  {product.sku}
-                </span>
-              </DialogTitle>
-            </DialogHeader>
-
-            <div className="flex flex-col gap-6">
-              <CollapsibleText text={service.description} />
-
-              <dl className="grid grid-cols-1 gap-x-6 gap-y-3 border-t border-border pt-6 text-sm sm:grid-cols-2">
-                {service.specs.map(([k, v]) => (
-                  <div key={k}>
-                    <dt className="text-xs uppercase tracking-wider text-muted-foreground">{k}</dt>
-                    <dd className="mt-0.5 font-medium text-foreground">{v}</dd>
-                  </div>
-                ))}
-              </dl>
-
-              <button
-                type="button"
-                onClick={() => setQuoteOpen(true)}
-                className="mt-2 inline-flex min-h-[48px] w-full cursor-pointer items-center justify-center rounded-sm bg-primary px-6 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
-              >
-                Расчёт
-              </button>
+          <div className="flex h-full flex-col overflow-hidden">
+            {/* 1. Хедер */}
+            <div className="flex-shrink-0 border-b border-gray-100 p-4 md:p-6">
+              {/* Индикатор шторки: подсказывает жест «свайп вниз» на мобильных */}
+              <div aria-hidden className="mx-auto mb-3 h-1.5 w-12 shrink-0 rounded-full bg-border md:hidden" />
+              <DialogHeader className="pr-14 text-left">
+                <DialogTitle className="text-left text-xl font-extrabold text-foreground">
+                  {product.name}
+                  <span className="ml-2 block text-sm font-normal text-muted-foreground sm:inline">
+                    {product.sku}
+                  </span>
+                </DialogTitle>
+              </DialogHeader>
             </div>
 
-            {quoteOpen && (
-              <QuoteRequestModal
-                sku={product.sku}
-                name={product.name}
-                onClose={() => setQuoteOpen(false)}
-              />
-            )}
-          </>
-        )}
-        {product && !service && (
-          <>
+            {/* 2. Скроллируемое тело */}
+            <div className="flex-1 overflow-y-auto p-4 md:p-6">
+              <div className="flex flex-col gap-6">
+                <CollapsibleText text={service.description} />
 
-            <DialogHeader className="pr-14 text-left">
-              <DialogTitle className="text-left text-xl font-extrabold text-foreground">
-                {product.name}
-                <span className="ml-2 block text-sm font-normal text-muted-foreground sm:inline">
-                  {product.sku}
-                </span>
-              </DialogTitle>
-            </DialogHeader>
-
-            <CollapsibleText text={profile.description} className="-mt-1" />
-
-            {profile.disclaimer && (
-              <div className="mt-4 max-w-[70ch] rounded-md border-l-4 border-amber-400 bg-amber-50/50 p-3 text-sm leading-[1.5] text-gray-700">
-                {profile.disclaimer}
-              </div>
-            )}
-
-            <div className="grid gap-8 lg:grid-cols-2">
-              <div>
-                <ClientOnly fallback={<CadViewerPlaceholder />}>
-                  {CadViewer ? (
-                    <CadViewer
-                      glbUrl={product.engineering_assets.model_glb_url}
-                      category={product.category}
-                      color={partColor}
-                      material={partMaterial}
-                    />
-                  ) : cad3dFailed ? (
-                    <CadStaticFallback product={product} />
-                  ) : (
-                    <CadViewerPlaceholder />
-                  )}
-                </ClientOnly>
-
-
-                <div className="mt-4">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Цвет детали
-                  </p>
-                  {/* Единый дизайн-код каталога: компактная сетка свотчей + тултип. */}
-                  <TooltipProvider delayDuration={120}>
-                    <div className="mt-2 flex flex-wrap items-center gap-2.5">
-                      {swatches.map((sw, i) => (
-                        <Tooltip key={sw.hex + sw.label}>
-                          <TooltipTrigger asChild>
-                            <button
-                              type="button"
-                              aria-label={sw.label}
-                              aria-pressed={i === swatchIndex}
-                              onClick={() => {
-                                setSwatchIndex(i);
-                                onColorChange?.({ label: sw.label, hex: sw.hex });
-                              }}
-                              className={`h-8 w-8 !min-h-0 shrink-0 cursor-pointer rounded-full border border-gray-200 transition aspect-square ${
-                                i === swatchIndex
-                                  ? "ring-2 ring-offset-2 ring-red-600"
-                                  : "hover:opacity-80"
-                              }`}
-                              style={
-                                sw.opacity
-                                  ? {
-                                      borderRadius: "9999px",
-                                      backgroundImage:
-                                        "linear-gradient(135deg, #ffffff 45%, #cfcfcf 45%, #cfcfcf 55%, #ffffff 55%)",
-                                    }
-                                  : { borderRadius: "9999px", backgroundColor: sw.hex }
-                              }
-                            />
-                          </TooltipTrigger>
-                          <TooltipContent>{sw.label}</TooltipContent>
-                        </Tooltip>
-                      ))}
-                    </div>
-                  </TooltipProvider>
-                </div>
-
-                <p className="mt-3 text-xs text-muted-foreground">
-                  Модель сжата Draco · вращение мышью, зум колесом. Геометрия совпадает с
-                  отливкой артикула {product.sku}.
-                </p>
-              </div>
-
-
-              <div className="pb-28 md:pb-0">
-                <dl className="scrollbar-thin grid max-h-[350px] grid-cols-2 gap-x-6 gap-y-3 overflow-y-auto border-b border-border pb-6 pr-1 text-sm">
-                  {normalizeSpecs(
-                    (product.specRows
-                      ? [
-                          ...product.specRows,
-                          ["Габариты", product.dims],
-                          ["Вес детали", `${(product.weight * 1000).toFixed(0)} г`],
-                          [
-                            "Наличие",
-                            product.stock.qty > 0
-                              ? `${product.stock.qty.toLocaleString("ru-RU")} шт`
-                              : product.stock.lead!,
-                          ],
-                        ]
-                      : [
-                          ["Материал", product.material],
-                          ["Габариты", product.dims],
-                          ["Нагрузка", product.load],
-                          ["Стандарт", product.gost],
-                          ...(product.features
-                            ? ([["Особенности", product.features]] as [string, string][])
-                            : []),
-                          ["Вес детали", `${(product.weight * 1000).toFixed(0)} г`],
-                          [
-                            "Наличие",
-                            product.stock.qty > 0
-                              ? `${product.stock.qty.toLocaleString("ru-RU")} шт`
-                              : product.stock.lead!,
-                          ],
-                        ]) as [string, string][],
-                  ).map(([k, v]) => (
+                <dl className="grid grid-cols-1 gap-x-6 gap-y-3 border-t border-border pt-6 text-sm sm:grid-cols-2">
+                  {service.specs.map(([k, v]) => (
                     <div key={k}>
                       <dt className="text-xs uppercase tracking-wider text-muted-foreground">{k}</dt>
                       <dd className="mt-0.5 font-medium text-foreground">{v}</dd>
                     </div>
                   ))}
                 </dl>
+              </div>
 
-                {assetGroup?.description && (
-                  <p className="mt-5 text-sm leading-[1.65] text-foreground">
-                    {assetGroup.description}
-                  </p>
-                )}
+              {quoteOpen && (
+                <QuoteRequestModal
+                  sku={product.sku}
+                  name={product.name}
+                  onClose={() => setQuoteOpen(false)}
+                />
+              )}
+            </div>
 
-                <div className="mt-6 space-y-2">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    CAD-ассеты для проектировщика · без регистрации
-                  </p>
-                  {(
-                    [
-                      ["step", "Скачать модель STEP", "Твердотельная 3D", Layers, product.engineering_assets.model_step_url],
-                      ["dwg", "Скачать чертёж DWG", "AutoCAD 2D", Ruler, product.engineering_assets.model_dwg_url],
-                      ["pdf", "Технический паспорт PDF", "Схема, ГОСТы, допуски", FileText, product.engineering_assets.passport_pdf_url],
-                    ] as const
-                  ).map(([fmt, label, hint, Icon, href]) => (
-                    <a
-                      key={fmt}
-                      href={href}
-                      download
-                      onClick={() => trackCadDownload(product.sku, fmt)}
-                      className="flex items-center gap-3 rounded-sm border border-border px-4 py-3 text-sm font-medium text-foreground transition-colors hover:border-primary hover:text-primary"
-                    >
-                      <Icon className="size-4 shrink-0" strokeWidth={1.75} />
-                      <span className="min-w-0 flex-1 truncate">{label}</span>
-                      <span className="hidden shrink-0 text-xs font-normal text-muted-foreground sm:inline">
-                        {hint}
-                      </span>
-                      <Download className="size-4 shrink-0" strokeWidth={1.75} />
-                    </a>
-                  ))}
+            {/* 3. Обычный подвал */}
+            <div className="flex-shrink-0 border-t border-gray-100 bg-gray-50/80 p-4 md:p-6">
+              <button
+                type="button"
+                onClick={() => setQuoteOpen(true)}
+                className="inline-flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-primary px-6 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+              >
+                Расчёт
+              </button>
+            </div>
+          </div>
+        )}
+
+        {product && !service && (
+          <div className="flex h-full flex-col overflow-hidden">
+            {/* 1. Хедер */}
+            <div className="flex-shrink-0 border-b border-gray-100 p-4 md:p-6">
+              {/* Индикатор шторки: подсказывает жест «свайп вниз» на мобильных */}
+              <div aria-hidden className="mx-auto mb-3 h-1.5 w-12 shrink-0 rounded-full bg-border md:hidden" />
+              <DialogHeader className="pr-14 text-left">
+                <DialogTitle className="text-left text-xl font-extrabold text-foreground">
+                  {product.name}
+                  <span className="ml-2 block text-sm font-normal text-muted-foreground sm:inline">
+                    {product.sku}
+                  </span>
+                </DialogTitle>
+              </DialogHeader>
+            </div>
+
+            {/* 2. Скроллируемое тело */}
+            <div className="flex-1 overflow-y-auto p-4 md:p-6">
+              <CollapsibleText text={profile.description} className="-mt-1" />
+
+              {profile.disclaimer && (
+                <div className="mt-4 max-w-[70ch] rounded-md border-l-4 border-amber-400 bg-amber-50/50 p-3 text-sm leading-[1.5] text-gray-700">
+                  {profile.disclaimer}
                 </div>
+              )}
 
-                <div className="mt-6 rounded-lg border border-border p-4">
-                  <div className="flex flex-col gap-2">
-                    <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      <Truck className="size-4" strokeWidth={1.5} /> Логистика на партию
-                    </p>
-                    <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
-                      <CityInput value={city} onChange={setCity} />
-                      <input
-                        value={batch}
-                        onChange={(e) =>
-                          setBatch(Math.max(1, Number(e.target.value.replace(/\D/g, "")) || 1))
-                        }
-                        onBlur={() => setBatch((v) => Math.max(1, clampBatch(v)))}
-                        max={stockLimited ? maxBatch : undefined}
-                        disabled={outOfStock}
-                        inputMode="numeric"
-                        pattern="[0-9]*"
-                        aria-label="Количество, шт"
-                        className="mt-3 h-11 w-[104px] shrink-0 rounded-sm border border-[#D1D5DB] px-3 text-base outline-none focus:border-foreground disabled:cursor-not-allowed disabled:bg-[#F3F4F6] disabled:text-gray-300"
+              <div className="mt-4 grid gap-8 lg:grid-cols-2">
+                <div>
+                  <ClientOnly fallback={<CadViewerPlaceholder />}>
+                    {CadViewer ? (
+                      <CadViewer
+                        glbUrl={product.engineering_assets.model_glb_url}
+                        category={product.category}
+                        color={partColor}
+                        material={partMaterial}
                       />
+                    ) : cad3dFailed ? (
+                      <CadStaticFallback product={product} />
+                    ) : (
+                      <CadViewerPlaceholder />
+                    )}
+                  </ClientOnly>
 
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      Расчётный груз: {parcel.totalWeight.toLocaleString("ru-RU")} кг ·{" "}
-                      {parcel.totalVolume.toLocaleString("ru-RU")} м³
+                  <div className="mt-4">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      Цвет детали
                     </p>
+                    {/* Единый дизайн-код каталога: компактная сетка свотчей + тултип. */}
+                    <TooltipProvider delayDuration={120}>
+                      <div className="mt-2 flex flex-wrap items-center gap-2.5">
+                        {swatches.map((sw, i) => (
+                          <Tooltip key={sw.hex + sw.label}>
+                            <TooltipTrigger asChild>
+                              <button
+                                type="button"
+                                aria-label={sw.label}
+                                aria-pressed={i === swatchIndex}
+                                onClick={() => {
+                                  setSwatchIndex(i);
+                                  onColorChange?.({ label: sw.label, hex: sw.hex });
+                                }}
+                                className={`h-8 w-8 !min-h-0 shrink-0 cursor-pointer rounded-full border border-gray-200 transition aspect-square ${
+                                  i === swatchIndex
+                                    ? "ring-2 ring-offset-2 ring-red-600"
+                                    : "hover:opacity-80"
+                                }`}
+                                style={
+                                  sw.opacity
+                                    ? {
+                                        borderRadius: "9999px",
+                                        backgroundImage:
+                                          "linear-gradient(135deg, #ffffff 45%, #cfcfcf 45%, #cfcfcf 55%, #ffffff 55%)",
+                                      }
+                                    : { borderRadius: "9999px", backgroundColor: sw.hex }
+                                }
+                              />
+                            </TooltipTrigger>
+                            <TooltipContent>{sw.label}</TooltipContent>
+                          </Tooltip>
+                        ))}
+                      </div>
+                    </TooltipProvider>
                   </div>
 
-                  {calcState === "loading" && (
-                    <ul className="mt-3 space-y-2" aria-busy="true">
-                      {[0, 1].map((i) => (
-                        <li key={i} className="flex justify-between gap-4">
-                          <span className="h-4 w-2/3 animate-pulse rounded bg-muted" />
-                          <span className="h-4 w-16 animate-pulse rounded bg-muted" />
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-
-                  {calcState === "failed" && (
-                    <p className="mt-3 text-sm text-muted-foreground">
-                      Расчет недоступен. Стоимость уточнит менеджер.
-                    </p>
-                  )}
-
-                  {calcState === "ready" && (
-                    <ul className="mt-3 space-y-2 text-sm">
-                      {logistics.map((l) => (
-                        <li key={l.carrier} className="flex items-center justify-between gap-2">
-                          <span className="min-w-0 flex-1 text-muted-foreground">
-                            {l.label} · {l.days} дн.
-                          </span>
-                          <span className="whitespace-nowrap flex-shrink-0 font-medium tabular-nums text-foreground">
-                            {l.price.toLocaleString("ru-RU")} ₽
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-
-                  {calcState === "idle" && (
-                    <p className="mt-3 text-sm text-muted-foreground">
-                      Укажите город — рассчитаем доставку по реальным тарифам ТК.
-                    </p>
-                  )}
+                  <p className="mt-3 text-xs text-muted-foreground">
+                    Модель сжата Draco · вращение мышью, зум колесом. Геометрия совпадает с
+                    отливкой артикула {product.sku}.
+                  </p>
                 </div>
 
-                {/* Мобильный CTA приклеен к низу шторки: цена и корзина всегда под большим пальцем */}
-                <div className="sticky bottom-0 z-50 -mx-4 mt-6 border-t border-border bg-background px-4 pb-[env(safe-area-inset-bottom)] pt-3 md:static md:mx-0 md:mt-0 md:border-0 md:bg-transparent md:p-0">
+                <div>
+                  <dl className="scrollbar-thin grid max-h-[350px] grid-cols-2 gap-x-6 gap-y-3 overflow-y-auto border-b border-border pb-6 pr-1 text-sm">
+                    {normalizeSpecs(
+                      (product.specRows
+                        ? [
+                            ...product.specRows,
+                            ["Габариты", product.dims],
+                            ["Вес детали", `${(product.weight * 1000).toFixed(0)} г`],
+                            [
+                              "Наличие",
+                              product.stock.qty > 0
+                                ? `${product.stock.qty.toLocaleString("ru-RU")} шт`
+                                : product.stock.lead!,
+                            ],
+                          ]
+                        : [
+                            ["Материал", product.material],
+                            ["Габариты", product.dims],
+                            ["Нагрузка", product.load],
+                            ["Стандарт", product.gost],
+                            ...(product.features
+                              ? ([["Особенности", product.features]] as [string, string][])
+                              : []),
+                            ["Вес детали", `${(product.weight * 1000).toFixed(0)} г`],
+                            [
+                              "Наличие",
+                              product.stock.qty > 0
+                                ? `${product.stock.qty.toLocaleString("ru-RU")} шт`
+                                : product.stock.lead!,
+                            ],
+                          ]) as [string, string][],
+                    ).map(([k, v]) => (
+                      <div key={k}>
+                        <dt className="text-xs uppercase tracking-wider text-muted-foreground">{k}</dt>
+                        <dd className="mt-0.5 font-medium text-foreground">{v}</dd>
+                      </div>
+                    ))}
+                  </dl>
+
+                  {assetGroup?.description && (
+                    <p className="mt-5 text-sm leading-[1.65] text-foreground">
+                      {assetGroup.description}
+                    </p>
+                  )}
+
+                  <div className="mt-6 space-y-2">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      CAD-ассеты для проектировщика · без регистрации
+                    </p>
+                    {(
+                      [
+                        ["step", "Скачать модель STEP", "Твердотельная 3D", Layers, product.engineering_assets.model_step_url],
+                        ["dwg", "Скачать чертёж DWG", "AutoCAD 2D", Ruler, product.engineering_assets.model_dwg_url],
+                        ["pdf", "Технический паспорт PDF", "Схема, ГОСТы, допуски", FileText, product.engineering_assets.passport_pdf_url],
+                      ] as const
+                    ).map(([fmt, label, hint, Icon, href]) => (
+                      <a
+                        key={fmt}
+                        href={href}
+                        download
+                        onClick={() => trackCadDownload(product.sku, fmt)}
+                        className="flex items-center gap-3 rounded-sm border border-border px-4 py-3 text-sm font-medium text-foreground transition-colors hover:border-primary hover:text-primary"
+                      >
+                        <Icon className="size-4 shrink-0" strokeWidth={1.75} />
+                        <span className="min-w-0 flex-1 truncate">{label}</span>
+                        <span className="hidden shrink-0 text-xs font-normal text-muted-foreground sm:inline">
+                          {hint}
+                        </span>
+                        <Download className="size-4 shrink-0" strokeWidth={1.75} />
+                      </a>
+                    ))}
+                  </div>
+
+                  <div className="mt-6 rounded-lg border border-border p-4">
+                    <div className="flex flex-col gap-2">
+                      <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        <Truck className="size-4" strokeWidth={1.5} /> Логистика на партию
+                      </p>
+                      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
+                        <CityInput value={city} onChange={setCity} />
+                        <input
+                          value={batch}
+                          onChange={(e) =>
+                            setBatch(Math.max(1, Number(e.target.value.replace(/\D/g, "")) || 1))
+                          }
+                          onBlur={() => setBatch((v) => Math.max(1, clampBatch(v)))}
+                          max={stockLimited ? maxBatch : undefined}
+                          disabled={outOfStock}
+                          inputMode="numeric"
+                          pattern="[0-9]*"
+                          aria-label="Количество, шт"
+                          className="mt-3 h-11 w-[104px] shrink-0 rounded-sm border border-[#D1D5DB] px-3 text-base outline-none focus:border-foreground disabled:cursor-not-allowed disabled:bg-[#F3F4F6] disabled:text-gray-300"
+                        />
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Расчётный груз: {parcel.totalWeight.toLocaleString("ru-RU")} кг ·{" "}
+                        {parcel.totalVolume.toLocaleString("ru-RU")} м³
+                      </p>
+                    </div>
+
+                    {calcState === "loading" && (
+                      <ul className="mt-3 space-y-2" aria-busy="true">
+                        {[0, 1].map((i) => (
+                          <li key={i} className="flex justify-between gap-4">
+                            <span className="h-4 w-2/3 animate-pulse rounded bg-muted" />
+                            <span className="h-4 w-16 animate-pulse rounded bg-muted" />
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+
+                    {calcState === "failed" && (
+                      <p className="mt-3 text-sm text-muted-foreground">
+                        Расчет недоступен. Стоимость уточнит менеджер.
+                      </p>
+                    )}
+
+                    {calcState === "ready" && (
+                      <ul className="mt-3 space-y-2 text-sm">
+                        {logistics.map((l) => (
+                          <li key={l.carrier} className="flex items-center justify-between gap-2">
+                            <span className="min-w-0 flex-1 text-muted-foreground">
+                              {l.label} · {l.days} дн.
+                            </span>
+                            <span className="whitespace-nowrap flex-shrink-0 font-medium tabular-nums text-foreground">
+                              {l.price.toLocaleString("ru-RU")} ₽
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+
+                    {calcState === "idle" && (
+                      <p className="mt-3 text-sm text-muted-foreground">
+                        Укажите город — рассчитаем доставку по реальным тарифам ТК.
+                      </p>
+                    )}
+                  </div>
+
                   <button
                     type="button"
-                    disabled={outOfStock}
-                    onClick={() => {
-                      const wanted = Math.max(1, Math.floor(batch) || 1);
-                      const qty = Math.max(0, Math.floor(clampBatch(wanted)));
-                      if (qty <= 0) return;
-                      if (qty !== wanted) setBatch(qty);
-                      addLine(
-                        product.sku,
-                        qty,
-                        undefined,
-                        activeSwatch
-                          ? { label: activeSwatch.label, hex: activeSwatch.hex }
-                          : undefined,
-                      );
-                      toast.success(
-                        `${product.sku} — ${qty.toLocaleString("ru-RU")} шт добавлено в корзину${
-                          activeSwatch ? ` (${activeSwatch.label})` : ""
-                        }`,
-                      );
-                    }}
-                    className={`flex min-h-[48px] w-full cursor-pointer flex-wrap items-center justify-center gap-x-1 rounded-xl px-4 py-2 text-sm font-semibold leading-tight transition-colors duration-200 md:mt-6 md:rounded-sm md:px-6 disabled:cursor-not-allowed ${
-                      outOfStock
-                        ? "bg-[#E5E7EB] text-[#9CA3AF]"
-                        : "bg-primary text-primary-foreground hover:opacity-90"
-                    }`}
+                    onClick={() => setBulkOpen(true)}
+                    className="mt-4 inline-flex min-h-[44px] cursor-pointer items-center rounded-sm px-1 text-left text-sm font-medium text-foreground underline-offset-4 transition-colors duration-200 hover:text-primary hover:underline"
                   >
-                    {outOfStock ? (
-                      "Нет в наличии"
-                    ) : (
-                      <>
-                        <span>В корзину</span>
-                        <span aria-hidden>·</span>
-                        <span>{ctaQty.toLocaleString("ru-RU")} шт</span>
-                        <span aria-hidden>·</span>
-                        <span className="tabular-nums">{formatPrice(ctaTotal)}</span>
-                      </>
-                    )}
+                    Запросить спец. условия на партию от{" "}
+                    {(product.tier2Qty || 50000).toLocaleString("ru-RU")} шт →
                   </button>
                 </div>
-
-                <button
-                  type="button"
-                  onClick={() => setBulkOpen(true)}
-                  className="mt-4 inline-flex min-h-[44px] cursor-pointer items-center rounded-sm px-1 text-left text-sm font-medium text-foreground underline-offset-4 transition-colors duration-200 hover:text-primary hover:underline"
-                >
-                  Запросить спец. условия на партию от{" "}
-                  {(product.tier2Qty || 50000).toLocaleString("ru-RU")} шт →
-                </button>
               </div>
+            </div>
+
+            {/* 3. Обычный подвал */}
+            <div className="flex-shrink-0 border-t border-gray-100 bg-gray-50/80 p-4 md:p-6">
+              <button
+                type="button"
+                disabled={outOfStock}
+                onClick={() => {
+                  const wanted = Math.max(1, Math.floor(batch) || 1);
+                  const qty = Math.max(0, Math.floor(clampBatch(wanted)));
+                  if (qty <= 0) return;
+                  if (qty !== wanted) setBatch(qty);
+                  addLine(
+                    product.sku,
+                    qty,
+                    undefined,
+                    activeSwatch
+                      ? { label: activeSwatch.label, hex: activeSwatch.hex }
+                      : undefined,
+                  );
+                  toast.success(
+                    `${product.sku} — ${qty.toLocaleString("ru-RU")} шт добавлено в корзину${
+                      activeSwatch ? ` (${activeSwatch.label})` : ""
+                    }`,
+                  );
+                }}
+                className={`flex h-12 w-full cursor-pointer items-center justify-center gap-x-2 rounded-xl px-4 text-sm font-semibold transition-colors duration-200 disabled:cursor-not-allowed ${
+                  outOfStock
+                    ? "bg-[#E5E7EB] text-[#9CA3AF]"
+                    : "bg-primary text-primary-foreground hover:opacity-90"
+                }`}
+              >
+                {outOfStock ? (
+                  "Нет в наличии"
+                ) : (
+                  <>
+                    <span>В корзину</span>
+                    <span aria-hidden>·</span>
+                    <span>{ctaQty.toLocaleString("ru-RU")} шт</span>
+                    <span aria-hidden>·</span>
+                    <span className="tabular-nums">{formatPrice(ctaTotal)}</span>
+                  </>
+                )}
+              </button>
             </div>
 
             <BulkRequestDialog
@@ -882,7 +896,7 @@ export function ProductSheet({
               type="application/ld+json"
               dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
             />
-          </>
+          </div>
         )}
       </DialogContent>
     </Dialog>

@@ -1,6 +1,6 @@
 import { formatPhone } from "@/lib/phone";
 import { useEffect, useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useSwipeClose } from "@/lib/use-swipe-close";
 import { getCabinet } from "@/lib/cabinet.functions";
 import { currentUser } from "@/lib/session";

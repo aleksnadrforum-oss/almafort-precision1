@@ -9,7 +9,7 @@ import { formatPrice } from "@/lib/pricing";
 import { applyPack } from "@/lib/spec-sanitize";
 import { linePrice, productBySku, useCart, type ReviewRow } from "@/store/cart-store";
 import { BulkRequestDialog } from "@/components/catalog/bulk-request-dialog";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 type UiStatus = "valid" | "warning" | "error";
 

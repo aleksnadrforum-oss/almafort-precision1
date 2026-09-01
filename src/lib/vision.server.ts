@@ -49,7 +49,8 @@ export function catalogGrounding(): string {
     list.push(p);
     byCategory.set(p.category, list);
   }
-  // Никакого транкейта: вся матрица позиций с визуальными признаками уходит в контекст.
+  // Все позиции остаются в контексте, но геометрия сжата до 180 символов:
+  // длинный контекст = долгий prefill и таймаут шлюза.
   return Array.from(byCategory.entries())
     .map(
       ([category, items]) =>
@@ -57,7 +58,7 @@ export function catalogGrounding(): string {
         items
           .map(
             (p) =>
-              `- ${p.sku} — ${p.name} | габарит: ${p.dims} | ГЕОМЕТРИЯ: ${p.visualFeatures}`,
+              `- ${p.sku} — ${p.name} | габарит: ${p.dims} | ГЕОМЕТРИЯ: ${p.visualFeatures.slice(0, 180)}`,
           )
           .join("\n"),
     )

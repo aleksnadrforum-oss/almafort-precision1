@@ -818,41 +818,39 @@ export function ProductSheet({
                 </div>
 
                 {/* Мобильный CTA приклеен к низу шторки: цена и корзина всегда под большим пальцем */}
-                <div className="sticky bottom-0 z-10 -mx-4 mt-6 border-t border-border bg-background px-4 pb-[max(env(safe-area-inset-bottom),0.75rem)] pt-3 md:static md:mx-0 md:mt-0 md:border-0 md:bg-transparent md:p-0">
-                <button
-                  type="button"
-                  disabled={outOfStock}
-                  onClick={() => {
-                    const wanted = Math.max(1, Math.floor(batch) || 1);
-                    const qty = Math.max(0, Math.floor(clampBatch(wanted)));
-                    if (qty <= 0) return;
-                    if (qty !== wanted) setBatch(qty);
-                    addLine(
-                      product.sku,
-                      qty,
-                      undefined,
-                      activeSwatch
-                        ? { label: activeSwatch.label, hex: activeSwatch.hex }
-                        : undefined,
-                    );
-                    toast.success(
-                      `${product.sku} — ${qty.toLocaleString("ru-RU")} шт добавлено в корзину${
-                        activeSwatch ? ` (${activeSwatch.label})` : ""
-                      }`,
-                    );
-                  }}
-                  className={`inline-flex min-h-[48px] w-full cursor-pointer items-center justify-center rounded-sm px-6 text-sm font-semibold transition-colors duration-200 md:mt-6 disabled:cursor-not-allowed ${
-                    outOfStock
-                      ? "bg-[#E5E7EB] text-[#9CA3AF]"
-                      : "bg-primary text-primary-foreground hover:opacity-90"
-                  }`}
-                >
-                  {outOfStock
-                    ? "Нет в наличии"
-                    : `В корзину · ${Math.max(1, Math.floor(batch) || 1).toLocaleString("ru-RU")} шт`}
-                </button>
-
-
+                <div className="sticky bottom-0 z-10 -mx-4 mt-6 border-t border-border bg-background px-4 pb-[env(safe-area-inset-bottom)] pt-3 md:static md:mx-0 md:mt-0 md:border-0 md:bg-transparent md:p-0">
+                  <button
+                    type="button"
+                    disabled={outOfStock}
+                    onClick={() => {
+                      const wanted = Math.max(1, Math.floor(batch) || 1);
+                      const qty = Math.max(0, Math.floor(clampBatch(wanted)));
+                      if (qty <= 0) return;
+                      if (qty !== wanted) setBatch(qty);
+                      addLine(
+                        product.sku,
+                        qty,
+                        undefined,
+                        activeSwatch
+                          ? { label: activeSwatch.label, hex: activeSwatch.hex }
+                          : undefined,
+                      );
+                      toast.success(
+                        `${product.sku} — ${qty.toLocaleString("ru-RU")} шт добавлено в корзину${
+                          activeSwatch ? ` (${activeSwatch.label})` : ""
+                        }`,
+                      );
+                    }}
+                    className={`inline-flex min-h-[48px] w-full cursor-pointer items-center justify-center rounded-xl px-4 text-sm font-semibold transition-colors duration-200 md:mt-6 disabled:cursor-not-allowed ${
+                      outOfStock
+                        ? "bg-[#E5E7EB] text-[#9CA3AF]"
+                        : "bg-primary text-primary-foreground hover:opacity-90"
+                    }`}
+                  >
+                    {outOfStock
+                      ? "Нет в наличии"
+                      : `В корзину · ${ctaQty.toLocaleString("ru-RU")} шт · ${formatPrice(ctaTotal)}`}
+                  </button>
                 </div>
 
                 <button

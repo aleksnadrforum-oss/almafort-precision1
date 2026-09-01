@@ -1,4 +1,25 @@
 import { toast } from "sonner";
+import {
+  DOVETAIL_PALETTE,
+  DOVETAIL_CAP_PALETTE,
+  LATHOLDER_PALETTE,
+  GLASSHOLDER_PALETTE,
+  ANGLE_BRACKET_PALETTE,
+  SHELF_GLASSHOLDER_PALETTE,
+  RODHOLDER_PALETTE,
+  EUROVINT_CAP_PALETTE,
+  SCREW_CAP_PALETTE,
+  ECCENTRIC_CAP_PALETTE,
+  KREPSS_PALETTE,
+  SUPPORT_PALETTE,
+  METAL_FRAME_SUPPORT_PALETTE,
+  TUBE_PLUG_PALETTE,
+  BLACK_PALETTE,
+  baseColorForProduct as baseColorFromData,
+  paletteForProduct as paletteFromData,
+  type Swatch,
+} from "@/data/palettes";
+
 import { stockLimit, useCart } from "@/store/cart-store";
 import { useEffect, useMemo, useRef, useState, type ComponentType } from "react";
 import { ClientOnly } from "@tanstack/react-router";
@@ -30,7 +51,6 @@ type CadViewerProps = {
   material?: PartMaterial;
 };
 
-type Swatch = { hex: string; label: string; opacity?: number; roughness?: number; borderColor?: string };
 
 type PartProfile = {
   colorLabel: string;
@@ -40,16 +60,6 @@ type PartProfile = {
   disclaimer?: string;
 };
 
-const DOVETAIL_PALETTE: Swatch[] = [
-  { hex: "#000000", label: "Чёрный" },
-  { hex: "#3e2723", label: "Тёмно-коричневый / Венге" },
-  { hex: "#6a3326", label: "Красно-коричневый / Махагон" },
-  { hex: "#8d6e63", label: "Светло-коричневый / Орех" },
-  { hex: "#d7ccc8", label: "Бежевый / Слоновая кость" },
-  { hex: "#757575", label: "Серый" },
-  { hex: "#f5f5f5", label: "Полупрозрачный / Натуральный полимер", opacity: 0.8 },
-];
-
 const DOVETAIL_PROFILE: PartProfile = {
   colorLabel: "Чёрный",
   material: { roughness: 0.45, metalness: 0.0 },
@@ -57,15 +67,6 @@ const DOVETAIL_PROFILE: PartProfile = {
     "Универсальный крепёжный элемент «Ласточкин хвост» для скрытого монтажа и прочного соединения листовых материалов, мебельных деталей и конструкционных профилей. Надёжная фиксация узла достигается за счёт точной клиновидной геометрии и боковых фрикционных рёбер, полностью исключающих люфт после сборки. Изготовлен из износостойкого полимера, устойчивого к механическим нагрузкам. Расширенная цветовая гамма и наличие полупрозрачного варианта позволяют сделать соединение визуально незаметным на любом материале.",
   palette: DOVETAIL_PALETTE,
 };
-
-const DOVETAIL_CAP_PALETTE: Swatch[] = [
-  { hex: "#000000", label: "Чёрный" },
-  { hex: "#3e2723", label: "Тёмно-коричневый" },
-  { hex: "#6a3326", label: "Красно-коричневый / Махагон" },
-  { hex: "#d7ccc8", label: "Бежевый / Песочный" },
-  { hex: "#757575", label: "Серый" },
-  { hex: "#f5f5f5", label: "Полупрозрачный / Натуральный", opacity: 0.8 },
-];
 
 const DOVETAIL_CAP_PROFILE: PartProfile = {
   colorLabel: "Чёрный",
@@ -75,10 +76,6 @@ const DOVETAIL_CAP_PROFILE: PartProfile = {
   palette: DOVETAIL_CAP_PALETTE,
 };
 
-const LATHOLDER_PALETTE: Swatch[] = [
-  { hex: "#000000", label: "Чёрный (Базовый)" },
-];
-
 const LATHOLDER_PROFILE: PartProfile = {
   colorLabel: "Чёрный (Базовый)",
   material: { roughness: 0.8, metalness: 0.0 },
@@ -86,16 +83,6 @@ const LATHOLDER_PROFILE: PartProfile = {
     "Универсальный пластиковый латодержатель для надёжной фиксации ортопедических деревянных лат (ламелей) к металлическому или деревянному каркасу мягкой мебели. Деталь выполняет функцию амортизатора: надёжно удерживает ламель, предотвращает скрип, гасит вибрации и полностью исключает трение древесины о конструкцию основания. Изготавливается из эластичного, ударопрочного полимера, рассчитанного на постоянные циклические нагрузки. Оптимальное стандартизированное решение для конвейерного производства кроватей, диванов и ортопедических решёток.",
   palette: LATHOLDER_PALETTE,
 };
-
-const GLASSHOLDER_PALETTE: Swatch[] = [
-  { hex: "#1c3aa9", label: "Синий" },
-  { hex: "#4ebaaa", label: "Мятный / Бирюзовый" },
-  { hex: "#ffffff", label: "Белый" },
-  { hex: "#dcb98a", label: "Бежевый" },
-  { hex: "#8c9091", label: "Серый" },
-  { hex: "#382a24", label: "Тёмно-коричневый" },
-  { hex: "#f0f0f0", label: "Полупрозрачный / Матовый", opacity: 0.6, roughness: 0.2 },
-];
 
 const GLASSHOLDER_PROFILE: PartProfile = {
   colorLabel: "Синий",
@@ -105,19 +92,6 @@ const GLASSHOLDER_PROFILE: PartProfile = {
   palette: GLASSHOLDER_PALETTE,
 };
 
-const ANGLE_BRACKET_PALETTE: Swatch[] = [
-  { hex: "#ffffff", label: "Белый", borderColor: "#e5e7eb" },
-  { hex: "#e8d5c4", label: "Бежевый" },
-  { hex: "#d4a373", label: "Бук" },
-  { hex: "#5d4037", label: "Коричневый" },
-  { hex: "#8d6e63", label: "Орех светлый" },
-  { hex: "#3e2723", label: "Орех тёмный" },
-  { hex: "#000000", label: "Чёрный" },
-  { hex: "#1976d2", label: "Синий" },
-  { hex: "#388e3c", label: "Зелёный" },
-  { hex: "#722f37", label: "Вишня" },
-];
-
 const ANGLE_BRACKET_PROFILE: PartProfile = {
   colorLabel: "Белый",
   material: { roughness: 0.6, metalness: 0.0 },
@@ -125,12 +99,6 @@ const ANGLE_BRACKET_PROFILE: PartProfile = {
     "Классический мебельный крепёжный уголок из прочного пластика для жёсткого соединения деталей из ЛДСП, МДФ и массива под прямым углом (90 градусов). Обеспечивает надёжную стяжку элементов каркаса, полок, ящиков и внутренних перегородок. Усиленная конструкция устойчива к нагрузкам на излом и вырывание саморезов. Широкая палитра, включающая как монохромные оттенки, так и имитацию популярных древесных декоров, позволяет подобрать крепёж тон в тон. Это делает узел соединения визуально незаметным и сохраняет эстетику внутреннего пространства готовой мебели.",
   palette: ANGLE_BRACKET_PALETTE,
 };
-
-const SHELF_GLASSHOLDER_PALETTE: Swatch[] = [
-  { hex: "#8c9091", label: "Серый (базовый)" },
-  { hex: "#000000", label: "Чёрный" },
-  { hex: "#ffffff", label: "Белый", borderColor: "#e5e7eb" },
-];
 
 const SHELF_GLASSHOLDER_PROFILE: PartProfile = {
   colorLabel: "Серый (базовый)",
@@ -140,16 +108,6 @@ const SHELF_GLASSHOLDER_PROFILE: PartProfile = {
   palette: SHELF_GLASSHOLDER_PALETTE,
 };
 
-const RODHOLDER_PALETTE: Swatch[] = [
-  { hex: "#000000", label: "Чёрный" },
-  { hex: "#ffffff", label: "Белый", borderColor: "#e5e7eb" },
-  { hex: "#808080", label: "Серый" },
-  { hex: "#3e2723", label: "Тёмно-коричневый / Венге" },
-  { hex: "#722f37", label: "Красно-коричневый / Вишня" },
-  { hex: "#d4a373", label: "Светло-коричневый / Бук" },
-  { hex: "#e8d5c4", label: "Бежевый / Песочный" },
-];
-
 const RODHOLDER_PROFILE: PartProfile = {
   colorLabel: "Чёрный",
   material: { roughness: 0.7, metalness: 0.0 },
@@ -157,17 +115,6 @@ const RODHOLDER_PROFILE: PartProfile = {
     "Специализированный пластиковый штангодержатель U-образной формы, предназначенный для надёжной фиксации стандартной овальной штанги в плательных шкафах и гардеробных системах. Деталь обеспечивает жёсткое крепление к боковым стенкам мебельного короба, равномерно распределяя весовую нагрузку от одежды. Конструкция из высокопрочного полимера предотвращает деформацию под тяжестью вещей, гасит металлический лязг при снятии и установке вешалок, а также исключает появление царапин на самой штанге. Широкая цветовая гамма позволяет подобрать фурнитуру в тон внутреннего ЛДСП.",
   palette: RODHOLDER_PALETTE,
 };
-
-const EUROVINT_CAP_PALETTE: Swatch[] = [
-  { hex: "#fdd835", label: "Жёлтый" },
-  { hex: "#1e88e5", label: "Голубой" },
-  { hex: "#722f37", label: "Вишня" },
-  { hex: "#3e2723", label: "Венге" },
-  { hex: "#d4a373", label: "Бук" },
-  { hex: "#ffffff", label: "Белый", borderColor: "#e5e7eb" },
-  { hex: "#e8d5c4", label: "Бежевый" },
-  { hex: "#e1c699", label: "Бамбук" },
-];
 
 const EUROVINT_CAP_PROFILE: PartProfile = {
   colorLabel: "Жёлтый",
@@ -177,15 +124,6 @@ const EUROVINT_CAP_PROFILE: PartProfile = {
   palette: EUROVINT_CAP_PALETTE,
 };
 
-const SCREW_CAP_PALETTE: Swatch[] = [
-  { hex: "#a05a45", label: "Светло-коричневый / Медный" },
-  { hex: "#4a2c11", label: "Тёмно-коричневый" },
-  { hex: "#ffffff", label: "Белый", borderColor: "#e5e7eb" },
-  { hex: "#000000", label: "Чёрный" },
-  { hex: "#808080", label: "Серый" },
-  { hex: "#e8d5c4", label: "Бежевый" },
-];
-
 const SCREW_CAP_PROFILE: PartProfile = {
   colorLabel: "Светло-коричневый / Медный",
   material: { roughness: 0.78, metalness: 0.0, texture: "shagreen" },
@@ -194,14 +132,6 @@ const SCREW_CAP_PROFILE: PartProfile = {
   palette: SCREW_CAP_PALETTE,
 };
 
-const ECCENTRIC_CAP_PALETTE: Swatch[] = [
-  { hex: "#000000", label: "Чёрный" },
-  { hex: "#382a24", label: "Тёмно-коричневый / Венге" },
-  { hex: "#722f37", label: "Красно-коричневый / Вишня" },
-  { hex: "#dcb98a", label: "Светло-бежевый / Песочный" },
-  { hex: "#1976d2", label: "Синий" },
-];
-
 const ECCENTRIC_CAP_PROFILE: PartProfile = {
   colorLabel: "Чёрный",
   material: { roughness: 0.25, metalness: 0.0 },
@@ -209,10 +139,6 @@ const ECCENTRIC_CAP_PROFILE: PartProfile = {
     "Пластиковая декоративная заглушка для эстетичной маскировки металлического барабана эксцентриковой стяжки (минификса). Плоский профиль с аккуратной фаской обеспечивает плотное прилегание к поверхности ЛДСП, делая монтажный узел визуально незаметным и защищая его от попадания пыли и влаги. На внутренней стороне расположен центрирующий цилиндрический штифт, который точно фиксируется в крестообразном шлице эксцентрика, исключая выпадение детали при эксплуатации мебели. Глянцевая фактура и точная колеровка позволяют подобрать заглушку в идеальный тон к ламинированному покрытию фасадов и корпусов.",
   palette: ECCENTRIC_CAP_PALETTE,
 };
-
-const KREPSS_PALETTE: Swatch[] = [
-  { hex: "#ffffff", label: "Белый", borderColor: "#e5e7eb" },
-];
 
 const KREPSS_PROFILE: PartProfile = {
   colorLabel: "Белый",
@@ -224,11 +150,6 @@ const KREPSS_PROFILE: PartProfile = {
   palette: KREPSS_PALETTE,
 };
 
-const SUPPORT_PALETTE: Swatch[] = [
-  { hex: "#000000", label: "Чёрный" },
-  { hex: "#4a2c11", label: "Коричневый" },
-];
-
 const SUPPORT_PROFILE: PartProfile = {
   colorLabel: "Чёрный",
   material: { roughness: 0.8, metalness: 0.0 },
@@ -237,10 +158,6 @@ const SUPPORT_PROFILE: PartProfile = {
   palette: SUPPORT_PALETTE,
 };
 
-const METAL_FRAME_SUPPORT_PALETTE: Swatch[] = [
-  { hex: "#000000", label: "Чёрный" },
-];
-
 const METAL_FRAME_SUPPORT_PROFILE: PartProfile = {
   colorLabel: "Чёрный",
   material: { roughness: 0.85, metalness: 0.0 },
@@ -248,10 +165,6 @@ const METAL_FRAME_SUPPORT_PROFILE: PartProfile = {
     "Специализированный пластиковый подпятник (опора-заглушка) для мебели на металлическом каркасе, включая школьные парты, стулья, столы и изделия в стиле лофт. Главная функция — надёжная защита напольных покрытий (ламината, линолеума, паркета) от царапин, продавливания и прямого контакта с жёстким металлическим профилем. Благодаря продуманной системе фиксации (плотный охват трубы или внутренние рёбра жёсткости), подпятник прочно держится на ножке мебели и не слетает при частом перемещении стульев. Отливается из износостойкого полимера, рассчитанного на постоянные статические и динамические нагрузки, а также стойкого к истиранию.",
   palette: METAL_FRAME_SUPPORT_PALETTE,
 };
-
-const TUBE_PLUG_PALETTE: Swatch[] = [
-  { hex: "#000000", label: "Чёрный (Базовый)" },
-];
 
 const RECT_TUBE_PLUG_PROFILE: PartProfile = {
   colorLabel: "Чёрный (Базовый)",

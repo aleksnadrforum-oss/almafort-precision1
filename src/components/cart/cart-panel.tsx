@@ -30,6 +30,7 @@ import {
   deliveryCost,
   linePrice,
   lineKey,
+  setServerAvailability,
   useCart,
   type Carrier,
   type PendingRow,
@@ -168,6 +169,30 @@ export function CartPanel() {
   const [holding, setHolding] = useState(false);
   const blockedByStock = Object.keys(shortages).length > 0;
 
+  /**
+   * Публичные остатки: сервер отдаёт availableStock (physical − reserved).
+   * Корзина сама по себе склад не трогает — это только намерение.
+   */
+  useEffect(() => {
+    const skus = [...new Set(lines.map((l) => l.sku))];
+    if (!skus.length) return;
+    let alive = true;
+    (async () => {
+      try {
+        const res = await fetch(`/api/inventory/availability?skus=${encodeURIComponent(skus.join(","))}`);
+        if (!res.ok || !alive) return;
+        const json = (await res.json()) as { availability?: Record<string, number | null> };
+        if (json.availability) setServerAvailability(json.availability);
+      } catch {
+        /* остатки недоступны — работаем по каталожным данным */
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lines.length]);
+
   // Изменил количество — снимаем прошлую блокировку по этой позиции.
   useEffect(() => {
     setShortages((prev) => {
@@ -181,9 +206,21 @@ export function CartPanel() {
     });
   }, [lines]);
 
+  /** Приводит перегруженные строки к доступному остатку одним кликом. */
+  const fixQuantities = () => {
+    for (const l of lines) {
+      const avail = shortages[l.sku];
+      if (avail === undefined) continue;
+      if (avail <= 0) removeLine(lineKey(l));
+      else if (l.quantity > avail) setQuantity(lineKey(l), avail);
+    }
+    setShortages({});
+    toast.success("Количества приведены к доступному остатку");
+  };
+
   /**
-   * Холд остатков: «в корзине» ≠ «зарезервировано». Перед выпуском счёта
-   * замораживаем склад на 24 часа под организацию (ИНН).
+   * Холд остатков: «в корзине» ≠ «зарезервировано». Резерв создаётся только
+   * при выпуске счёта, живёт 72 часа и после истечения возвращается в пул.
    */
   const ctaDisabled =
     !cartReady || unverified || Boolean(party?.blocked) || blockedByStock || holding;
@@ -197,17 +234,30 @@ export function CartPanel() {
         body: JSON.stringify({
           organizationId: organizationId ?? (inn.replace(/\D/g, "") || null),
           lockedBy: userId,
+          verified,
           items: lines.map((l) => ({ sku: l.sku, quantity: l.quantity })),
         }),
       });
+      if (res.status === 403) {
+        toast.error(
+          "Резерв склада доступен после подтверждения ИНН. Сейчас можно скачать коммерческое предложение без брони остатков",
+        );
+        return false;
+      }
       if (res.status === 409) {
         const json = (await res.json()) as {
+          reason?: string;
+          error?: string;
           shortages?: Array<{ sku: string; available: number }>;
         };
         const map: Record<string, number> = {};
         for (const sh of json.shortages ?? []) map[sh.sku] = sh.available;
         setShortages(map);
-        toast.error("Часть позиций недоступна в заявленном объёме — скорректируйте количество");
+        toast.error(
+          json.reason === "ceiling_exceeded"
+            ? "Для бронирования оптовой партии такого объёма требуется ручное подтверждение менеджера"
+            : "Остаток на складе изменился — скорректируйте количество",
+        );
         return false;
       }
       if (!res.ok) throw new Error("hold");
@@ -220,6 +270,7 @@ export function CartPanel() {
       setHolding(false);
     }
   };
+
   const idemKey = useRef<string | null>(null);
   // Стратегическому партнёру доступна отгрузка с отсрочкой платежа 15–30 дней.
   const [deferred, setDeferred] = useState(false);
@@ -456,10 +507,19 @@ export function CartPanel() {
                   </p>
                 )}
                 {shortages[l.sku] !== undefined && (
-                  <p className="mt-1 inline-flex rounded-md bg-amber-100 px-2 py-1 text-xs font-medium text-amber-800">
-                    Доступно только {shortages[l.sku]!.toLocaleString("ru-RU")} шт из{" "}
-                    {l.quantity.toLocaleString("ru-RU")} шт
-                  </p>
+                  <div className="mt-1 flex flex-wrap items-center gap-2 rounded-md bg-amber-100 px-2 py-1 text-xs font-medium text-amber-800">
+                    <span>
+                      Остаток на складе изменился. Доступно:{" "}
+                      {shortages[l.sku]!.toLocaleString("ru-RU")} шт
+                    </span>
+                    <button
+                      type="button"
+                      onClick={fixQuantities}
+                      className="cursor-pointer rounded-sm border border-amber-400 px-2 py-0.5 font-semibold text-amber-900 transition-colors hover:bg-amber-200"
+                    >
+                      Скорректировать количество
+                    </button>
+                  </div>
                 )}
                 {l.originalName && l.originalName !== l.name && (
                   <p className="truncate text-xs text-muted-foreground">

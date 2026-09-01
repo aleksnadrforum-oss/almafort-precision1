@@ -156,6 +156,7 @@ function AuthPage() {
 
       if (body.status === "ok" && body.user && body.expiresAt) {
         writeSession({ user: body.user, expiresAt: body.expiresAt });
+        invalidateSessionCache();
         // Жёсткий переход: браузер гарантированно отправит cookie almafort_session
         window.location.href = "/cabinet";
         return;

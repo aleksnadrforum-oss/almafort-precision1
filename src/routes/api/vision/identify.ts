@@ -75,6 +75,12 @@ export const Route = createFileRoute("/api/vision/identify")({
 
           // Модель прямо сказала «в каталоге такого нет»: артикул не выдумываем,
           // показываем 2–3 ближайших варианта и предлагаем ручной выбор.
+          // Мусорный кадр: несколько разных деталей — никаких «похожих» вариантов.
+          if (verdict.multiple_objects_detected) {
+            void logVisionFail(image, verdict);
+            return Response.json({ scenario: "notfound", verdict, matches: [] });
+          }
+
           if (verdict.status === "NOT_FOUND") {
             void logVisionFail(image, verdict);
             return Response.json({

@@ -181,7 +181,17 @@ export function AiConfigurator() {
     return items.map((item) => {
       const p = PRODUCTS.find((x) => x.sku === item.sku);
       const q = Math.max(1, Math.floor(qty[rowKey(item)] ?? item.quantity));
-      if (!p) return { ...item, quantity: q };
+      // SKU GUARDRAIL: артикула нет в реальном каталоге — позиция помечается и не считается.
+      if (!p)
+        return {
+          ...item,
+          quantity: q,
+          missing: true as const,
+          on_request: true,
+          unit_price: 0,
+          total_price: 0,
+          tier: 0 as const,
+        };
       const onRequest = isOnRequest(p);
       return {
         ...item,
@@ -334,7 +344,7 @@ export function AiConfigurator() {
       toast.error(conflict);
       return;
     }
-    const payable = rows.filter((r) => !r.on_request);
+    const payable = rows.filter((r) => !r.on_request && !("missing" in r && r.missing));
     if (payable.length === 0) return;
     for (const r of payable)
       addLine(r.sku, r.quantity, undefined, r.color ?? undefined);

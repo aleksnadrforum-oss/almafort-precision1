@@ -617,10 +617,12 @@ export function ProductSheet({
                                 setSwatchIndex(i);
                                 onColorChange?.({ label: sw.label, hex: sw.hex });
                               }}
-                              className={`size-6 cursor-pointer rounded-full border transition-all duration-200 ${
+                              className={`h-8 w-8 shrink-0 cursor-pointer rounded-full transition md:h-5 md:w-5 ${
+                                isLightColor(sw.hex) || sw.opacity ? "border border-gray-200" : ""
+                              } ${
                                 i === swatchIndex
-                                  ? "border-foreground ring-2 ring-gray-400 ring-offset-2"
-                                  : "border-border hover:border-foreground/60"
+                                  ? "ring-2 ring-offset-2 ring-zinc-400"
+                                  : "hover:opacity-80"
                               }`}
                               style={
                                 sw.opacity
@@ -628,10 +630,7 @@ export function ProductSheet({
                                       backgroundImage:
                                         "linear-gradient(135deg, #ffffff 45%, #cfcfcf 45%, #cfcfcf 55%, #ffffff 55%)",
                                     }
-                                  : {
-                                      backgroundColor: sw.hex,
-                                      ...(sw.borderColor ? { borderColor: sw.borderColor } : {}),
-                                    }
+                                  : { backgroundColor: sw.hex }
                               }
                             />
                           </TooltipTrigger>

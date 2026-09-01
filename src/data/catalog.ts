@@ -1,3 +1,5 @@
+import { visualFeaturesFor } from "@/data/visual-features";
+
 export type Stock = { qty: number; lead?: string };
 
 /**
@@ -380,6 +382,7 @@ export const PRODUCTS: Product[] = raw.map(
     load: spec?.load ?? "до 240 кг статической нагрузки",
     ...(spec?.features ? { features: spec.features } : {}),
     ...(SKU_SPEC_ROWS[sku] ? { specRows: SKU_SPEC_ROWS[sku] } : {}),
+    visualFeatures: visualFeaturesFor(sku, category),
     weight,
     volume,
     stock:

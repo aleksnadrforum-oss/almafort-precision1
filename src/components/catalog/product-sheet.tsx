@@ -627,7 +627,7 @@ export function ProductSheet({
                                 setSwatchIndex(i);
                                 onColorChange?.({ label: sw.label, hex: sw.hex });
                               }}
-                              className={`h-8 w-8 shrink-0 cursor-pointer rounded-full transition md:h-5 md:w-5 ${
+                              className={`h-8 w-8 shrink-0 cursor-pointer !rounded-full transition md:h-5 md:w-5 ${
                                 isLightColor(sw.hex) || sw.opacity ? "border border-gray-200" : ""
                               } ${
                                 i === swatchIndex

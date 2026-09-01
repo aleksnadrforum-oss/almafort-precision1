@@ -453,6 +453,17 @@ export const useCart = create<State>()(
         city: s.city,
         fiasId: s.fiasId,
       }),
+      // Бэкфилл: строки, сохранённые до введения сквозного цвета, получают
+      // базовый цвет артикула — в спецификации не остаётся «бесцветных» позиций.
+      onRehydrateStorage: () => (state) => {
+        if (!state?.lines?.length) return;
+        state.lines = state.lines.map((l) => {
+          if (l.color?.label) return l;
+          const p = productBySku(l.sku);
+          return p ? { ...l, color: resolveLineColor(p) } : l;
+        });
+      },
     },
+
   ),
 );

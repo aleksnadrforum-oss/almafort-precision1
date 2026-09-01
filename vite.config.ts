@@ -32,6 +32,9 @@ export default defineConfig({
     dedupe: ["react", "react-dom", "@tanstack/react-router", "@tanstack/react-store"],
   },
   build: {
+    // Клиентский бандл должен парситься старыми iOS Safari (15+),
+    // иначе на iPhone страница рендерится, но ни одна кнопка не работает.
+    target: ["es2020", "safari15", "chrome87", "firefox78"],
     rollupOptions: { treeshake: false as const },
   },
   environments: {

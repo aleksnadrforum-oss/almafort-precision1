@@ -55,8 +55,8 @@ export function scoreMatch(haystack: string, query: string) {
     const qd = dedupe(q);
     if (hd.includes(qd)) best = Math.max(best, 70);
 
-    // typo tolerance over word tokens
-    for (const token of hd.split(/(?=\d)|(?<=\d)/)) {
+    // typo tolerance over word tokens (без lookbehind — старый Safari ломается)
+    for (const token of hd.match(/\d+|\D+/g) ?? []) {
       if (!token || Math.abs(token.length - qd.length) > 3) continue;
       const d = levenshtein(token, qd);
       if (d <= Math.max(1, Math.floor(qd.length / 4))) best = Math.max(best, 60 - d * 5);

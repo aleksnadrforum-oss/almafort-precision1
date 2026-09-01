@@ -84,8 +84,93 @@
     }
   ],
   "companies": [],
-  "orders": [],
-  "order_events": [],
+  "orders": [
+    {
+      "id": "669c485d-2283-47e3-8d5c-d16d338d69bf",
+      "created_at": "2026-09-01T07:19:59.041Z",
+      "updated_at": "2026-09-01T07:19:59.041Z",
+      "user_id": "7602a0fc-f63d-4482-9aa3-c50b6e3a7677",
+      "company_id": null,
+      "number": "AF-2026-09-01-07-19-58",
+      "status": "awaiting_payment",
+      "items": [
+        {
+          "sku": "ZGV-20x40",
+          "name": "Заглушка 20х40 мм",
+          "quantity": 100,
+          "unit": 8,
+          "sum": 800
+        },
+        {
+          "sku": "ZGD-EX",
+          "name": "Заглушка для эксцентрика",
+          "quantity": 10000,
+          "unit": 0.21,
+          "sum": 2100
+        },
+        {
+          "sku": "ZGD-EV",
+          "name": "Заглушка для евровинта",
+          "quantity": 5000,
+          "unit": 0.16,
+          "sum": 800
+        },
+        {
+          "sku": "ZGD-EV",
+          "name": "Заглушка для евровинта",
+          "quantity": 5000,
+          "unit": 0.16,
+          "sum": 800
+        },
+        {
+          "sku": "ZGD-EV",
+          "name": "Заглушка для евровинта",
+          "quantity": 10000,
+          "unit": 0.16,
+          "sum": 1600
+        },
+        {
+          "sku": "ZGD-EV",
+          "name": "Заглушка для евровинта",
+          "quantity": 15000,
+          "unit": 0.16,
+          "sum": 2400
+        },
+        {
+          "sku": "ZGD-EV",
+          "name": "Заглушка для евровинта",
+          "quantity": 15000,
+          "unit": 0.16,
+          "sum": 2400
+        },
+        {
+          "sku": "OP-H50",
+          "name": "Мебельная опора h50 мм",
+          "quantity": 500,
+          "unit": 8,
+          "sum": 4000
+        }
+      ],
+      "delivery_price": 1023,
+      "carrier": "cdek",
+      "city": "Дивногорск",
+      "deferred_payment": false,
+      "offer_version": "v1",
+      "idempotency_key": "af-1788247183204-xr6d2b2g",
+      "goods_price": 14900,
+      "total": 15923
+    }
+  ],
+  "order_events": [
+    {
+      "id": "4ab8ddb0-3b21-45bc-be54-48707abc7648",
+      "created_at": "2026-09-01T07:19:59.046Z",
+      "updated_at": "2026-09-01T07:19:59.046Z",
+      "order_id": "669c485d-2283-47e3-8d5c-d16d338d69bf",
+      "stage": "awaiting_payment",
+      "title": "Счёт сформирован, ожидаем оплату"
+    }
+  ],
   "order_documents": [],
   "saved_carts": [
     {
@@ -98,7 +183,7 @@
     {
       "id": "fbf6c744-4069-4a56-83b3-86c803ea1774",
       "created_at": "2026-08-22T14:34:50.592Z",
-      "updated_at": "2026-08-22T16:44:34.565Z",
+      "updated_at": "2026-09-01T07:20:53.625Z",
       "user_id": "7602a0fc-f63d-4482-9aa3-c50b6e3a7677",
       "lines": []
     },
@@ -288,6 +373,102 @@
       "locked_by": null,
       "status": "active",
       "expires_at": "2026-09-04T06:49:42.030Z"
+    },
+    {
+      "id": "f8b3f382-2d6b-4b91-b61c-1f36485f966b",
+      "created_at": "2026-09-01T07:19:54.999Z",
+      "updated_at": "2026-09-01T07:19:54.999Z",
+      "hold_id": "HOLD-MTIC7IIF",
+      "sku": "ZGV-20x40",
+      "quantity": 100,
+      "organization_id": "5555555555",
+      "locked_by": "7602a0fc-f63d-4482-9aa3-c50b6e3a7677",
+      "status": "active",
+      "expires_at": "2026-09-04T07:19:54.999Z"
+    },
+    {
+      "id": "fded7680-7187-4f18-a47b-f5aede3d967c",
+      "created_at": "2026-09-01T07:19:55.004Z",
+      "updated_at": "2026-09-01T07:19:55.004Z",
+      "hold_id": "HOLD-MTIC7IIF",
+      "sku": "ZGD-EX",
+      "quantity": 10000,
+      "organization_id": "5555555555",
+      "locked_by": "7602a0fc-f63d-4482-9aa3-c50b6e3a7677",
+      "status": "active",
+      "expires_at": "2026-09-04T07:19:54.999Z"
+    },
+    {
+      "id": "125e7728-15f1-4b90-97a4-97b9faaa2637",
+      "created_at": "2026-09-01T07:19:55.009Z",
+      "updated_at": "2026-09-01T07:19:55.009Z",
+      "hold_id": "HOLD-MTIC7IIF",
+      "sku": "ZGD-EV",
+      "quantity": 5000,
+      "organization_id": "5555555555",
+      "locked_by": "7602a0fc-f63d-4482-9aa3-c50b6e3a7677",
+      "status": "active",
+      "expires_at": "2026-09-04T07:19:54.999Z"
+    },
+    {
+      "id": "9de61e44-0f8e-42eb-8f48-68cb274558f9",
+      "created_at": "2026-09-01T07:19:55.011Z",
+      "updated_at": "2026-09-01T07:19:55.011Z",
+      "hold_id": "HOLD-MTIC7IIF",
+      "sku": "ZGD-EV",
+      "quantity": 5000,
+      "organization_id": "5555555555",
+      "locked_by": "7602a0fc-f63d-4482-9aa3-c50b6e3a7677",
+      "status": "active",
+      "expires_at": "2026-09-04T07:19:54.999Z"
+    },
+    {
+      "id": "9fe4e5f4-d965-49b6-922a-c3e7d1854652",
+      "created_at": "2026-09-01T07:19:55.022Z",
+      "updated_at": "2026-09-01T07:19:55.022Z",
+      "hold_id": "HOLD-MTIC7IIF",
+      "sku": "ZGD-EV",
+      "quantity": 10000,
+      "organization_id": "5555555555",
+      "locked_by": "7602a0fc-f63d-4482-9aa3-c50b6e3a7677",
+      "status": "active",
+      "expires_at": "2026-09-04T07:19:54.999Z"
+    },
+    {
+      "id": "ece28416-07c4-45b2-acef-dc1fbb245871",
+      "created_at": "2026-09-01T07:19:55.024Z",
+      "updated_at": "2026-09-01T07:19:55.024Z",
+      "hold_id": "HOLD-MTIC7IIF",
+      "sku": "ZGD-EV",
+      "quantity": 15000,
+      "organization_id": "5555555555",
+      "locked_by": "7602a0fc-f63d-4482-9aa3-c50b6e3a7677",
+      "status": "active",
+      "expires_at": "2026-09-04T07:19:54.999Z"
+    },
+    {
+      "id": "88e11500-a293-4760-82cb-e34f83785c47",
+      "created_at": "2026-09-01T07:19:55.025Z",
+      "updated_at": "2026-09-01T07:19:55.025Z",
+      "hold_id": "HOLD-MTIC7IIF",
+      "sku": "ZGD-EV",
+      "quantity": 15000,
+      "organization_id": "5555555555",
+      "locked_by": "7602a0fc-f63d-4482-9aa3-c50b6e3a7677",
+      "status": "active",
+      "expires_at": "2026-09-04T07:19:54.999Z"
+    },
+    {
+      "id": "ad586b79-947f-48c8-ae54-8e25d19112b4",
+      "created_at": "2026-09-01T07:19:55.027Z",
+      "updated_at": "2026-09-01T07:19:55.027Z",
+      "hold_id": "HOLD-MTIC7IIF",
+      "sku": "OP-H50",
+      "quantity": 500,
+      "organization_id": "5555555555",
+      "locked_by": "7602a0fc-f63d-4482-9aa3-c50b6e3a7677",
+      "status": "active",
+      "expires_at": "2026-09-04T07:19:54.999Z"
     }
   ],
   "bulk_requests": [
@@ -304,6 +485,110 @@
       "email": "222kk2@gmail.com",
       "inn": "222222222222",
       "comment": "Запрос превышает текущий складской остаток (0 шт) — требуется дозаказ на производстве"
+    },
+    {
+      "id": "99ed8a39-0523-4de8-b3db-b089ff0c49ca",
+      "created_at": "2026-09-01T07:22:21.468Z",
+      "updated_at": "2026-09-01T07:22:21.468Z",
+      "sku": "ZGV-15x15",
+      "product_name": "Заглушка 15х15 мм",
+      "base_price": 3,
+      "qty": 5000,
+      "contact_name": "Александр Москаленко",
+      "phone": "+7 (908) 211-22-56",
+      "email": "sashamoskalenko0@gmail.com",
+      "inn": "5555555555",
+      "comment": "да"
+    }
+  ],
+  "erp_sync_jobs": [
+    {
+      "id": "d9f229d7-cd11-4227-ba7e-f0ee4357b187",
+      "created_at": "2026-09-01T07:19:58.476Z",
+      "updated_at": "2026-09-01T07:19:58.480Z",
+      "order_number": "AF-2026-09-01-07-19-58",
+      "order_id": null,
+      "direction": "push",
+      "payload": {
+        "orderNumber": "AF-2026-09-01-07-19-58",
+        "inn": "5555555555",
+        "kpp": null,
+        "companyName": "",
+        "customer": {
+          "name": "Александр",
+          "phone": "+7 (908) 211-22-56",
+          "email": "sashamoskalenko0@gmail.com"
+        },
+        "city": "Дивногорск",
+        "carrier": "СДЭК",
+        "deliveryPrice": 1023,
+        "goodsPrice": 14900,
+        "total": 15923,
+        "status": "new",
+        "items": [
+          {
+            "sku": "ZGV-20x40",
+            "name": "Заглушка 20х40 мм",
+            "quantity": 100,
+            "unit": 8,
+            "sum": 800
+          },
+          {
+            "sku": "ZGD-EX",
+            "name": "Заглушка для эксцентрика",
+            "quantity": 10000,
+            "unit": 0.21,
+            "sum": 2100
+          },
+          {
+            "sku": "ZGD-EV",
+            "name": "Заглушка для евровинта",
+            "quantity": 5000,
+            "unit": 0.16,
+            "sum": 800
+          },
+          {
+            "sku": "ZGD-EV",
+            "name": "Заглушка для евровинта",
+            "quantity": 5000,
+            "unit": 0.16,
+            "sum": 800
+          },
+          {
+            "sku": "ZGD-EV",
+            "name": "Заглушка для евровинта",
+            "quantity": 10000,
+            "unit": 0.16,
+            "sum": 1600
+          },
+          {
+            "sku": "ZGD-EV",
+            "name": "Заглушка для евровинта",
+            "quantity": 15000,
+            "unit": 0.16,
+            "sum": 2400
+          },
+          {
+            "sku": "ZGD-EV",
+            "name": "Заглушка для евровинта",
+            "quantity": 15000,
+            "unit": 0.16,
+            "sum": 2400
+          },
+          {
+            "sku": "OP-H50",
+            "name": "Мебельная опора h50 мм",
+            "quantity": 500,
+            "unit": 8,
+            "sum": 4000
+          }
+        ]
+      },
+      "status": "sync_failed",
+      "attempts": 1,
+      "last_error": "1С не сконфигурирована",
+      "next_attempt_at": "2026-09-01T07:34:58.480Z",
+      "synced_at": null
     }
   ]
 }

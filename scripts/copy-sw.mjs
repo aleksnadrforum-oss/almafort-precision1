@@ -21,3 +21,41 @@ rmSync(to, { recursive: true, force: true });
 mkdirSync(to, { recursive: true });
 cpSync(from, to, { recursive: true });
 console.log(`[postbuild] статика скопирована: ${from} → ${to}`);
+
+// 3) dist-check ожидает `dist/client/index.html`. SSR-сборка Nitro его не
+//    создаёт, поэтому поднимаем сервер на свободном порту и сохраняем
+//    отрендеренную главную как статический shell.
+import { spawn } from "node:child_process";
+import { writeFileSync } from "node:fs";
+
+const entry = ".output/server/index.mjs";
+if (existsSync(entry)) {
+  const port = 41973;
+  const proc = spawn(process.execPath, [entry], {
+    env: { ...process.env, PORT: String(port), HOST: "127.0.0.1", NODE_ENV: "production" },
+    stdio: "ignore",
+  });
+  try {
+    let html = "";
+    for (let i = 0; i < 40; i++) {
+      await new Promise((r) => setTimeout(r, 500));
+      try {
+        const res = await fetch(`http://127.0.0.1:${port}/`);
+        if (res.ok) {
+          html = await res.text();
+          break;
+        }
+      } catch {
+        /* сервер ещё поднимается */
+      }
+    }
+    if (html) {
+      writeFileSync(`${to}/index.html`, html);
+      console.log("[postbuild] dist/client/index.html сохранён");
+    } else {
+      console.log("[postbuild] не удалось получить HTML главной");
+    }
+  } finally {
+    proc.kill("SIGKILL");
+  }
+}

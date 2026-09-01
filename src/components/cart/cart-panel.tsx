@@ -495,128 +495,176 @@ export function CartPanel() {
           };
           return (
             <SwipeToDelete key={key} onDelete={() => removeLine(key)}>
-            <div
-              className="cart-table-grid border-b border-border px-4 py-4 last:border-b-0 md:px-5 md:py-3"
-            >
-
-
-              <div className="flex min-w-0 items-center gap-3">
-                <span className="block w-10 shrink-0">
-                  <ProductThumb
-                    src={PRODUCTS.find((p) => p.sku === l.sku)?.image_url ?? null}
-                    alt={l.name}
-                  />
-                </span>
-                <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium text-foreground md:truncate">
-                  {l.sku} — {l.name}
-                </p>
-                {l.color && (
-                  <p className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
-                    <span
-                      aria-hidden
-                      className="inline-block size-3 shrink-0 rounded-full border border-border"
-                      style={{ backgroundColor: l.color.hex }}
+              <div className="cart-table-grid border-0 px-4 py-2 md:grid md:items-center md:border-b md:border-border md:px-5 md:py-3 md:last:border-b-0">
+                {/* Мобильная карточка */}
+                <article className="rounded-xl border border-gray-100 bg-white p-4 shadow-sm md:hidden">
+                  <div className="flex items-start gap-3">
+                    <span className="block w-10 shrink-0">
+                      <ProductThumb
+                        src={PRODUCTS.find((p) => p.sku === l.sku)?.image_url ?? null}
+                        alt={l.name}
+                      />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="w-full text-left text-sm font-medium leading-snug text-foreground">
+                        {l.sku} — {l.name}
+                      </p>
+                      {l.color && (
+                        <p className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
+                          <span
+                            aria-hidden
+                            className="inline-block size-3 shrink-0 rounded-full border border-border"
+                            style={{ backgroundColor: l.color.hex }}
+                          />
+                          Цвет: {l.color.label}
+                        </p>
+                      )}
+                      {shortages[l.sku] !== undefined && (
+                        <div className="mt-1 flex flex-wrap items-center gap-2 rounded-md bg-amber-100 px-2 py-1 text-xs font-medium text-amber-800">
+                          <span>
+                            Остаток на складе изменился. Доступно:{" "}
+                            {shortages[l.sku]!.toLocaleString("ru-RU")} шт
+                          </span>
+                          <button
+                            type="button"
+                            onClick={fixQuantities}
+                            className="cursor-pointer rounded-sm border border-amber-400 px-2 py-0.5 font-semibold text-amber-900 transition-colors hover:bg-amber-200"
+                          >
+                            Скорректировать
+                          </button>
+                        </div>
+                      )}
+                      {l.originalName && l.originalName !== l.name && (
+                        <p className="truncate text-xs text-muted-foreground">
+                          из вашей сметы: {l.originalName}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="mt-3 flex items-center justify-between gap-3 border-t border-gray-100 pt-2">
+                    <input
+                      inputMode="numeric"
+                      value={l.quantity}
+                      max={capped ? maxQty : undefined}
+                      onChange={(e) =>
+                        setQtyGuarded(Number(e.target.value.replace(/\D/g, "")) || 1)
+                      }
+                      className="h-9 w-24 rounded border border-gray-200 px-2 text-center text-sm tabular-nums outline-none transition-colors focus:border-foreground"
                     />
-                    Цвет: {l.color.label}
-                  </p>
-                )}
-                {shortages[l.sku] !== undefined && (
-                  <div className="mt-1 flex flex-wrap items-center gap-2 rounded-md bg-amber-100 px-2 py-1 text-xs font-medium text-amber-800">
-                    <span>
-                      Остаток на складе изменился. Доступно:{" "}
-                      {shortages[l.sku]!.toLocaleString("ru-RU")} шт
+                    <span className="whitespace-nowrap text-base font-semibold tabular-nums text-foreground">
+                      {money(sum)}
                     </span>
                     <button
                       type="button"
-                      onClick={fixQuantities}
-                      className="cursor-pointer rounded-sm border border-amber-400 px-2 py-0.5 font-semibold text-amber-900 transition-colors hover:bg-amber-200"
+                      onClick={() => removeLine(key)}
+                      aria-label="Удалить позицию"
+                      className="p-2 text-gray-400 transition-colors hover:text-red-600 active:scale-95"
                     >
-                      Скорректировать количество
+                      <Trash2 className="size-5" strokeWidth={1.75} />
                     </button>
                   </div>
-                )}
-                {l.originalName && l.originalName !== l.name && (
-                  <p className="truncate text-xs text-muted-foreground">
-                    из вашей сметы: {l.originalName}
-                  </p>
-                )}
+                </article>
+
+                {/* Десктоп-ячейка: позиция */}
+                <div className="hidden min-w-0 items-center gap-3 md:flex">
+                  <span className="block w-10 shrink-0">
+                    <ProductThumb
+                      src={PRODUCTS.find((p) => p.sku === l.sku)?.image_url ?? null}
+                      alt={l.name}
+                    />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-foreground md:truncate">
+                      {l.sku} — {l.name}
+                    </p>
+                    {l.color && (
+                      <p className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <span
+                          aria-hidden
+                          className="inline-block size-3 shrink-0 rounded-full border border-border"
+                          style={{ backgroundColor: l.color.hex }}
+                        />
+                        Цвет: {l.color.label}
+                      </p>
+                    )}
+                    {shortages[l.sku] !== undefined && (
+                      <div className="mt-1 flex flex-wrap items-center gap-2 rounded-md bg-amber-100 px-2 py-1 text-xs font-medium text-amber-800">
+                        <span>
+                          Остаток на складе изменился. Доступно:{" "}
+                          {shortages[l.sku]!.toLocaleString("ru-RU")} шт
+                        </span>
+                        <button
+                          type="button"
+                          onClick={fixQuantities}
+                          className="cursor-pointer rounded-sm border border-amber-400 px-2 py-0.5 font-semibold text-amber-900 transition-colors hover:bg-amber-200"
+                        >
+                          Скорректировать количество
+                        </button>
+                      </div>
+                    )}
+                    {l.originalName && l.originalName !== l.name && (
+                      <p className="truncate text-xs text-muted-foreground">
+                        из вашей сметы: {l.originalName}
+                      </p>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removeLine(key)}
+                    aria-label="Удалить позицию"
+                    className="grid size-11 shrink-0 cursor-pointer place-items-center rounded-sm text-muted-foreground transition-colors active:scale-95 md:hidden"
+                  >
+                    <Trash2 className="size-4" strokeWidth={1.75} />
+                  </button>
                 </div>
+
+                {/* Десктоп-ячейка: количество */}
+                <div className="no-select hidden text-right md:mt-0 md:block">
+                  <input
+                    inputMode="numeric"
+                    value={l.quantity}
+                    max={capped ? maxQty : undefined}
+                    onChange={(e) =>
+                      setQtyGuarded(Number(e.target.value.replace(/\D/g, "")) || 1)
+                    }
+                    className="h-auto w-full rounded-sm border border-[#D1D5DB] px-2 py-1.5 text-right text-sm tabular-nums outline-none transition-colors focus:border-foreground"
+                  />
+                </div>
+
+                {/* Десктоп-ячейка: цена */}
+                <div className="hidden text-right text-sm tabular-nums md:block">
+                  <span>
+                    {discounted && (
+                      <span className="mr-1 text-xs text-muted-foreground line-through">
+                        {money(base)}
+                      </span>
+                    )}
+                    <span
+                      className={
+                        discounted ? "font-semibold text-[oklch(0.5_0.15_150)]" : "text-foreground"
+                      }
+                    >
+                      {money(unit)}
+                    </span>
+                  </span>
+                  <p className="text-[11px] text-muted-foreground md:mt-0">{TIER_LABEL[tier]}</p>
+                </div>
+
+                {/* Десктоп-ячейка: сумма */}
+                <div className="hidden text-right text-sm font-semibold tabular-nums text-foreground md:block">
+                  {money(sum)}
+                </div>
+
+                {/* Десктоп: удаление */}
                 <button
                   type="button"
                   onClick={() => removeLine(key)}
                   aria-label="Удалить позицию"
-                  className="grid size-11 shrink-0 cursor-pointer place-items-center rounded-sm text-muted-foreground transition-colors active:scale-95 md:hidden"
+                  className="hidden size-8 cursor-pointer place-items-center rounded-sm text-muted-foreground transition-all duration-200 hover:scale-110 hover:bg-primary hover:text-primary-foreground active:scale-95 md:grid"
                 >
                   <Trash2 className="size-4" strokeWidth={1.75} />
                 </button>
               </div>
-
-              {/* Мобильный блок количества: крупные «−» и «+» */}
-              <div className="no-select mt-3 grid grid-cols-[44px_minmax(0,1fr)_44px] gap-2 md:mt-0 md:block">
-                <button
-                  type="button"
-                  aria-label="Уменьшить количество"
-                  onClick={() => setQtyGuarded(Math.max(1, l.quantity - 100))}
-                  className="grid h-11 place-items-center rounded-md border border-[#D1D5DB] text-foreground active:scale-95 md:hidden"
-                >
-                  −
-                </button>
-                <input
-                  inputMode="numeric"
-                  value={l.quantity}
-                  max={capped ? maxQty : undefined}
-                  onChange={(e) =>
-                    setQtyGuarded(Number(e.target.value.replace(/\D/g, "")) || 1)
-                  }
-                  className="h-11 w-full rounded-md border border-[#D1D5DB] px-2 text-center tabular-nums outline-none transition-colors focus:border-foreground md:h-auto md:rounded-sm md:py-1.5 md:text-right md:text-sm"
-                />
-                <button
-                  type="button"
-                  aria-label="Увеличить количество"
-                  onClick={() => setQtyGuarded(l.quantity + 100)}
-                  disabled={atMax}
-                  className="grid h-11 place-items-center rounded-md border border-[#D1D5DB] text-foreground active:scale-95 disabled:cursor-not-allowed disabled:text-gray-300 md:hidden"
-                >
-                  +
-                </button>
-              </div>
-
-              <div className="mt-3 flex items-baseline justify-between text-sm tabular-nums md:mt-0 md:block md:text-right">
-                <span className="text-xs uppercase text-muted-foreground md:hidden">Цена</span>
-                <span>
-                  {discounted && (
-                    <span className="mr-1 text-xs text-muted-foreground line-through">
-                      {money(base)}
-                    </span>
-                  )}
-                  <span
-                    className={
-                      discounted ? "font-semibold text-[oklch(0.5_0.15_150)]" : "text-foreground"
-                    }
-                  >
-                    {money(unit)}
-                  </span>
-                </span>
-                <p className="text-[11px] text-muted-foreground md:mt-0">{TIER_LABEL[tier]}</p>
-              </div>
-
-              <div className="mt-2 flex items-baseline justify-between text-sm font-semibold tabular-nums text-foreground md:mt-0 md:block md:text-right">
-                <span className="text-xs uppercase font-normal text-muted-foreground md:hidden">
-                  Сумма
-                </span>
-                {money(sum)}
-              </div>
-
-              <button
-                type="button"
-                onClick={() => removeLine(key)}
-                aria-label="Удалить позицию"
-                className="hidden size-8 cursor-pointer place-items-center rounded-sm text-muted-foreground transition-all duration-200 hover:scale-110 hover:bg-primary hover:text-primary-foreground active:scale-95 md:grid"
-              >
-                <Trash2 className="size-4" strokeWidth={1.75} />
-              </button>
-            </div>
             </SwipeToDelete>
           );
 

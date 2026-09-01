@@ -670,9 +670,9 @@ button:disabled,
 @media (min-width: 768px) {
   .cart-table-grid {
     display: grid;
-    grid-template-columns: minmax(280px, 3fr) 120px 120px 120px 40px;
+    grid-template-columns: minmax(220px, 1fr) 112px 128px 128px 40px;
     align-items: center;
-    gap: 16px;
+    gap: 12px;
   }
 
   .cart-table-scroll {
@@ -681,7 +681,7 @@ button:disabled,
   }
 
   .cart-table-scroll > * {
-    min-width: 744px;
+    min-width: 600px;
   }
 }
 

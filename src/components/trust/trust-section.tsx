@@ -25,37 +25,49 @@ function Lightbox({ doc, onClose }: { doc: Doc | null; onClose: () => void }) {
       aria-modal="true"
       aria-label={doc.alt}
       onClick={onClose}
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-foreground/80 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-[100] flex flex-col bg-foreground/90 backdrop-blur-sm"
     >
-      <button
-        type="button"
-        aria-label="Закрыть"
-        onClick={onClose}
-        className="absolute right-5 top-5 rounded-md p-2 text-background hover:bg-background/10"
-      >
-        <X className="size-6" />
-      </button>
+      {/* Верхняя панель: всегда видима, учитывает «чёлку» и панель Safari */}
       <div
         onClick={(e) => e.stopPropagation()}
-        className="flex h-[80vh] max-w-full flex-col overflow-hidden rounded-md bg-card shadow-2xl"
+        className="flex shrink-0 items-center gap-3 px-4 pb-3 pt-[calc(env(safe-area-inset-top,0px)+12px)]"
+      >
+        <p className="min-w-0 flex-1 truncate text-sm font-medium text-background">
+          {doc.caption ?? doc.alt}
+        </p>
+        <button
+          type="button"
+          aria-label="Закрыть"
+          onClick={onClose}
+          className="grid size-11 shrink-0 place-items-center rounded-full bg-background/15 text-background transition-colors hover:bg-background/25 active:scale-95"
+        >
+          <X className="size-6" strokeWidth={2} />
+        </button>
+      </div>
+
+      {/* Область просмотра: изображение всегда вписывается по ширине и высоте */}
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="mx-auto flex min-h-0 w-full max-w-[900px] flex-1 items-center justify-center px-3 pb-[calc(env(safe-area-inset-bottom,0px)+16px)]"
       >
         {doc.pdf ? (
           <iframe
             src={doc.pdf}
             title={doc.alt}
-            className="h-full w-[min(90vw,860px)] border-0 bg-card"
+            className="h-full w-full rounded-md border-0 bg-card"
           />
         ) : (
           <img
             src={doc.src}
             alt={doc.alt}
-            className="h-full w-auto max-w-[92vw] object-contain"
+            className="max-h-full w-auto max-w-full rounded-md bg-card object-contain shadow-2xl"
           />
         )}
       </div>
     </div>
   );
 }
+
 
 function DocThumb({ doc, onOpen }: { doc: Doc; onOpen: (d: Doc) => void }) {
   return (

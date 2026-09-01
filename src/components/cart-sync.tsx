@@ -1,9 +1,14 @@
 import { useEffect, useRef } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { isAuthed, onAuthChange } from "@/lib/session";
+import { clearSession, isAuthed, onAuthChange } from "@/lib/session";
 import { useCart } from "@/store/cart-store";
 import { mergeSavedCart, saveCart } from "@/lib/cart-sync.functions";
+
+/** 401 от серверной функции приходит как Response — это не сбой приложения. */
+function isUnauthorized(error: unknown): boolean {
+  return error instanceof Response && error.status === 401;
+}
 
 /**
  * Коллизия гостевой корзины: при входе гостевые позиции сливаются
@@ -26,9 +31,16 @@ export function CartSync() {
           toast.info(`Корзина объединена с сохранённой в кабинете: +${res.restored} поз.`);
         }
       } catch (e) {
-        console.error("[cart-sync] слияние не выполнено", e);
+        if (isUnauthorized(e)) {
+          // Снимок профиля в localStorage пережил HttpOnly-куку: тихо разлогиниваем.
+          signedIn.current = false;
+          clearSession();
+          return;
+        }
+        console.warn("[cart-sync] слияние не выполнено", e);
       }
     };
+
 
     if (isAuthed() && !signedIn.current) {
       signedIn.current = true;

@@ -1,9 +1,10 @@
 /**
  * ALMAFORT — отправка писем через HTTPS API Resend (порт 443).
  * SMTP не используется: провайдер VPS блокирует порты 465/587.
+ *
+ * Важно: НЕ используем npm-пакет `resend` — в serverless-воркере он падает
+ * с EPERM (пакет тянет postal-mime/standardwebhooks). Только чистый fetch.
  */
-import { Resend } from "resend";
-
 export type MailPayload = {
   to: string;
   subject: string;
@@ -14,16 +15,12 @@ export type MailPayload = {
 
 /** Sandbox-режим Resend: единственный разрешённый отправитель. */
 const FROM_ADDRESS = "onboarding@resend.dev";
+const RESEND_API = "https://api.resend.com";
 
-let client: Resend | null = null;
-
-function getResend(): Resend {
-  if (!client) {
-    const apiKey = (process.env["RESEND_API_KEY"] ?? "").trim();
-    if (!apiKey) throw new Error("RESEND_API_KEY не задан в переменных окружения");
-    client = new Resend(apiKey);
-  }
-  return client;
+function resendApiKey(): string {
+  const apiKey = (process.env["RESEND_API_KEY"] ?? "").trim();
+  if (!apiKey) throw new Error("RESEND_API_KEY не задан в переменных окружения");
+  return apiKey;
 }
 
 export function siteUrl(): string {
@@ -31,22 +28,50 @@ export function siteUrl(): string {
   return raw.replace(/\/+$/, "");
 }
 
+async function resendRequest(
+  path: string,
+  init: { method: string; body?: unknown },
+): Promise<Record<string, unknown>> {
+  const response = await fetch(`${RESEND_API}${path}`, {
+    method: init.method,
+    headers: {
+      Authorization: `Bearer ${resendApiKey()}`,
+      "Content-Type": "application/json",
+    },
+    ...(init.body !== undefined ? { body: JSON.stringify(init.body) } : {}),
+  });
+  const text = await response.text();
+  let json: Record<string, unknown> = {};
+  try {
+    json = text ? (JSON.parse(text) as Record<string, unknown>) : {};
+  } catch {
+    /* не-JSON ответ — вернём как текст ниже */
+  }
+  if (!response.ok) {
+    const providerMessage =
+      (typeof json["message"] === "string" && json["message"]) || text.slice(0, 300) ||
+      `HTTP ${response.status}`;
+    throw new Error(providerMessage);
+  }
+  return json;
+}
+
 export async function sendMail(payload: MailPayload): Promise<{ messageId?: string }> {
   try {
-    const { data, error } = await getResend().emails.send({
-      from: FROM_ADDRESS,
-      to: payload.to,
-      subject: payload.subject,
-      html: payload.html,
-      text: payload.text ?? stripHtml(payload.html),
-      ...(payload.replyTo ? { replyTo: payload.replyTo } : {}),
+    const data = await resendRequest("/emails", {
+      method: "POST",
+      body: {
+        from: FROM_ADDRESS,
+        to: payload.to,
+        subject: payload.subject,
+        html: payload.html,
+        text: payload.text ?? stripHtml(payload.html),
+        ...(payload.replyTo ? { reply_to: payload.replyTo } : {}),
+      },
     });
-    if (error) {
-      console.error("[mailer] Resend ошибка:", error.name, error.message);
-      throw new Error(`Не удалось отправить письмо: ${error.message}`);
-    }
-    console.info(`[mailer] отправлено -> ${payload.to} (${data?.id ?? "no-id"})`);
-    return { ...(data?.id ? { messageId: data.id } : {}) };
+    const id = typeof data["id"] === "string" ? data["id"] : undefined;
+    console.info(`[mailer] отправлено -> ${payload.to} (${id ?? "no-id"})`);
+    return { ...(id ? { messageId: id } : {}) };
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
     console.error("[mailer] ОШИБКА ОТПРАВКИ", JSON.stringify({ to: payload.to, message }));
@@ -56,8 +81,7 @@ export async function sendMail(payload: MailPayload): Promise<{ messageId?: stri
 
 /** Диагностика канала отправки (Resend API доступен и ключ валиден). */
 export async function verifyResend(): Promise<void> {
-  const { error } = await getResend().domains.list();
-  if (error) throw new Error(`Resend API: ${error.message}`);
+  await resendRequest("/domains", { method: "GET" });
 }
 
 

@@ -183,7 +183,7 @@
     {
       "id": "fbf6c744-4069-4a56-83b3-86c803ea1774",
       "created_at": "2026-08-22T14:34:50.592Z",
-      "updated_at": "2026-09-01T07:37:26.389Z",
+      "updated_at": "2026-09-01T07:49:21.446Z",
       "user_id": "7602a0fc-f63d-4482-9aa3-c50b6e3a7677",
       "lines": [
         {
@@ -416,7 +416,30 @@
       "used": false
     }
   ],
-  "otp_codes": [],
+  "otp_codes": [
+    {
+      "id": "0819af56-026d-4419-a77a-544ffc1967d6",
+      "created_at": "2026-09-01T07:47:42.224Z",
+      "updated_at": "2026-09-01T07:47:42.224Z",
+      "email": "test-eperm-check@example.com",
+      "ip": "unknown",
+      "salt": "6b51cc4ce15f7318bce4302d5fe1a1b2",
+      "code_hash": "23a541613684b675a42eea9c296710a8a507cace1aa6a5273d63d93efe92bb68a462e499b7863fe07dac9c7330aec072e049e6b66e2c4ec94ea21692237f3444",
+      "attempts": 0,
+      "expires_at": "2026-09-01T07:52:42.224Z"
+    },
+    {
+      "id": "148933b1-ab7f-4f14-b489-7083e71aea6f",
+      "created_at": "2026-09-01T07:50:30.008Z",
+      "updated_at": "2026-09-01T07:50:30.009Z",
+      "email": "sashamoskalenko0@gmail.com",
+      "ip": "unknown",
+      "salt": "b2a7669c59df704fabb7f32d2ff72cae",
+      "code_hash": "f6d22f4b8e96bc711c7e46a3f96e27248cf8a3bc60aa15628174d0e848f796372dfc8932edcd065c5532c6b4b44510369f0ee8610a384784ec0a49856e210b27",
+      "attempts": 0,
+      "expires_at": "2026-09-01T07:55:30.008Z"
+    }
+  ],
   "crm_queue": [],
   "inventory_holds": [
     {

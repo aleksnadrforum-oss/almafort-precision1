@@ -10,7 +10,7 @@ import { QuoteRequestModal } from "@/components/catalog/quote-request-modal";
 import { ProductThumb } from "@/components/catalog/product-thumb";
 import { AssetLightbox } from "@/components/catalog/asset-lightbox";
 import { useAssetGroups, type AssetGroup } from "@/lib/asset-groups";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+
 import {
   baseColorForProduct,
   paletteForProduct,
@@ -23,64 +23,7 @@ type Props = {
   onAdd: (p: Product, qty: number, color?: { label: string; hex: string }) => void;
 };
 
-/** Компактная палитра прямо в строке: снабженец не добавляет «слепой» цвет. */
-function MicroSwatches({
-  palette,
-  index,
-  onPick,
-  sku,
-}: {
-  palette: ColorSwatch[];
-  index: number;
-  onPick: (i: number) => void;
-  sku: string;
-}) {
-  return (
-    <TooltipProvider delayDuration={120}>
-      <div className="mt-1.5 flex flex-wrap items-center gap-2">
-        {palette.map((sw, i) => (
-          <Tooltip key={sw.hex + sw.label}>
-            <TooltipTrigger asChild>
-              <button
-                type="button"
-                aria-label={`${sku}: ${sw.label}`}
-                aria-pressed={i === index}
-                onClick={() => onPick(i)}
-                className={`h-8 w-8 shrink-0 rounded-full transition md:h-5 md:w-5 ${
-                  isLightColor(sw.hex) || sw.opacity ? "border border-gray-200" : ""
-                } ${
-                  i === index
-                    ? "ring-2 ring-offset-2 ring-zinc-400"
-                    : "hover:opacity-80"
-                }`}
-                style={
-                  sw.opacity
-                    ? {
-                        borderRadius: "9999px",
-                        backgroundImage:
-                          "linear-gradient(135deg, #ffffff 45%, #cfcfcf 45%, #cfcfcf 55%, #ffffff 55%)",
-                      }
-                    : { borderRadius: "9999px", backgroundColor: sw.hex }
-                }
-              />
-            </TooltipTrigger>
-            <TooltipContent>{sw.label}</TooltipContent>
-          </Tooltip>
-        ))}
-      </div>
-    </TooltipProvider>
-  );
-}
 
-/** Светлые оттенки (белый, бежевый и т.п.) нуждаются в деликатной границе, чтобы не сливаться с фоном. */
-function isLightColor(hex: string) {
-  const n = Number.parseInt(hex.replace("#", ""), 16);
-  if (Number.isNaN(n)) return false;
-  const r = (n >> 16) & 255;
-  const g = (n >> 8) & 255;
-  const b = n & 255;
-  return 0.299 * r + 0.587 * g + 0.114 * b > 200;
-}
 
 
 /** Персистентный маркер «позиция уже в спецификации» с микро-кружком цвета. */
@@ -347,17 +290,6 @@ function MobileCard({
           )}
           <p className="mt-1 text-xs tabular-nums text-muted-foreground">{p.sku}</p>
           <p className="mt-1 text-xs leading-[1.35] text-muted-foreground">{p.dims}</p>
-          {/* Резерв под цвет: слот фиксированной высоты в каждой строке. */}
-          {!onRequest && palette ? (
-            <MicroSwatches
-              palette={palette}
-              index={colorIndex}
-              onPick={setColorIndex}
-              sku={p.sku}
-            />
-          ) : (
-            <div className="mt-1.5 min-h-8 md:min-h-5" aria-hidden />
-          )}
           <div className="mt-1.5">
             <StockCell p={p} />
           </div>
@@ -573,12 +505,6 @@ function Row({
         <span className="block w-full overflow-hidden text-ellipsis whitespace-nowrap text-xs tabular-nums text-[oklch(0.55_0.01_264)]">
           {p.sku}
         </span>
-        {/* Резерв под цвет: слот фиксированной высоты в каждой строке. */}
-        {!onRequest && palette ? (
-          <MicroSwatches palette={palette} index={colorIndex} onPick={setColorIndex} sku={p.sku} />
-        ) : (
-          <div className="mt-1.5 min-h-8 md:min-h-5" aria-hidden />
-        )}
       </div>
       <div className={`${CELL} text-sm text-muted-foreground`}>
         <span

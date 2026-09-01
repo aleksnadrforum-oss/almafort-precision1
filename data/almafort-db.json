@@ -249,6 +249,20 @@
     }
   ],
   "crm_queue": [],
+  "inventory_holds": [
+    {
+      "id": "837c201f-0910-4c8b-82f2-945ccdbc4001",
+      "created_at": "2026-09-01T06:49:42.030Z",
+      "updated_at": "2026-09-01T06:49:42.030Z",
+      "hold_id": "HOLD-MTIB4NM6",
+      "sku": "ZGD-EV",
+      "quantity": 50,
+      "organization_id": "7701234567",
+      "locked_by": null,
+      "status": "active",
+      "expires_at": "2026-09-04T06:49:42.030Z"
+    }
+  ],
   "bulk_requests": [
     {
       "id": "cbf60106-4198-46a5-903a-299ec9b25724",

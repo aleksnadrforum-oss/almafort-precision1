@@ -594,10 +594,10 @@ export function ProductSheet({
         {product && !service && (
           <>
 
-            <DialogHeader>
-              <DialogTitle className="text-xl font-extrabold text-foreground">
+            <DialogHeader className="pr-14 text-left">
+              <DialogTitle className="text-left text-xl font-extrabold text-foreground">
                 {product.name}
-                <span className="ml-2 text-sm font-normal text-muted-foreground">
+                <span className="ml-2 block text-sm font-normal text-muted-foreground sm:inline">
                   {product.sku}
                 </span>
               </DialogTitle>

@@ -88,8 +88,9 @@ export async function requestOtp(emailRaw: string, ip: string): Promise<RequestR
   const code = String(randomInt(0, 10_000)).padStart(4, "0");
   const salt = randomBytes(16).toString("hex");
 
+  const otpId = randomUUID();
   await db.from("otp_codes").insert({
-    id: randomUUID(),
+    id: otpId,
     email,
     ip: ip || null,
     salt,
@@ -108,7 +109,10 @@ export async function requestOtp(emailRaw: string, ip: string): Promise<RequestR
     if (!(process.env["RESEND_API_KEY"] ?? "").trim()) {
       console.warn(`[otp] Resend не настроен, код для ${email}: ${code}`);
     } else {
+      // Письмо не ушло — код бесполезен: убираем его, чтобы пользователь
+      // мог повторить попытку сразу, без 60-секундного кулдауна.
       console.error("[otp] не удалось отправить код:", (e as Error)?.message);
+      await db.from("otp_codes").delete().eq("id", otpId);
       throw e;
     }
   }

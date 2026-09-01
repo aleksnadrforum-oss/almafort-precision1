@@ -26,6 +26,10 @@ export type VisionVerdict = {
   low_light: boolean;
   /** Отличительные визуальные маркеры: металлический каркас, фактура, форма шляпки. */
   markers: string[];
+  /** Chain of Thought: что модель физически увидела ДО вывода об артикуле. */
+  detected_features: string;
+  /** Артикул каталога, если модель уверенно сопоставила геометрию. */
+  sku: string | null;
 };
 
 const MODEL = "google/gemini-3.6-flash";
@@ -223,6 +227,11 @@ export async function identifyPart(imageDataUrl: string): Promise<VisionVerdict>
     markers: Array.isArray(parsed.markers)
       ? parsed.markers.slice(0, 5).map((m) => String(m).slice(0, 40))
       : [],
+    detected_features: String(parsed.detected_features ?? "").slice(0, 600),
+    sku:
+      status === "VALID" && typeof parsed.sku === "string" && parsed.sku.trim()
+        ? parsed.sku.trim().toUpperCase()
+        : null,
   };
 }
 

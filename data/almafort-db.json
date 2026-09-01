@@ -235,19 +235,7 @@
       "used": false
     }
   ],
-  "otp_codes": [
-    {
-      "id": "40b187e7-b350-4ac4-a0a7-a99880155186",
-      "created_at": "2026-08-31T21:18:28.246Z",
-      "updated_at": "2026-08-31T21:18:28.246Z",
-      "email": "sashamoskalenko0@gmail.com",
-      "ip": "195.200.17.34",
-      "salt": "829d851b007fc35014e4133640bc98ca",
-      "code_hash": "32797a97ac0cb99ed525ff447882631ee5418c9b4847861b53a080b24908d97103d73425fe80cd7059758e00059413b9210f34b6fa8d6dab4975e3ff52ea29b4",
-      "attempts": 0,
-      "expires_at": "2026-08-31T21:23:28.246Z"
-    }
-  ],
+  "otp_codes": [],
   "crm_queue": [],
   "inventory_holds": [
     {

@@ -37,7 +37,7 @@ function MicroSwatches({
 }) {
   return (
     <TooltipProvider delayDuration={120}>
-      <div className="mt-1.5 flex min-h-[24px] flex-wrap items-center gap-1.5">
+      <div className="mt-1.5 flex flex-wrap items-center gap-2">
         {palette.map((sw, i) => (
           <Tooltip key={sw.hex + sw.label}>
             <TooltipTrigger asChild>
@@ -46,21 +46,21 @@ function MicroSwatches({
                 aria-label={`${sku}: ${sw.label}`}
                 aria-pressed={i === index}
                 onClick={() => onPick(i)}
-                className={`size-4 shrink-0 rounded-full border transition ${
+                className={`h-8 w-8 shrink-0 rounded-full transition md:h-5 md:w-5 ${
+                  isLightColor(sw.hex) || sw.opacity ? "border border-gray-200" : ""
+                } ${
                   i === index
-                    ? "border-foreground ring-1 ring-gray-400"
-                    : "border-border hover:border-foreground/60"
+                    ? "ring-2 ring-offset-2 ring-zinc-400"
+                    : "hover:opacity-80"
                 }`}
                 style={
                   sw.opacity
                     ? {
+                        borderRadius: "9999px",
                         backgroundImage:
                           "linear-gradient(135deg, #ffffff 45%, #cfcfcf 45%, #cfcfcf 55%, #ffffff 55%)",
                       }
-                    : {
-                        backgroundColor: sw.hex,
-                        ...(sw.borderColor ? { borderColor: sw.borderColor } : {}),
-                      }
+                    : { borderRadius: "9999px", backgroundColor: sw.hex }
                 }
               />
             </TooltipTrigger>
@@ -70,6 +70,16 @@ function MicroSwatches({
       </div>
     </TooltipProvider>
   );
+}
+
+/** Светлые оттенки (белый, бежевый и т.п.) нуждаются в деликатной границе, чтобы не сливаться с фоном. */
+function isLightColor(hex: string) {
+  const n = Number.parseInt(hex.replace("#", ""), 16);
+  if (Number.isNaN(n)) return false;
+  const r = (n >> 16) & 255;
+  const g = (n >> 8) & 255;
+  const b = n & 255;
+  return 0.299 * r + 0.587 * g + 0.114 * b > 200;
 }
 
 
@@ -346,7 +356,7 @@ function MobileCard({
               sku={p.sku}
             />
           ) : (
-            <div className="mt-1.5 min-h-[24px]" aria-hidden />
+            <div className="mt-1.5 min-h-8 md:min-h-5" aria-hidden />
           )}
           <div className="mt-1.5">
             <StockCell p={p} />
@@ -421,13 +431,14 @@ function MobileCard({
         disabled={state === "loading" || outOfStock}
         className={`mt-3 flex h-12 w-full items-center justify-center gap-2 rounded-md text-sm font-semibold tabular-nums transition-colors active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed ${
           outOfStock
-            ? "bg-[#E5E7EB] text-[#9CA3AF]"
+            ? "border border-[#E5E7EB] bg-[#F3F4F6] text-[#9CA3AF]"
             : state === "done"
               ? "bg-[#10B981] text-white"
-              : "bg-primary text-primary-foreground"
+              : hasSum
+                ? "bg-[#F3F4F6] text-foreground hover:bg-primary hover:text-primary-foreground"
+                : "border border-[#D1D5DB] bg-[#F3F4F6] text-muted-foreground hover:border-primary hover:bg-primary hover:text-primary-foreground"
         }`}
       >
-
         {state === "loading" ? (
           <Loader2 className="size-4 animate-spin" strokeWidth={1.75} />
         ) : state === "done" ? (
@@ -566,7 +577,7 @@ function Row({
         {!onRequest && palette ? (
           <MicroSwatches palette={palette} index={colorIndex} onPick={setColorIndex} sku={p.sku} />
         ) : (
-          <div className="mt-1.5 min-h-[24px]" aria-hidden />
+          <div className="mt-1.5 min-h-8 md:min-h-5" aria-hidden />
         )}
       </div>
       <div className={`${CELL} text-sm text-muted-foreground`}>

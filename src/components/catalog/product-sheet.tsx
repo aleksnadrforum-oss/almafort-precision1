@@ -36,6 +36,16 @@ import { useAssetGroups } from "@/lib/asset-groups";
 import { useDebounce } from "@/hooks/use-debounce";
 import type { ShippingQuote } from "@/lib/logistics";
 
+/** Светлые оттенки (белый, бежевый и т.п.) нуждаются в деликатной границе, чтобы не сливаться с фоном. */
+function isLightColor(hex: string) {
+  const n = Number.parseInt(hex.replace("#", ""), 16);
+  if (Number.isNaN(n)) return false;
+  const r = (n >> 16) & 255;
+  const g = (n >> 8) & 255;
+  const b = n & 255;
+  return 0.299 * r + 0.587 * g + 0.114 * b > 200;
+}
+
 type PartMaterial = {
   roughness: number;
   metalness: number;
@@ -617,21 +627,21 @@ export function ProductSheet({
                                 setSwatchIndex(i);
                                 onColorChange?.({ label: sw.label, hex: sw.hex });
                               }}
-                              className={`size-6 cursor-pointer rounded-full border transition-all duration-200 ${
+                              className={`h-8 w-8 shrink-0 cursor-pointer rounded-full transition md:h-5 md:w-5 ${
+                                isLightColor(sw.hex) || sw.opacity ? "border border-gray-200" : ""
+                              } ${
                                 i === swatchIndex
-                                  ? "border-foreground ring-2 ring-gray-400 ring-offset-2"
-                                  : "border-border hover:border-foreground/60"
+                                  ? "ring-2 ring-offset-2 ring-zinc-400"
+                                  : "hover:opacity-80"
                               }`}
                               style={
                                 sw.opacity
                                   ? {
+                                      borderRadius: "9999px",
                                       backgroundImage:
                                         "linear-gradient(135deg, #ffffff 45%, #cfcfcf 45%, #cfcfcf 55%, #ffffff 55%)",
                                     }
-                                  : {
-                                      backgroundColor: sw.hex,
-                                      ...(sw.borderColor ? { borderColor: sw.borderColor } : {}),
-                                    }
+                                  : { borderRadius: "9999px", backgroundColor: sw.hex }
                               }
                             />
                           </TooltipTrigger>

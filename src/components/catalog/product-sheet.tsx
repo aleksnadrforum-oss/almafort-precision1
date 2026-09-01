@@ -635,7 +635,7 @@ export function ProductSheet({
                   </p>
                   {/* Единый дизайн-код каталога: компактная сетка свотчей + тултип. */}
                   <TooltipProvider delayDuration={120}>
-                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                    <div className="mt-2 flex flex-wrap items-center gap-2.5">
                       {swatches.map((sw, i) => (
                         <Tooltip key={sw.hex + sw.label}>
                           <TooltipTrigger asChild>
@@ -647,11 +647,9 @@ export function ProductSheet({
                                 setSwatchIndex(i);
                                 onColorChange?.({ label: sw.label, hex: sw.hex });
                               }}
-                              className={`h-8 w-8 shrink-0 cursor-pointer rounded-full transition md:h-5 md:w-5 ${
-                                isLightColor(sw.hex) || sw.opacity ? "border border-gray-200" : ""
-                              } ${
+                              className={`h-8 w-8 shrink-0 flex-shrink-0 cursor-pointer rounded-full border border-gray-200 transition md:h-8 md:w-8 ${
                                 i === swatchIndex
-                                  ? "ring-2 ring-offset-2 ring-zinc-400"
+                                  ? "ring-2 ring-offset-2 ring-red-600"
                                   : "hover:opacity-80"
                               }`}
                               style={

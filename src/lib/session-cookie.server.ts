@@ -32,7 +32,7 @@ export function sessionCookie(request: Request, token: string, expiresAtSec: num
   ];
   // Secure нельзя ставить на http — иначе браузер молча выбросит куку
   // (self-host по IP до выпуска сертификата).
-  if (secure) parts.push("Secure");
+  if (secure) parts.push("Secure", "Partitioned");
   return parts.join("; ");
 }
 
@@ -45,7 +45,7 @@ export function clearSessionCookie(request: Request): string {
     secure ? "SameSite=None" : "SameSite=Lax",
     "Max-Age=0",
   ];
-  if (secure) parts.push("Secure");
+  if (secure) parts.push("Secure", "Partitioned");
   return parts.join("; ");
 }
 

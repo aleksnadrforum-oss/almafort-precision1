@@ -259,7 +259,7 @@ export function matchRow(rawName: string, quantity: number): MatchResult {
     }
   }
 
-  const qp = extractParams(rawName);
+  const qp = extractParams(core);
 
   // 2. Прямые семантические попадания (стеклодержатель, кляймер, крепсс, услуги…).
   for (const [triggers, sku] of DIRECT_HITS) {
@@ -312,7 +312,7 @@ export function matchRow(rawName: string, quantity: number): MatchResult {
 
     if (list.length === 1) {
       const p = list[0]!;
-      return { status: "MATCHED", score: 88, sku: p.sku, name: p.name, candidates: [toCandidate(p, quantity)] };
+      return { status: "MATCHED", score: 88, sku: p.sku, name: p.name, colors, candidates: [toCandidate(p, quantity)] };
     }
     if (list.length) {
       return {
@@ -320,6 +320,7 @@ export function matchRow(rawName: string, quantity: number): MatchResult {
         score: narrowed.length ? 70 : 55,
         sku: null,
         name: null,
+        colors,
         candidates: list.slice(0, 12).map((p) => toCandidate(p, quantity)),
       };
     }
@@ -355,6 +356,7 @@ export function matchRow(rawName: string, quantity: number): MatchResult {
       score: Math.round(top.score),
       sku: null,
       name: null,
+      colors,
       candidates: ranked.slice(0, 8).map((r) => toCandidate(r.p, quantity)),
     };
   }

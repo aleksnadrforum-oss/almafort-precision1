@@ -1,3 +1,4 @@
+import { useAuth } from "@/lib/use-auth";
 import { Link, useLocation } from "@tanstack/react-router";
 import { Home, LayoutGrid, ShoppingCart, Sparkles, UserRound } from "lucide-react";
 import { useEffect } from "react";

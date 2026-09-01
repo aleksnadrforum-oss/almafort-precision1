@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { MapPin, Phone, UserRound, Menu, ShoppingCart, X } from "lucide-react";
-import { currentUser, onAuthChange } from "@/lib/session";
+import { useAuth } from "@/lib/use-auth";
 import { useCart } from "@/store/cart-store";
 import { trackContact } from "@/lib/metrika";
 
@@ -16,8 +16,8 @@ const NAV = [
 export function SiteHeader() {
   const [elevated, setElevated] = useState(false);
   const [open, setOpen] = useState(false);
-  /** null — сессия ещё не прочитана (SSR-safe), иначе e-mail снабженца или "". */
-  const [account, setAccount] = useState<string | null>(null);
+  const { user, isAuthenticated: authed } = useAuth();
+  const account = user?.email ?? "";
   const cartLines = useCart((s) => s.lines.length);
 
   useEffect(() => {
@@ -37,13 +37,6 @@ export function SiteHeader() {
     };
   }, [open]);
 
-  useEffect(() => {
-    const sync = () => setAccount(currentUser()?.email ?? "");
-    sync();
-    return onAuthChange(sync);
-  }, []);
-
-  const authed = Boolean(account);
 
 
   return (

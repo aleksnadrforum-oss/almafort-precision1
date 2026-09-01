@@ -13,6 +13,7 @@ import {
   splitMixedCell,
 } from "@/lib/spec-sanitize";
 import { PRODUCTS, unitPrice } from "@/data/catalog";
+import { DEFAULT_COLOR, extractColors, resolveColor, type ColorRef } from "@/data/palettes";
 
 export type SpecRowStatus = RowStatus | "NEEDS_SIZE" | "ERROR";
 
@@ -29,6 +30,10 @@ export type ParsedRow = {
   notes: string[];
   error: string | null;
   candidates: Candidate[];
+  /** Цвет позиции. Структура едина для 100 % строк (услуги → «Базовый»). */
+  color: ColorRef;
+  /** Цвет реально распознан в строке клиента (а не подставлен по умолчанию). */
+  colorRecognized: boolean;
 };
 
 export type ParseResult = {
@@ -314,11 +319,19 @@ function walk(wb: XLSX.WorkBook): ParseResult {
           ],
           error,
           candidates: roundCapCandidates(quantity),
+          color: DEFAULT_COLOR,
+          colorRecognized: false,
         });
         continue;
       }
 
       const verdict = matchRow(label, quantity);
+      // Проход 2: канонические цвета из строки → образец палитры конкретного SKU.
+      const matchedProduct = verdict.sku ? (PRODUCTS.find((x) => x.sku === verdict.sku) ?? null) : null;
+      const canonicals = verdict.colors.length ? verdict.colors : extractColors(label).colors;
+      const resolved = resolveColor(matchedProduct, canonicals);
+      if (resolved.warning) notes.push(resolved.warning);
+
       if (verdict.status === "MATCHED" && verdict.sku) {
         const packed = applyPack(verdict.sku, quantity);
         if (packed.note) notes.push(packed.note);
@@ -338,20 +351,53 @@ function walk(wb: XLSX.WorkBook): ParseResult {
         notes,
         error,
         candidates: verdict.candidates,
+        color: resolved.color,
+        colorRecognized: resolved.recognized,
       });
     }
     if (truncated) break;
   }
 
+  const rows = aggregate(out);
+
   return {
     sheets: wb.SheetNames,
-    rowsScanned: out.length,
-    matched: out.filter((r) => r.status === "MATCHED").length,
-    ambiguous: out.filter((r) => r.status === "AMBIGUOUS").length,
-    notFound: out.filter((r) => r.status === "NOT_FOUND").length,
-    needsInput: out.filter((r) => r.status === "NEEDS_SIZE" || r.status === "ERROR").length,
+    rowsScanned: rows.length,
+    matched: rows.filter((r) => r.status === "MATCHED").length,
+    ambiguous: rows.filter((r) => r.status === "AMBIGUOUS").length,
+    notFound: rows.filter((r) => r.status === "NOT_FOUND").length,
+    needsInput: rows.filter((r) => r.status === "NEEDS_SIZE" || r.status === "ERROR").length,
     truncated,
     columnMap,
-    rows: out,
+    rows,
   };
+}
+
+/**
+ * Сводка файла по композитному ключу «артикул + цвет».
+ * Клиент продублировал «Венге 5000» на строке 5 и «Венге 2000» на строке 18 —
+ * в корзину уедет одна строка на 7000, а «Бук 3000» останется независимой.
+ */
+function aggregate(rows: ParsedRow[]): ParsedRow[] {
+  const byKey = new Map<string, ParsedRow>();
+  const result: ParsedRow[] = [];
+
+  for (const r of rows) {
+    if (r.status !== "MATCHED" || !r.sku || r.error) {
+      result.push(r);
+      continue;
+    }
+    const key = `${r.sku}::${r.color.label}`;
+    const found = byKey.get(key);
+    if (!found) {
+      byKey.set(key, r);
+      result.push(r);
+      continue;
+    }
+    found.quantity += r.quantity;
+    for (const n of r.notes) if (!found.notes.includes(n)) found.notes.push(n);
+    const merged = "Строки файла с этим артикулом и цветом объединены в одну позицию";
+    if (!found.notes.includes(merged)) found.notes.push(merged);
+  }
+  return result;
 }

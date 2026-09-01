@@ -145,7 +145,7 @@ function Index() {
 
             </div>
 
-            <ul className="no-scrollbar -mx-5 mt-12 flex snap-x gap-8 overflow-x-auto px-5 sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-8 sm:overflow-visible sm:px-0 lg:flex lg:gap-10">
+            <ul className="no-scrollbar -mx-5 mt-12 flex snap-x snap-mandatory items-stretch gap-8 overflow-x-auto overscroll-x-contain scroll-smooth px-5 [touch-action:pan-x_pan-y] sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-8 sm:overflow-visible sm:px-0 lg:flex lg:gap-10">
               {FACTS.map((f) => (
                 <li
                   key={f.label}

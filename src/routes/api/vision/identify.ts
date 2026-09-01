@@ -140,7 +140,7 @@ export const Route = createFileRoute("/api/vision/identify")({
             });
           }
 
-          // < 0.75 — ложный артикул выдавать запрещено: спрашиваем человека.
+          // < 0.5 — точного совпадения нет: предлагаем близкие категории для ручного выбора.
           void logVisionFail(image, verdict);
           return Response.json({
             scenario: "clarify",

@@ -818,7 +818,7 @@ export function ProductSheet({
                 </div>
 
                 {/* Мобильный CTA приклеен к низу шторки: цена и корзина всегда под большим пальцем */}
-                <div className="fixed bottom-0 left-4 right-4 z-50 border-t border-border bg-background px-0 pb-[env(safe-area-inset-bottom)] pt-3 md:static md:mx-0 md:mt-6 md:border-0 md:bg-transparent md:p-0">
+                <div className="sticky bottom-0 z-50 -mx-4 mt-6 border-t border-border bg-background px-4 pb-[env(safe-area-inset-bottom)] pt-3 md:static md:mx-0 md:mt-0 md:border-0 md:bg-transparent md:p-0">
                   <button
                     type="button"
                     disabled={outOfStock}

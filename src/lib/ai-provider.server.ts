@@ -239,9 +239,7 @@ async function chatCompletions(r: Resolved, req: AiRequest): Promise<AiResponse>
     body["temperature"] = req.temperature;
   }
   if (typeof req.maxTokens === "number") {
-    // Часть шлюзов уже перешла на max_completion_tokens — шлём оба, лишнее игнорируется.
     body["max_tokens"] = req.maxTokens;
-    body["max_completion_tokens"] = req.maxTokens;
   }
 
   const res = await postJson(r, "/chat/completions", body, req.timeoutMs ?? 20_000, req.task);

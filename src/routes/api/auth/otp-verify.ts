@@ -75,6 +75,13 @@ export const Route = createFileRoute("/api/auth/otp-verify")({
             },
           },
         );
+        } catch (e) {
+          console.error("[otp-verify] сбой проверки кода", e);
+          return Response.json(
+            { success: false, status: "error", error: "Неверный или устаревший код" },
+            { status: 500 },
+          );
+        }
       },
     },
   },

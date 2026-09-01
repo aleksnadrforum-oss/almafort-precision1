@@ -46,7 +46,7 @@ function MicroSwatches({
                 aria-label={`${sku}: ${sw.label}`}
                 aria-pressed={i === index}
                 onClick={() => onPick(i)}
-                className={`h-8 w-8 shrink-0 !rounded-full transition md:h-5 md:w-5 ${
+                className={`h-8 w-8 shrink-0 rounded-full transition md:h-5 md:w-5 ${
                   isLightColor(sw.hex) || sw.opacity ? "border border-gray-200" : ""
                 } ${
                   i === index
@@ -56,10 +56,11 @@ function MicroSwatches({
                 style={
                   sw.opacity
                     ? {
+                        borderRadius: "9999px",
                         backgroundImage:
                           "linear-gradient(135deg, #ffffff 45%, #cfcfcf 45%, #cfcfcf 55%, #ffffff 55%)",
                       }
-                    : { backgroundColor: sw.hex }
+                    : { borderRadius: "9999px", backgroundColor: sw.hex }
                 }
               />
             </TooltipTrigger>

@@ -423,7 +423,9 @@ export const useCart = create<State>()(
           name: p.name,
           quantity: row.quantity,
           originalName: row.originalString,
+          color: resolveLineColor(p),
         });
+
       return { lines, pending: s.pending.filter((x) => x.id !== id) };
     }),
 

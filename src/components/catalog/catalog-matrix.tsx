@@ -573,12 +573,6 @@ function Row({
         <span className="block w-full overflow-hidden text-ellipsis whitespace-nowrap text-xs tabular-nums text-[oklch(0.55_0.01_264)]">
           {p.sku}
         </span>
-        {/* Резерв под цвет: слот фиксированной высоты в каждой строке. */}
-        {!onRequest && palette ? (
-          <MicroSwatches palette={palette} index={colorIndex} onPick={setColorIndex} sku={p.sku} />
-        ) : (
-          <div className="mt-1.5 min-h-8 md:min-h-5" aria-hidden />
-        )}
       </div>
       <div className={`${CELL} text-sm text-muted-foreground`}>
         <span

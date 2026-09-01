@@ -6,7 +6,7 @@ import { aiComplete } from "@/lib/ai-provider.server";
 import { activePrompt, logLlmCall } from "@/lib/llm-log.server";
 import { uploadObject } from "@/lib/s3.server";
 
-export type VisionStatus = "VALID" | "FOREIGN" | "INVALID";
+export type VisionStatus = "VALID" | "FOREIGN" | "INVALID" | "NOT_FOUND";
 
 export type VisionVerdict = {
   /** VALID — техническая деталь класса ALMAFORT, FOREIGN — деталь не из матрицы,

@@ -31,25 +31,26 @@ function Lightbox({ doc, onClose }: { doc: Doc | null; onClose: () => void }) {
         type="button"
         aria-label="Закрыть"
         onClick={onClose}
-        className="absolute right-5 top-5 rounded-md p-2 text-background hover:bg-background/10"
+        className="fixed z-[99999] grid h-11 w-11 !min-h-0 place-items-center rounded-full bg-black/60 text-white shadow-lg transition-all active:scale-95"
+        style={{ top: "max(12px, env(safe-area-inset-top))", right: "max(12px, env(safe-area-inset-right))" }}
       >
         <X className="size-6" />
       </button>
       <div
         onClick={(e) => e.stopPropagation()}
-        className="flex h-[80vh] max-w-full flex-col overflow-hidden rounded-md bg-card shadow-2xl"
+        className="flex max-h-[82dvh] max-w-full flex-col overflow-hidden rounded-xl bg-card shadow-2xl"
       >
         {doc.pdf ? (
           <iframe
             src={doc.pdf}
             title={doc.alt}
-            className="h-full w-[min(90vw,860px)] border-0 bg-card"
+            className="h-[82dvh] w-[min(92vw,860px)] border-0 bg-card"
           />
         ) : (
           <img
             src={doc.src}
             alt={doc.alt}
-            className="h-full w-auto max-w-[92vw] object-contain"
+            className="mx-auto max-h-[82dvh] w-auto max-w-full object-contain"
           />
         )}
       </div>

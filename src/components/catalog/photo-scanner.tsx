@@ -440,15 +440,20 @@ export function PhotoScanner({ open, onClose }: { open: boolean; onClose: () => 
           </div>
         </div>
       )}
-      <button
-        type="button"
-        onClick={onClose}
-        aria-label="Закрыть сканер"
-        className="absolute right-4 top-4 z-[60] grid size-11 cursor-pointer place-items-center rounded-full bg-black/50 p-2 text-white backdrop-blur-sm transition hover:bg-black/65"
+      {/* Крестик всегда поверх видеопотока: максимальный слой + свои события */}
+      <div
+        className="pointer-events-auto absolute right-4 top-4 z-[9999]"
         style={{ top: "calc(1rem + env(safe-area-inset-top))" }}
       >
-        <X className="size-5" strokeWidth={2} />
-      </button>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Закрыть сканер"
+          className="grid size-11 cursor-pointer place-items-center rounded-full bg-black/50 p-2 text-white backdrop-blur-sm transition hover:bg-black/65"
+        >
+          <X className="size-6 text-white" size={24} strokeWidth={2} />
+        </button>
+      </div>
 
       {showViewfinder && (
         <button
@@ -658,7 +663,7 @@ export function PhotoScanner({ open, onClose }: { open: boolean; onClose: () => 
             ref={videoRef}
             playsInline
             muted
-            className="h-full w-full object-cover opacity-90"
+            className="relative z-0 h-full w-full object-cover opacity-90"
           />
 
           {/* Snap-and-Send: кадр замирает, поверх него — статус нейросети */}

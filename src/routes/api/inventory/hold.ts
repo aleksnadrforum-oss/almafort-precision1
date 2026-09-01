@@ -1,17 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { rateLimit } from "@/lib/rate-limit.server";
-import { PRODUCTS, isOnRequest } from "@/data/catalog";
+import { createHold, HOLD_TTL_MS } from "@/lib/inventory.server";
 
 /**
- * Холд остатков под спецификацию.
+ * Холд остатков под счёт.
  *
- * «В корзине» и «Зарезервировано» — разные сущности: корзина локальна,
- * а холд замораживает склад на 24 часа под конкретную организацию (ИНН).
- * Если объёма физически нет — отвечаем 409 со списком дефицита, чтобы
- * фронт заблокировал генерацию PDF до корректировки количеств.
+ * «В корзине» и «Зарезервировано» — разные сущности: корзина локальна и
+ * публичные остатки не меняет, холд создаётся только при выпуске счёта и
+ * живёт TTL (72 часа). Гость без подтверждённого ИНН резерв не создаёт —
+ * ему доступно только коммерческое предложение (estimate).
  */
-
-const HOLD_TTL_MS = 24 * 60 * 60 * 1000;
 
 type HoldItem = { sku: string; quantity: number };
 
@@ -29,10 +27,11 @@ export const Route = createFileRoute("/api/inventory/hold")({
           return Response.json({ error: "Некорректный запрос" }, { status: 400 });
         }
 
-        const { items, organizationId, lockedBy } = (body ?? {}) as {
+        const { items, organizationId, lockedBy, verified } = (body ?? {}) as {
           items?: unknown;
           organizationId?: unknown;
           lockedBy?: unknown;
+          verified?: unknown;
         };
         if (!Array.isArray(items) || items.length === 0) {
           return Response.json({ error: "Пустая спецификация" }, { status: 400 });
@@ -48,31 +47,56 @@ export const Route = createFileRoute("/api/inventory/hold")({
           normalized.push({ sku, quantity: Math.min(qty, 9_999_999) });
         }
 
-        const shortages: Array<{ sku: string; requested: number; available: number }> = [];
-        for (const item of normalized) {
-          const p = PRODUCTS.find((x) => x.sku === item.sku);
-          if (!p || isOnRequest(p)) continue; // услуги и позиции «по запросу» склад не резервируют
-          const available = Math.max(0, p.stock.qty);
-          if (available < item.quantity) {
-            shortages.push({ sku: item.sku, requested: item.quantity, available });
-          }
+        const inn = typeof organizationId === "string" ? organizationId.replace(/\D/g, "") : "";
+        // Подтверждённым считаем аккаунт с корректным ИНН (10/12 цифр) и признаком верификации.
+        const innOk = inn.length === 10 || inn.length === 12;
+        if (!innOk) {
+          return Response.json(
+            {
+              ok: false,
+              reason: "unverified",
+              error:
+                "Резерв склада доступен после подтверждения ИНН. Сейчас можно скачать коммерческое предложение без брони остатков",
+            },
+            { status: 403 },
+          );
         }
 
-        if (shortages.length > 0) {
+        const result = await createHold({
+          items: normalized,
+          organizationId: inn,
+          lockedBy: typeof lockedBy === "string" ? lockedBy : null,
+          verified: verified === true,
+        });
+
+        if (!result.ok && result.reason === "ceiling_exceeded") {
           return Response.json(
-            { ok: false, reason: "insufficient_stock", shortages },
+            {
+              ok: false,
+              reason: "ceiling_exceeded",
+              shortages: result.shortages,
+              error:
+                "Для бронирования оптовой партии такого объёма требуется ручное подтверждение менеджера",
+            },
             { status: 409 },
           );
         }
 
-        const expiresAt = Date.now() + HOLD_TTL_MS;
+        if (!result.ok) {
+          return Response.json(
+            { ok: false, reason: "insufficient_stock", shortages: result.shortages },
+            { status: 409 },
+          );
+        }
+
         return Response.json({
           ok: true,
-          holdId: `HOLD-${Date.now().toString(36).toUpperCase()}`,
-          organizationId: typeof organizationId === "string" ? organizationId : null,
+          holdId: result.holdId,
+          organizationId: inn,
           lockedBy: typeof lockedBy === "string" ? lockedBy : null,
-          expiresAt,
-          items: normalized,
+          expiresAt: result.expiresAt,
+          ttlMs: HOLD_TTL_MS,
+          items: result.items,
         });
       },
     },

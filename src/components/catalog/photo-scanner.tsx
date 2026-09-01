@@ -1106,6 +1106,7 @@ export function PhotoScanner({ open, onClose }: { open: boolean; onClose: () => 
           onClose={() => setReverse(false)}
         />
       )}
-    </div>
+    </div>,
+    document.body,
   );
 }

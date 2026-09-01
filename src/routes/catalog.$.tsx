@@ -193,13 +193,15 @@ function ProductCard({
             Запросить расчет
           </button>
         ) : (
-          <a
-            href={`/catalog?product=${encodeURIComponent(p.sku)}`}
+          <button
+            type="button"
+            onClick={() => onOpen(p)}
             className="flex h-10 shrink-0 items-center justify-center gap-1.5 rounded-xl bg-primary px-4 text-xs font-semibold text-primary-foreground shadow-sm transition-all duration-200 hover:opacity-90 active:scale-95"
           >
             Подробнее
-          </a>
+          </button>
         )}
+
       </div>
 
       {quote && <QuoteRequestModal sku={p.sku} name={p.name} onClose={() => setQuote(false)} />}

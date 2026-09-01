@@ -552,10 +552,10 @@ export function ProductSheet({
         <div aria-hidden className="mx-auto -mt-1 h-1.5 w-12 shrink-0 rounded-full bg-border md:hidden" />
         {product && service && (
           <>
-            <DialogHeader>
-              <DialogTitle className="text-xl font-extrabold text-foreground">
+            <DialogHeader className="pr-14 text-left">
+              <DialogTitle className="text-left text-xl font-extrabold text-foreground">
                 {product.name}
-                <span className="ml-2 text-sm font-normal text-muted-foreground">
+                <span className="ml-2 block text-sm font-normal text-muted-foreground sm:inline">
                   {product.sku}
                 </span>
               </DialogTitle>

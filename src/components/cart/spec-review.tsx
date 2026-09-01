@@ -308,21 +308,22 @@ export function SpecReview() {
                   )}
                 </div>
 
-                <div className="flex items-center gap-3">
+                {/* Нижняя панель карточки на мобильных: количество, сумма, удаление */}
+                <div className="mt-3 flex items-center justify-between gap-2 border-t border-gray-100 pt-2.5 md:mt-0 md:justify-end md:gap-3 md:border-0 md:pt-0">
                   <input
-                    className="h-11 w-28 rounded-sm border border-[#D1D5DB] bg-background px-2 text-base"
+                    className="h-9 w-24 rounded-lg border border-gray-200 bg-background px-2 text-center text-sm md:h-11 md:w-28 md:rounded-sm md:border-[#D1D5DB] md:text-base"
                     inputMode="numeric"
                     type="text"
                     value={r.quantity ? String(r.quantity) : ""}
                     onChange={(e) => setQty(r, e.target.value)}
                     aria-label="Количество"
                   />
-                  <span className="w-28 text-right text-sm font-semibold text-foreground">
+                  <span className="whitespace-nowrap text-base font-semibold text-foreground md:w-32 md:text-right md:text-sm">
                     {r.sku ? formatPrice(linePrice(r.sku, r.quantity).sum) : "—"}
                   </span>
                   <button
                     type="button"
-                    className="text-muted-foreground transition-colors hover:text-primary"
+                    className="p-2 text-gray-400 transition hover:text-red-600 active:scale-95"
                     onClick={() => remove(r.id)}
                     aria-label="Удалить строку"
                   >

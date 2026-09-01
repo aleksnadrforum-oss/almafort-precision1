@@ -49,6 +49,7 @@ const ssrOutput = {
 } as const;
 
 export default defineConfig({
+  server: { host: true, port: 8080, strictPort: true },
   resolve: {
     alias: { "@": srcDir },
     dedupe: ["react", "react-dom", "@tanstack/react-router", "@tanstack/react-store"],

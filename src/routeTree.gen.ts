@@ -45,6 +45,7 @@ import { Route as ApiCheckoutSubmitRouteImport } from './routes/api/checkout/sub
 import { Route as ApiConfiguratorSolveRouteImport } from './routes/api/configurator/solve'
 import { Route as ApiDadataCityRouteImport } from './routes/api/dadata/city'
 import { Route as ApiDadataPartyRouteImport } from './routes/api/dadata/party'
+import { Route as ApiInventoryAvailabilityRouteImport } from './routes/api/inventory/availability'
 import { Route as ApiInventoryHoldRouteImport } from './routes/api/inventory/hold'
 import { Route as ApiLeadsBulkRouteImport } from './routes/api/leads/bulk'
 import { Route as ApiParserUploadRouteImport } from './routes/api/parser/upload'
@@ -247,6 +248,12 @@ const ApiDadataPartyRoute = ApiDadataPartyRouteImport.update({
   path: '/api/dadata/party',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiInventoryAvailabilityRoute =
+  ApiInventoryAvailabilityRouteImport.update({
+    id: '/api/inventory/availability',
+    path: '/api/inventory/availability',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiInventoryHoldRoute = ApiInventoryHoldRouteImport.update({
   id: '/api/inventory/hold',
   path: '/api/inventory/hold',
@@ -350,6 +357,7 @@ export interface FileRoutesByFullPath {
   '/api/configurator/solve': typeof ApiConfiguratorSolveRoute
   '/api/dadata/city': typeof ApiDadataCityRoute
   '/api/dadata/party': typeof ApiDadataPartyRoute
+  '/api/inventory/availability': typeof ApiInventoryAvailabilityRoute
   '/api/inventory/hold': typeof ApiInventoryHoldRoute
   '/api/leads/bulk': typeof ApiLeadsBulkRoute
   '/api/parser/upload': typeof ApiParserUploadRoute
@@ -398,6 +406,7 @@ export interface FileRoutesByTo {
   '/api/configurator/solve': typeof ApiConfiguratorSolveRoute
   '/api/dadata/city': typeof ApiDadataCityRoute
   '/api/dadata/party': typeof ApiDadataPartyRoute
+  '/api/inventory/availability': typeof ApiInventoryAvailabilityRoute
   '/api/inventory/hold': typeof ApiInventoryHoldRoute
   '/api/leads/bulk': typeof ApiLeadsBulkRoute
   '/api/parser/upload': typeof ApiParserUploadRoute
@@ -450,6 +459,7 @@ export interface FileRoutesById {
   '/api/configurator/solve': typeof ApiConfiguratorSolveRoute
   '/api/dadata/city': typeof ApiDadataCityRoute
   '/api/dadata/party': typeof ApiDadataPartyRoute
+  '/api/inventory/availability': typeof ApiInventoryAvailabilityRoute
   '/api/inventory/hold': typeof ApiInventoryHoldRoute
   '/api/leads/bulk': typeof ApiLeadsBulkRoute
   '/api/parser/upload': typeof ApiParserUploadRoute
@@ -502,6 +512,7 @@ export interface FileRouteTypes {
     | '/api/configurator/solve'
     | '/api/dadata/city'
     | '/api/dadata/party'
+    | '/api/inventory/availability'
     | '/api/inventory/hold'
     | '/api/leads/bulk'
     | '/api/parser/upload'
@@ -550,6 +561,7 @@ export interface FileRouteTypes {
     | '/api/configurator/solve'
     | '/api/dadata/city'
     | '/api/dadata/party'
+    | '/api/inventory/availability'
     | '/api/inventory/hold'
     | '/api/leads/bulk'
     | '/api/parser/upload'
@@ -601,6 +613,7 @@ export interface FileRouteTypes {
     | '/api/configurator/solve'
     | '/api/dadata/city'
     | '/api/dadata/party'
+    | '/api/inventory/availability'
     | '/api/inventory/hold'
     | '/api/leads/bulk'
     | '/api/parser/upload'
@@ -642,6 +655,7 @@ export interface RootRouteChildren {
   ApiConfiguratorSolveRoute: typeof ApiConfiguratorSolveRoute
   ApiDadataCityRoute: typeof ApiDadataCityRoute
   ApiDadataPartyRoute: typeof ApiDadataPartyRoute
+  ApiInventoryAvailabilityRoute: typeof ApiInventoryAvailabilityRoute
   ApiInventoryHoldRoute: typeof ApiInventoryHoldRoute
   ApiLeadsBulkRoute: typeof ApiLeadsBulkRoute
   ApiParserUploadRoute: typeof ApiParserUploadRoute
@@ -910,6 +924,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiDadataPartyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/inventory/availability': {
+      id: '/api/inventory/availability'
+      path: '/api/inventory/availability'
+      fullPath: '/api/inventory/availability'
+      preLoaderRoute: typeof ApiInventoryAvailabilityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/inventory/hold': {
       id: '/api/inventory/hold'
       path: '/api/inventory/hold'
@@ -1094,6 +1115,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiConfiguratorSolveRoute: ApiConfiguratorSolveRoute,
   ApiDadataCityRoute: ApiDadataCityRoute,
   ApiDadataPartyRoute: ApiDadataPartyRoute,
+  ApiInventoryAvailabilityRoute: ApiInventoryAvailabilityRoute,
   ApiInventoryHoldRoute: ApiInventoryHoldRoute,
   ApiLeadsBulkRoute: ApiLeadsBulkRoute,
   ApiParserUploadRoute: ApiParserUploadRoute,

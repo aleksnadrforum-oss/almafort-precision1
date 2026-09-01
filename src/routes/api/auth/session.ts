@@ -14,7 +14,15 @@ export const Route = createFileRoute("/api/auth/session")({
         if (raw.split(".").length !== 3) return Response.json({ authed: false }, { headers });
         try {
           const { verifyToken } = await import("@/lib/auth.server");
-          return Response.json({ authed: Boolean(verifyToken(raw)) }, { headers });
+          const claims = verifyToken(raw);
+          if (!claims) return Response.json({ authed: false }, { headers });
+          const { findUserById } = await import("@/lib/auth.server");
+          const user = await findUserById(claims.sub);
+          if (!user) return Response.json({ authed: false }, { headers });
+          return Response.json(
+            { authed: true, user, expiresAt: claims.exp },
+            { headers },
+          );
         } catch {
           return Response.json({ authed: false }, { headers });
         }

@@ -1,5 +1,4 @@
 import { getCabinet } from "@/lib/cabinet.functions";
-import { readSession } from "@/lib/session";
 
 const CABINET_TIMEOUT_MS = 12_000;
 
@@ -17,8 +16,6 @@ function withTimeout<T>(promise: PromiseLike<T>, label: string): Promise<T> {
 
 /** Данные кабинета грузим с клиента: сессия живёт в localStorage, SSR её не видит. */
 export async function getCabinetFromBrowser() {
-  if (!readSession()) throw new Error("401 Unauthorized: сессия отсутствует или истекла");
-
   const result = await withTimeout(getCabinet(), "Загрузка кабинета");
 
   // Сервер при отказе отдаёт { error: "Unauthorized" } со статусом 401.

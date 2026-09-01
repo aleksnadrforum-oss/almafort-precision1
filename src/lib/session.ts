@@ -15,6 +15,13 @@ export type SessionUser = {
 
 export type Session = { user: SessionUser; expiresAt: number; token?: string };
 
+export type ServerSession = {
+  authed: boolean;
+  checked: boolean;
+  user?: SessionUser;
+  expiresAt?: number;
+};
+
 const KEY = "almafort:session:v2";
 const EVENT = "almafort:auth";
 
@@ -38,8 +45,13 @@ export function writeSession(session: Session) {
   if (typeof window === "undefined") return;
   // Токен намеренно отбрасываем: хранить его в localStorage запрещено.
   const safe: Session = { user: session.user, expiresAt: session.expiresAt };
-  window.localStorage.setItem(KEY, JSON.stringify(safe));
-  window.dispatchEvent(new CustomEvent(EVENT, { detail: "SIGNED_IN" }));
+  try {
+    window.localStorage.setItem(KEY, JSON.stringify(safe));
+    window.dispatchEvent(new CustomEvent(EVENT, { detail: "SIGNED_IN" }));
+  } catch {
+    // Safari может запретить localStorage (приватный режим/ограничения
+    // хранилища). Это лишь UI-снимок: настоящая сессия уже лежит в HttpOnly-cookie.
+  }
 }
 
 export function clearSession() {
@@ -54,6 +66,31 @@ export const currentUser = () => readSession()?.user ?? null;
 export const isAuthed = () => Boolean(readSession());
 /** Токен недоступен клиенту — сессия передаётся кукой. */
 export const authToken = (): string | null => null;
+
+/** Проверяет настоящую HttpOnly-сессию, не полагаясь на localStorage. */
+export async function getServerSession(timeoutMs = 12_000): Promise<ServerSession> {
+  const controller = new AbortController();
+  const timer = window.setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch("/api/auth/session", {
+      credentials: "same-origin",
+      cache: "no-store",
+      signal: controller.signal,
+    });
+    if (!response.ok) return { authed: false, checked: true };
+    const session = (await response.json()) as ServerSession;
+    if (session.authed && session.user && session.expiresAt) {
+      writeSession({ user: session.user, expiresAt: session.expiresAt });
+    }
+    return { ...session, checked: true };
+  } catch {
+    // Сетевой сбой не равен выходу: не уничтожаем рабочую cookie из-за
+    // кратковременного обрыва мобильной сети.
+    return { authed: false, checked: false };
+  } finally {
+    window.clearTimeout(timer);
+  }
+}
 
 /** Подписка на вход/выход, в том числе из соседней вкладки. */
 export function onAuthChange(handler: (event: "SIGNED_IN" | "SIGNED_OUT") => void) {

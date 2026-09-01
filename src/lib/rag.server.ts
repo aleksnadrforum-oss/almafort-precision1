@@ -246,7 +246,7 @@ const SCHEMA = {
     },
     is_service: { type: "boolean" },
   },
-  required: ["recommended_items", "engineering_logic", "safety_margin_factor", "is_service"],
+  required: ["error", "recommended_items", "engineering_logic", "safety_margin_factor", "is_service"],
 } as const;
 
 /**
@@ -430,6 +430,7 @@ export async function solveConfiguration(
   }
 
   let parsed: {
+    error?: string | null;
     recommended_items?: Array<{ sku?: string; quantity?: number; color?: string | null }>;
     engineering_logic?: string;
     safety_margin_factor?: number | null;
@@ -460,6 +461,14 @@ export async function solveConfiguration(
     usage: result.usage,
   });
 
+  // Модель сама распознала запрос вне компетенции — не строим смету.
+  if (typeof parsed.error === "string" && parsed.error.trim()) {
+    return staticSolution(
+      "Запрос вне компетенции конфигуратора ALMAFORT. Опишите инженерную задачу: что крепим, какая масса и в какое основание.",
+      { warnings: ["Запрос не относится к подбору крепежа и был отклонён."] },
+    );
+  }
+
   const wantsSandwich = /сэндвич|сендвич|sandwich|панел/i.test(query);
   const proposed = (parsed.recommended_items ?? [])
     // Жёсткий предохранитель от галлюцинаций: КРЕПСС — только для сэндвич-панелей.
@@ -487,7 +496,17 @@ export async function solveConfiguration(
     color: "color" in i && i.color ? String(i.color) : null,
   }));
 
-  const capped = requested.map((i) => {
+  // SKU GUARDRAIL: артикул, которого нет в реальной базе каталога, — галлюцинация.
+  // Такие позиции не попадают ни в смету, ни в корзину, ни в выгрузку.
+  const validated = requested.filter((i) => {
+    const exists = PRODUCTS.some((x) => x.sku === i.sku);
+    if (!exists) {
+      warnings.push(`Позиция ${i.sku || "без артикула"} снята с производства или не найдена в каталоге — исключена из сметы.`);
+    }
+    return exists;
+  });
+
+  const capped = validated.map((i) => {
     const p = PRODUCTS.find((x) => x.sku === i.sku);
     const stock = p?.stock.qty ?? 0;
     if (!p || isOnRequest(p) || stock <= 0 || i.quantity <= stock) return i;

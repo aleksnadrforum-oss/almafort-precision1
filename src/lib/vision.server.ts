@@ -205,7 +205,7 @@ export async function identifyPart(imageDataUrl: string): Promise<VisionVerdict>
   // даже если модель попыталась выдумать VALID.
   const foundFlag = (parsed as { found?: boolean }).found;
   const rawStatus = String(parsed.status ?? "").toUpperCase();
-  const status: VisionStatus =
+  let status: VisionStatus =
     foundFlag === false || rawStatus === "NOT_FOUND" || rawStatus === "NOTFOUND"
       ? "NOT_FOUND"
       : rawStatus === "FOREIGN"
@@ -213,6 +213,12 @@ export async function identifyPart(imageDataUrl: string): Promise<VisionVerdict>
         : rawStatus === "INVALID"
           ? "INVALID"
           : "VALID";
+
+  const multiObjects = Boolean(
+    (parsed as { multiple_objects_detected?: boolean }).multiple_objects_detected,
+  );
+  // Мусорный кадр: несколько разных деталей — гадать запрещено.
+  if (multiObjects && status === "VALID") status = "NOT_FOUND";
 
   // Модель отдаёт 0..100, но иногда 0..1 — нормализуем в долю.
   const rawConf = Number(parsed.confidence);

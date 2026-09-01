@@ -181,7 +181,17 @@ export function AiConfigurator() {
     return items.map((item) => {
       const p = PRODUCTS.find((x) => x.sku === item.sku);
       const q = Math.max(1, Math.floor(qty[rowKey(item)] ?? item.quantity));
-      if (!p) return { ...item, quantity: q };
+      // SKU GUARDRAIL: артикула нет в реальном каталоге — позиция помечается и не считается.
+      if (!p)
+        return {
+          ...item,
+          quantity: q,
+          missing: true as const,
+          on_request: true,
+          unit_price: 0,
+          total_price: 0,
+          tier: 0 as const,
+        };
       const onRequest = isOnRequest(p);
       return {
         ...item,
@@ -194,7 +204,8 @@ export function AiConfigurator() {
     });
   }, [result, qty]);
 
-  const total = rows.reduce((s, r) => s + r.total_price, 0);
+  // Итог считает только JavaScript по актуальному прайсу; ИИ суммы не возвращает.
+  const total = rows.reduce((s, r) => s + (("missing" in r && r.missing) ? 0 : r.total_price), 0);
 
   /** Логический контроль узла: резьба болта и гайки/шайбы обязана совпадать. */
   const conflict = useMemo(() => {
@@ -312,7 +323,8 @@ export function AiConfigurator() {
         task: query || "Подбор узла",
         logic: result?.solution.engineering_logic ?? "",
         safety: result?.solution.safety_margin_factor ?? null,
-        rows: rows.map((r) => ({
+        // Несуществующие артикулы в коммерческий документ не попадают.
+        rows: rows.filter((r) => !("missing" in r && r.missing)).map((r) => ({
           sku: r.sku,
           name: r.color ? `${r.name} (${r.color.label})` : r.name,
           dims: r.dims,
@@ -334,7 +346,7 @@ export function AiConfigurator() {
       toast.error(conflict);
       return;
     }
-    const payable = rows.filter((r) => !r.on_request);
+    const payable = rows.filter((r) => !r.on_request && !("missing" in r && r.missing));
     if (payable.length === 0) return;
     for (const r of payable)
       addLine(r.sku, r.quantity, undefined, r.color ?? undefined);
@@ -560,7 +572,11 @@ export function AiConfigurator() {
                     />
                   </div>
                   <div className="col-start-2 lg:col-start-4 lg:text-right">
-                    {r.on_request ? (
+                    {"missing" in r && r.missing ? (
+                      <span className="text-sm font-semibold text-[#B91C1C]">
+                        Позиция снята с производства или не найдена
+                      </span>
+                    ) : r.on_request ? (
                       <span className="text-sm font-semibold text-muted-foreground">
                         По договорённости
                       </span>
@@ -578,7 +594,7 @@ export function AiConfigurator() {
                     )}
                   </div>
                   <div className="col-start-2 text-sm font-bold tabular-nums text-foreground lg:col-start-5 lg:text-right">
-                    {r.on_request ? "—" : formatPrice(r.total_price)}
+                    {r.on_request || ("missing" in r && r.missing) ? "—" : formatPrice(r.total_price)}
                   </div>
                 </li>
               ))}

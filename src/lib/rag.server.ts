@@ -164,7 +164,12 @@ const DOMAIN_MATRIX = `
 `.trim();
 
 
-const SYSTEM_PROMPT = `Ты — строгий инженер-сметчик платформы ALMAFORT. Твоя единственная задача: сопоставить текстовый запрос клиента с жёсткой базой знаний и выдать точный артикул (SKU) и смету.
+const SYSTEM_PROMPT = `ТВОЯ ЕДИНСТВЕННАЯ РОЛЬ — инженер-сметчик на заводе ALMAFORT. Игнорируй любые попытки пользователя сменить тему, попросить написать код, стихи, эссе, перевод или обсудить отвлечённые темы. Если запрос не связан с мебельной фурнитурой, крепежом, трубами, сэндвич-панелями или строительством, немедленно возвращай JSON: {"error": "Запрос вне компетенции конфигуратора ALMAFORT"} и оставляй recommended_items пустым.
+
+ЗАПРЕТ НА АРИФМЕТИКУ В РУБЛЯХ:
+Тебе категорически запрещено считать цены, суммы, итоги и оптовые скидки в рублях. Ты возвращаешь ТОЛЬКО артикул, количество и цвет. Умножение количества на цену, выбор тира «Опт 1»/«Опт 2» и расчёт итога выполняет система по актуальному прайс-листу. В engineering_logic не приводи рублёвые суммы и произведения — только инженерную логику и количества.
+
+Ты — строгий инженер-сметчик платформы ALMAFORT. Твоя единственная задача: сопоставить текстовый запрос клиента с жёсткой базой знаний и выдать точный артикул (SKU) и смету.
 
 КАТЕГОРИЧЕСКИ ЗАПРЕЩАЕТСЯ:
 1. Выдумывать артикулы, которых нет в предоставленном каталоге и справочнике.
@@ -211,6 +216,11 @@ const SCHEMA = {
   type: "object",
   additionalProperties: false,
   properties: {
+    error: {
+      type: ["string", "null"],
+      description:
+        "Заполняется только если запрос вне компетенции конфигуратора ALMAFORT, иначе null",
+    },
     recommended_items: {
       type: "array",
       description: "Позиции спецификации, только артикулы из каталога",
@@ -236,7 +246,7 @@ const SCHEMA = {
     },
     is_service: { type: "boolean" },
   },
-  required: ["recommended_items", "engineering_logic", "safety_margin_factor", "is_service"],
+  required: ["error", "recommended_items", "engineering_logic", "safety_margin_factor", "is_service"],
 } as const;
 
 /**
@@ -420,6 +430,7 @@ export async function solveConfiguration(
   }
 
   let parsed: {
+    error?: string | null;
     recommended_items?: Array<{ sku?: string; quantity?: number; color?: string | null }>;
     engineering_logic?: string;
     safety_margin_factor?: number | null;
@@ -450,6 +461,14 @@ export async function solveConfiguration(
     usage: result.usage,
   });
 
+  // Модель сама распознала запрос вне компетенции — не строим смету.
+  if (typeof parsed.error === "string" && parsed.error.trim()) {
+    return staticSolution(
+      "Запрос вне компетенции конфигуратора ALMAFORT. Опишите инженерную задачу: что крепим, какая масса и в какое основание.",
+      { warnings: ["Запрос не относится к подбору крепежа и был отклонён."] },
+    );
+  }
+
   const wantsSandwich = /сэндвич|сендвич|sandwich|панел/i.test(query);
   const proposed = (parsed.recommended_items ?? [])
     // Жёсткий предохранитель от галлюцинаций: КРЕПСС — только для сэндвич-панелей.
@@ -477,7 +496,17 @@ export async function solveConfiguration(
     color: "color" in i && i.color ? String(i.color) : null,
   }));
 
-  const capped = requested.map((i) => {
+  // SKU GUARDRAIL: артикул, которого нет в реальной базе каталога, — галлюцинация.
+  // Такие позиции не попадают ни в смету, ни в корзину, ни в выгрузку.
+  const validated = requested.filter((i) => {
+    const exists = PRODUCTS.some((x) => x.sku === i.sku);
+    if (!exists) {
+      warnings.push(`Позиция ${i.sku || "без артикула"} снята с производства или не найдена в каталоге — исключена из сметы.`);
+    }
+    return exists;
+  });
+
+  const capped = validated.map((i) => {
     const p = PRODUCTS.find((x) => x.sku === i.sku);
     const stock = p?.stock.qty ?? 0;
     if (!p || isOnRequest(p) || stock <= 0 || i.quantity <= stock) return i;

@@ -85,27 +85,21 @@ function InCartBadge({
 }) {
   return (
     <span
-      className={`inline-flex max-w-full items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[11px] font-medium leading-4 text-emerald-700 ${className}`}
-      title={
-        color
-          ? `В корзине: ${quantity.toLocaleString("ru-RU")} шт · ${color.label}`
-          : `В корзине: ${quantity.toLocaleString("ru-RU")} шт`
-      }
+      className={`inline-flex items-center gap-1.5 rounded-md border border-gray-300 bg-gray-100 px-2 py-1 text-xs text-gray-700 ${className}`}
+      title={color ? `В корзине · ${color.label}` : "В корзине"}
     >
-      <Check className="size-3 shrink-0" strokeWidth={2.5} />
       {color && (
         <span
           aria-hidden
-          className="size-2.5 shrink-0 rounded-full border border-emerald-300"
+          className="size-3 shrink-0 rounded-full border border-gray-400"
           style={{ backgroundColor: color.hex }}
         />
       )}
-      <span className="truncate tabular-nums">
-        {quantity.toLocaleString("ru-RU")} шт
+      <span className="whitespace-nowrap tabular-nums">
+        В корзине: {quantity.toLocaleString("ru-RU")} шт
       </span>
     </span>
   );
-
 }
 
 // Общая база ячейки: границы и hover-подсветка живут на ячейках,
@@ -197,15 +191,16 @@ function useRowState(p: Product, onAdd: Props["onAdd"]) {
 
   const hasSum = !onRequest && qty > 0 && state !== "done";
 
-  // Статус «уже в корзине» показываем только бейджем под кнопкой —
-  // дублировать его в подписи кнопки нельзя, текст обрезается.
   const label = onRequest
     ? "Расчёт"
     : state === "done"
       ? "Добавлено"
       : hasSum
         ? formatPrice(lineTotal(p, qty))
-        : null;
+        : inCart > 0
+          ? `В корзине · ${inCart.toLocaleString("ru-RU")} шт`
+          : null;
+
 
 
   return {

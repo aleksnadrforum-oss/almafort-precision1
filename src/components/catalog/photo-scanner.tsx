@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   CameraOff,
   ImageUp,
@@ -415,9 +416,13 @@ export function PhotoScanner({ open, onClose }: { open: boolean; onClose: () => 
         ? "Деталь сливается с фоном или снимок слишком тёмный. Положите деталь на светлый лист бумаги и загрузите фото ещё раз."
         : null);
 
-  return (
+  if (typeof document === "undefined") return null;
+
+  // Портал в <body>: оверлей выходит из stacking-контекста шапки/панели поиска,
+  // поэтому крестик больше не может оказаться за шапкой сайта.
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 bg-[oklch(0.16_0.01_264)]"
+      className="fixed inset-0 z-[9999] bg-[oklch(0.16_0.01_264)]"
       onDragOver={(e) => {
         e.preventDefault();
         setDragOver(true);
@@ -1101,6 +1106,7 @@ export function PhotoScanner({ open, onClose }: { open: boolean; onClose: () => 
           onClose={() => setReverse(false)}
         />
       )}
-    </div>
+    </div>,
+    document.body,
   );
 }

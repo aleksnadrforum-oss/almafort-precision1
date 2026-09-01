@@ -156,17 +156,46 @@ export const Route = createFileRoute("/api/vision/identify")({
         } catch (e) {
           const message = e instanceof Error ? e.message : "Ошибка распознавания";
           console.error("[vision]", message);
-          // Ключи ИИ не заданы или шлюз недоступен — камера уходит в ручной режим.
-          const unavailable = (e as { fallback?: boolean })?.fallback === true;
-          return Response.json(
-            {
-              error: unavailable
-                ? "Сервис временно недоступен. Найдите деталь в каталоге вручную или отправьте фото менеджеру."
-                : message,
-              fallback: unavailable,
-            },
-            { status: unavailable ? 503 : 502 },
-          );
+          // Мягкая деградация вместо 503: модалка не гаснет, клиент выбирает
+          // категорию вручную в один клик по популярным группам каталога.
+          try {
+            const { candidateCategories } = await import("@/lib/vision.server");
+            const verdict = {
+              status: "NOT_FOUND" as const,
+              type: "",
+              shape: "",
+              color: "",
+              has_threads: false,
+              confidence: 0,
+              observed: "",
+              hands_present: false,
+              low_light: false,
+              markers: [],
+              detected_features: "",
+              sku: null,
+              multiple_objects_detected: false,
+            };
+            return Response.json({
+              scenario: "clarify",
+              verdict,
+              degraded: true,
+              question:
+                "ИИ-распознавание временно недоступно. Выберите категорию — покажем подходящие позиции каталога:",
+              groups: candidateCategories(verdict, 4).map((g) => ({
+                category: g.category,
+                items: g.items.map((p) => ({
+                  sku: p.sku,
+                  name: p.name,
+                  dims: p.dims,
+                  price: p.price,
+                  stock: p.stock.qty,
+                  lead: p.stock.lead ?? null,
+                })),
+              })),
+            });
+          } catch {
+            return Response.json({ error: message, fallback: true }, { status: 503 });
+          }
         }
 
       },

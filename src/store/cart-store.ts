@@ -54,6 +54,21 @@ export const lineKey = (l: { sku: string; color?: { label: string } | null | und
 export const productBySku = (sku: string) => PRODUCTS.find((p) => p.sku === sku);
 
 /**
+ * Серверные доступные остатки (availableStock = physical − reserved).
+ * Каталог и валидаторы инпутов опираются на них, а не на «сырой» сток:
+ * товар в чужих неоплаченных счетах уже недоступен.
+ */
+const serverAvailability = new Map<string, number | null>();
+let availabilityVersion = 0;
+
+export const setServerAvailability = (map: Record<string, number | null>) => {
+  for (const [sku, value] of Object.entries(map)) serverAvailability.set(sku, value);
+  availabilityVersion += 1;
+};
+
+export const availabilityRevision = () => availabilityVersion;
+
+/**
  * Потолок заказа по артикулу. Склад общий для всех цветов SKU.
  * qty = 0 при наличии срока поставки — позиция «под заказ», лимита нет.
  */
@@ -61,9 +76,15 @@ export const stockLimit = (sku: string): number => {
   const p = productBySku(sku);
   if (!p) return Number.POSITIVE_INFINITY;
   if (p.is_service) return Number.POSITIVE_INFINITY;
+  if (serverAvailability.has(sku)) {
+    const v = serverAvailability.get(sku);
+    if (v === null || v === undefined) return Number.POSITIVE_INFINITY;
+    return Math.max(0, v);
+  }
   if (p.stock.qty > 0) return p.stock.qty;
   return p.stock.lead ? Number.POSITIVE_INFINITY : 0;
 };
+
 
 /** Есть ли жёсткий складской лимит у позиции. */
 export const hasStockLimit = (sku: string) => Number.isFinite(stockLimit(sku));

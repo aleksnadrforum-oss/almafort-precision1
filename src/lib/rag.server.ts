@@ -264,7 +264,7 @@ export function priceItems(
     const p = PRODUCTS.find((x) => x.sku === sku);
     if (!p) continue;
     // Цвет из ответа модели → канонический образец палитры артикула.
-    const canonicals = color ? extractColors(String(color)).canonical : [];
+    const canonicals = color ? extractColors(String(color)).colors : [];
     const resolved = resolveColor(p, canonicals);
     const lineColor: ColorRef | null = p.is_service ? null : resolved.color;
     // Композитный ключ: «белые» и «коричневые» заглушки одного артикула — разные строки.

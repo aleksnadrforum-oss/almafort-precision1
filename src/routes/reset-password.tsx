@@ -43,6 +43,7 @@ function RecoveryPage() {
     void (async () => {
       try {
         const res = await fetch("/api/auth/consume-link", {
+        signal: AbortSignal.timeout(20_000),
           method: "POST",
           headers: { "content-type": "application/json" },
           credentials: "same-origin",

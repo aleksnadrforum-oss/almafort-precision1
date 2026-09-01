@@ -26,7 +26,8 @@ export function CartSync() {
     // без этого протухшая сессия давала 401 от защищённой server-функции.
     const hasServerSession = async () => {
       try {
-        const res = await fetch("/api/auth/session", { credentials: "same-origin" });
+        const res = await fetch("/api/auth/session", {
+        signal: AbortSignal.timeout(20_000), credentials: "same-origin" });
         const json = (await res.json()) as { authed?: boolean };
         return Boolean(json?.authed);
       } catch {

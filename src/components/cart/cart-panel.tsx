@@ -233,6 +233,7 @@ export function CartPanel() {
     setHolding(true);
     try {
       const res = await fetch("/api/inventory/hold", {
+        signal: AbortSignal.timeout(20_000),
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -330,6 +331,7 @@ export function CartPanel() {
       }
 
       const res = await fetch("/api/checkout/submit", {
+        signal: AbortSignal.timeout(20_000),
         method: "POST",
         headers: { "Content-Type": "application/json", "Idempotency-Key": idempotencyKey },
         body: JSON.stringify({

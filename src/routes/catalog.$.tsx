@@ -3,6 +3,8 @@ import { useState } from "react";
 import { isOnRequest, type Product } from "@/data/catalog";
 import { BackLink } from "@/components/back-link";
 import { QuoteRequestModal } from "@/components/catalog/quote-request-modal";
+import { ProductThumb } from "@/components/catalog/product-thumb";
+import { useAssetGroups } from "@/lib/asset-groups";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { formatPrice } from "@/lib/pricing";
@@ -96,36 +98,84 @@ function FacetNotFound() {
   );
 }
 
-function FacetRow({ p }: { p: Product }) {
+function ProductCard({ p, thumb }: { p: Product; thumb?: string | null }) {
   const [quote, setQuote] = useState(false);
   const onRequest = isOnRequest(p) || p.is_service;
 
   return (
-    <li className="flex flex-wrap items-center gap-4 px-5 py-4">
-      <span className="w-[110px] shrink-0 font-mono text-xs text-muted-foreground">{p.sku}</span>
-      <span className="min-w-[220px] flex-1 text-sm font-semibold text-foreground">{p.name}</span>
-      <span className="w-[120px] text-sm tabular-nums text-muted-foreground">{p.dims}</span>
-      <span className="w-[140px] text-sm tabular-nums text-muted-foreground">
-        {p.is_service ? "Под заказ" : p.stock.qty > 0 ? `${p.stock.qty.toLocaleString("ru-RU")} шт` : p.stock.lead}
-      </span>
-      <span className="w-[170px] text-right text-sm font-bold tabular-nums text-foreground">
+    <li className="flex flex-col justify-between rounded-2xl border border-border/80 bg-card p-4 shadow-sm transition-all duration-200 hover:shadow-md">
+      <div>
+        <div className="mb-3 flex aspect-[4/3] w-full items-center justify-center overflow-hidden rounded-xl border border-border/70 bg-muted/40">
+          {thumb ? (
+            <img
+              src={thumb}
+              alt={p.name}
+              loading="lazy"
+              className="h-full w-full object-contain p-2"
+            />
+          ) : (
+            <ProductThumb src={p.image_url} alt={p.name} className="max-h-full" />
+          )}
+        </div>
+
+        <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          {p.sku}
+        </span>
+
+        <h3 className="mt-1 line-clamp-2 text-base font-semibold leading-snug text-foreground">
+          {p.name}
+        </h3>
+
+        <div className="mt-2.5 flex items-center justify-between gap-2 border-b border-border/70 pb-3 text-xs text-muted-foreground">
+          <span className="min-w-0 truncate">{p.dims || "Габариты по запросу"}</span>
+          {p.is_service ? (
+            <span className="shrink-0 whitespace-nowrap font-medium">Под заказ</span>
+          ) : p.stock.qty > 0 ? (
+            <span className="flex shrink-0 items-center gap-1 whitespace-nowrap font-medium text-emerald-600">
+              <span className="size-1.5 rounded-full bg-emerald-500" />
+              {p.stock.qty.toLocaleString("ru-RU")} шт
+            </span>
+          ) : (
+            <span className="shrink-0 whitespace-nowrap font-medium">{p.stock.lead}</span>
+          )}
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between gap-3 pt-3">
+        <div className="min-w-0">
+          {onRequest ? (
+            <span className="block text-sm font-semibold text-muted-foreground">
+              По договоренности
+            </span>
+          ) : (
+            <>
+              <span className="block text-xs text-muted-foreground">Опт от 1 шт</span>
+              <span className="whitespace-nowrap text-lg font-bold tabular-nums text-foreground">
+                {formatPrice(p.price)}
+                <span className="ml-1 text-xs font-normal text-muted-foreground">/ шт</span>
+              </span>
+            </>
+          )}
+        </div>
+
         {onRequest ? (
-          <span className="inline-block whitespace-nowrap rounded-sm bg-[#F3F4F6] px-2 py-1 text-[11px] font-semibold text-muted-foreground">
-            По договоренности
-          </span>
+          <button
+            type="button"
+            onClick={() => setQuote(true)}
+            className="flex h-10 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-border px-4 text-xs font-semibold text-foreground transition-all duration-200 hover:border-primary hover:text-primary active:scale-95"
+          >
+            Запросить расчет
+          </button>
         ) : (
-          formatPrice(p.price)
+          <a
+            href={`/catalog?product=${encodeURIComponent(p.sku)}`}
+            className="flex h-10 shrink-0 items-center justify-center gap-1.5 rounded-xl bg-primary px-4 text-xs font-semibold text-primary-foreground shadow-sm transition-all duration-200 hover:opacity-90 active:scale-95"
+          >
+            Подробнее
+          </a>
         )}
-      </span>
-      {onRequest && (
-        <button
-          type="button"
-          onClick={() => setQuote(true)}
-          className="rounded-[4px] border border-border px-3 py-2 text-xs font-semibold text-foreground transition-colors duration-200 hover:border-primary hover:text-primary"
-        >
-          Запросить расчет
-        </button>
-      )}
+      </div>
+
       {quote && <QuoteRequestModal sku={p.sku} name={p.name} onClose={() => setQuote(false)} />}
       <script
         type="application/ld+json"
@@ -138,6 +188,7 @@ function FacetRow({ p }: { p: Product }) {
     </li>
   );
 }
+
 
 function FacetPage() {
   const { facets, items } = Route.useLoaderData() as {
@@ -169,19 +220,20 @@ function FacetPage() {
   const childColors = facets.size && !facets.color ? COLORS : [];
   const page = Math.max(1, Number(Route.useSearch().page ?? 1) || 1);
   const base = facets.path;
+  const assetGroups = useAssetGroups();
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <SiteHeader />
-      <main className="w-full flex-1 mx-auto max-w-[1200px] px-5 pb-24 pt-10 lg:px-10">
-        <nav aria-label="Хлебные крошки" className="mb-6 text-xs text-muted-foreground">
+      <main className="w-full flex-1 mx-auto max-w-[1200px] px-4 pb-24 pt-6 sm:px-5 lg:px-10 lg:pt-10">
+        <nav aria-label="Хлебные крошки" className="mb-4 flex flex-nowrap items-center overflow-x-auto whitespace-nowrap text-xs text-muted-foreground">
           {crumbs.map((c, i) => (
-            <span key={c.path}>
-              {i > 0 && <span className="mx-2 text-border">/</span>}
+            <span key={c.path} className="shrink-0">
+              {i > 0 && <span className="mx-1.5 text-border">/</span>}
               {i === crumbs.length - 1 ? (
                 <span className="text-foreground">{c.name}</span>
               ) : (
-                <a href={c.path} className="hover:text-primary">
+                <a href={c.path} className="transition-colors hover:text-foreground">
                   {c.name}
                 </a>
               )}
@@ -189,24 +241,27 @@ function FacetPage() {
           ))}
         </nav>
 
-        <BackLink fallback="/catalog" className="mb-3" />
+        <BackLink fallback="/catalog" className="mb-4" />
 
-        <h1 className="text-3xl font-extrabold leading-[1.1] tracking-tight text-foreground lg:text-[40px]">
+        <h1 className="text-2xl font-bold leading-[1.1] tracking-tight text-foreground lg:text-[40px]">
           {facetH1(facets)}
         </h1>
         {page === 1 && (
-          <p className="mt-3 max-w-[70ch] text-sm leading-[1.6] text-muted-foreground">
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
             {facetDescription(facets, items)}
           </p>
         )}
 
         {(childShapes.length > 0 || childSizes.length > 0 || childColors.length > 0) && (
-          <div className="mt-8 flex flex-wrap gap-2">
+          <div
+            className="mt-6 flex gap-2 overflow-x-auto pb-1"
+            aria-label="Фильтры раздела"
+          >
             {[...childShapes, ...childSizes, ...childColors].map((f) => (
               <a
                 key={f.slug}
                 href={`${base}/${f.slug}`}
-                className="rounded-sm border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground transition-colors duration-200 hover:border-primary hover:text-primary"
+                className="whitespace-nowrap rounded-full bg-muted px-3.5 py-1.5 text-xs font-medium text-foreground/80 transition-colors duration-200 hover:bg-muted/70 hover:text-primary"
               >
                 {f.label}
               </a>
@@ -215,7 +270,7 @@ function FacetPage() {
         )}
 
         {items.length === 0 && (
-          <section className="mt-10 rounded-sm border border-border bg-card p-6" style={{ minHeight: 200 }}>
+          <section className="mt-10 rounded-2xl border border-border bg-card p-6" style={{ minHeight: 200 }}>
             <h2 className="text-lg font-bold text-foreground">Позиции временно отсутствуют</h2>
             <p className="mt-2 text-sm text-muted-foreground">
               Раздел пуст — посмотрите родительскую категорию или закажите изготовление партии.
@@ -229,10 +284,10 @@ function FacetPage() {
           </section>
         )}
 
-        <section className="mt-10" style={{ minHeight: 320 }} aria-label="Позиции раздела">
-          <ul className="divide-y divide-border rounded-sm border border-border bg-card">
+        <section className="mt-8" style={{ minHeight: 320 }} aria-label="Позиции раздела">
+          <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 lg:gap-5 xl:grid-cols-4">
             {items.map((p) => (
-              <FacetRow key={p.sku} p={p} />
+              <ProductCard key={p.sku} p={p} thumb={assetGroups.get(p.sku)?.images[0]?.thumb_url ?? null} />
             ))}
           </ul>
         </section>

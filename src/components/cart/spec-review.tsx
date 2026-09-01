@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { AlertTriangle, Check, CircleAlert, Factory, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { PRODUCTS } from "@/data/catalog";
+import { extractColors, paletteForProduct, resolveColor } from "@/data/palettes";
 import { formatPrice } from "@/lib/pricing";
 import { applyPack } from "@/lib/spec-sanitize";
 import { linePrice, productBySku, useCart, type ReviewRow } from "@/store/cart-store";
@@ -77,8 +78,12 @@ export function SpecReview() {
     const p = productBySku(sku);
     if (!p) return;
     const packed = applyPack(sku, r.quantity);
+    // Цвет пересобираем под палитру выбранного артикула.
+    const resolved = resolveColor(p, extractColors(r.originalString).colors);
     patch(r.id, {
       sku,
+      color: resolved.color,
+      colorRecognized: resolved.recognized,
       name: p.name,
       status: "MATCHED",
       score: 100,
@@ -103,7 +108,12 @@ export function SpecReview() {
       return;
     }
     commitReview(
-      list.map((r) => ({ sku: r.sku!, quantity: r.quantity, originalName: r.originalString })),
+      list.map((r) => ({
+        sku: r.sku!,
+        quantity: r.quantity,
+        originalName: r.originalString,
+        color: r.color,
+      })),
       mode,
     );
     toast.success(`В корзину добавлено позиций: ${list.length}`);
@@ -174,6 +184,8 @@ export function SpecReview() {
         {rows.map((r) => {
           const tone = toneOf(r);
           const stock = stockOf(r.sku);
+          const product = r.sku ? productBySku(r.sku) : undefined;
+          const palette = product ? paletteForProduct(product) : null;
           const partial = Boolean(r.sku) && r.quantity > stock;
           return (
             <li key={r.id} className={`px-5 py-4 ${TONE_BG[tone]}`}>
@@ -183,6 +195,34 @@ export function SpecReview() {
                   <p className="mt-0.5 text-base font-semibold text-foreground">
                     {r.sku ? `${r.name} (${r.sku})` : "Позиция не найдена в каталоге"}
                   </p>
+                  {r.sku && r.color && (
+                    <p className="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground">
+                      <span
+                        aria-hidden
+                        className="inline-block size-3.5 shrink-0 rounded-[3px] border border-black/15"
+                        style={{ backgroundColor: r.color.hex === "transparent" ? "#F3F4F6" : r.color.hex }}
+                      />
+                      Цвет: {r.color.label}
+                      {!r.colorRecognized && palette && palette.length > 1 ? " (по умолчанию)" : ""}
+                    </p>
+                  )}
+                  {palette && palette.length > 1 && (
+                    <select
+                      className="mt-2 h-11 w-full max-w-xs rounded-sm border border-[#D1D5DB] bg-background px-2 text-base"
+                      value={r.color?.label ?? ""}
+                      aria-label="Цвет позиции"
+                      onChange={(e) => {
+                        const sw = palette.find((x) => x.label === e.target.value);
+                        if (sw) patch(r.id, { color: { label: sw.label, hex: sw.hex }, colorRecognized: true });
+                      }}
+                    >
+                      {palette.map((sw) => (
+                        <option key={sw.label} value={sw.label}>
+                          {sw.label}
+                        </option>
+                      ))}
+                    </select>
+                  )}
                   {r.error && (
                     <p className="mt-1 flex items-center gap-1.5 text-sm font-medium text-[#B91C1C]">
                       <CircleAlert className="size-4" /> {r.error}. Исправьте количество вручную.

@@ -107,22 +107,43 @@ async function generateInvoicePdfImpl({
     ],
   ];
 
-  lines.forEach((l, i) => {
+  // Комплектовщику удобнее собирать заказ по коробкам: сортируем по артикулу,
+  // внутри артикула — по цвету.
+  const sorted = [...lines].sort(
+    (a, b) =>
+      a.sku.localeCompare(b.sku, "ru") || (a.color?.label ?? "").localeCompare(b.color?.label ?? "", "ru"),
+  );
+
+  sorted.forEach((l, i) => {
     const { unit, sum } = linePrice(l.sku, l.quantity);
+    const title = safeText(
+      `${productBySku(l.sku)?.name ?? l.name}${l.color ? ` (Цвет: ${l.color.label})` : ""}`,
+      200,
+    );
+    const hex = l.color?.hex ?? "";
+    const swatchOk = /^#[0-9a-f]{6}$/i.test(hex);
     body.push([
       { text: String(i + 1) },
       { text: safeText(l.sku, 40) },
-      {
-        text: safeText(
-          `${productBySku(l.sku)?.name ?? l.name}${l.color ? ` (цвет: ${l.color.label})` : ""}`,
-          200,
-        ),
-      },
+      swatchOk
+        ? {
+            columns: [
+              {
+                width: 12,
+                canvas: [
+                  { type: "rect", x: 0, y: 2, w: 7, h: 7, color: hex, lineWidth: 0.5, lineColor: "#9CA3AF" },
+                ],
+              },
+              { text: title },
+            ],
+          }
+        : { text: title },
       { text: l.quantity.toLocaleString("ru-RU"), alignment: "right" },
       { text: money(unit), alignment: "right" },
       { text: money(sum), alignment: "right" },
     ]);
   });
+
 
   if (delivery > 0) {
     body.push([

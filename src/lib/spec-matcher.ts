@@ -2,6 +2,7 @@
 // со всем каталогом ALMAFORT. Изоморфный модуль: используется и на сервере (парсер
 // Excel), и на клиенте (пересопоставление вручную введённой строки).
 import { PRODUCTS, unitPrice, type Product } from "@/data/catalog";
+import { extractColors } from "@/data/palettes";
 
 export type RowStatus = "MATCHED" | "AMBIGUOUS" | "NOT_FOUND";
 
@@ -15,6 +16,8 @@ export type Candidate = {
 
 export type MatchResult = {
   status: RowStatus;
+  /** Канонические цвета, извлечённые из клиентской строки (первый проход). */
+  colors: string[];
   /** 0–100 */
   score: number;
   sku: string | null;
@@ -234,8 +237,11 @@ function extraWords(query: string, p: Product): number {
 }
 
 export function matchRow(rawName: string, quantity: number): MatchResult {
-  const query = normalizeQuery(rawName);
-  const empty: MatchResult = { status: "NOT_FOUND", score: 0, sku: null, name: null, candidates: [] };
+  // Проход 1: вырезаем цветовые маркеры — «Ясень шимо светлый (Бамбук)» больше
+  // не участвует в нечётком поиске и не сбивает ранжирование.
+  const { core, colors } = extractColors(rawName);
+  const query = normalizeQuery(core);
+  const empty: MatchResult = { status: "NOT_FOUND", score: 0, sku: null, name: null, candidates: [], colors };
   if (!query) return empty;
 
   // 1. Артикул в чистом виде — 100 % попадание.
@@ -247,12 +253,13 @@ export function matchRow(rawName: string, quantity: number): MatchResult {
         score: 100,
         sku: direct.sku,
         name: direct.name,
+        colors,
         candidates: [toCandidate(direct, quantity)],
       };
     }
   }
 
-  const qp = extractParams(rawName);
+  const qp = extractParams(core);
 
   // 2. Прямые семантические попадания (стеклодержатель, кляймер, крепсс, услуги…).
   for (const [triggers, sku] of DIRECT_HITS) {
@@ -264,6 +271,7 @@ export function matchRow(rawName: string, quantity: number): MatchResult {
       score: 90,
       sku: p.sku,
       name: p.name,
+      colors,
       candidates: [toCandidate(p, quantity)],
     };
   }
@@ -293,6 +301,7 @@ export function matchRow(rawName: string, quantity: number): MatchResult {
         score: 95,
         sku: p.sku,
         name: p.name,
+        colors,
         candidates: [toCandidate(p, quantity)],
       };
     }
@@ -303,7 +312,7 @@ export function matchRow(rawName: string, quantity: number): MatchResult {
 
     if (list.length === 1) {
       const p = list[0]!;
-      return { status: "MATCHED", score: 88, sku: p.sku, name: p.name, candidates: [toCandidate(p, quantity)] };
+      return { status: "MATCHED", score: 88, sku: p.sku, name: p.name, colors, candidates: [toCandidate(p, quantity)] };
     }
     if (list.length) {
       return {
@@ -311,6 +320,7 @@ export function matchRow(rawName: string, quantity: number): MatchResult {
         score: narrowed.length ? 70 : 55,
         sku: null,
         name: null,
+        colors,
         candidates: list.slice(0, 12).map((p) => toCandidate(p, quantity)),
       };
     }
@@ -336,6 +346,7 @@ export function matchRow(rawName: string, quantity: number): MatchResult {
       score: Math.round(Math.min(100, top.score)),
       sku: top.p.sku,
       name: top.p.name,
+      colors,
       candidates: [toCandidate(top.p, quantity)],
     };
   }
@@ -345,6 +356,7 @@ export function matchRow(rawName: string, quantity: number): MatchResult {
       score: Math.round(top.score),
       sku: null,
       name: null,
+      colors,
       candidates: ranked.slice(0, 8).map((r) => toCandidate(r.p, quantity)),
     };
   }

@@ -146,6 +146,9 @@ export type ReviewRow = {
   notes: string[];
   error: string | null;
   candidates: Candidate[];
+  /** Цвет позиции (единая структура для всех SKU, услуги → «Базовый»). */
+  color: { label: string; hex: string };
+  colorRecognized: boolean;
 };
 
 export type ReviewState = {
@@ -162,6 +165,8 @@ type State = {
   /** Сотрудник, удерживающий блокировку редактирования спецификации. */
   lockedBy: string | null;
   parsing: boolean;
+  /** Прогресс разбора спецификации, 0–100. */
+  parseProgress: number;
   lines: CartLine[];
   pending: PendingRow[];
   review: ReviewState | null;
@@ -175,12 +180,18 @@ type State = {
   setQuoting: (v: boolean) => void;
   setQuoteError: (e: string | null) => void;
   setParsing: (v: boolean) => void;
+  setParseProgress: (v: number) => void;
   bindOrganization: (organizationId: string | null, userId: string | null) => void;
   applyParse: (payload: ParsePayload) => void;
   setReview: (r: ReviewState | null) => void;
   /** Переносит подтверждённые строки предпросмотра в корзину. */
   commitReview: (
-    rows: Array<{ sku: string; quantity: number; originalName?: string }>,
+    rows: Array<{
+      sku: string;
+      quantity: number;
+      originalName?: string;
+      color?: { label: string; hex: string };
+    }>,
     mode: "merge" | "replace",
   ) => void;
   addLine: (
@@ -210,6 +221,7 @@ export const useCart = create<State>()(
   organizationId: null,
   lockedBy: null,
   parsing: false,
+  parseProgress: 0,
   lines: [],
   pending: [],
   review: null,
@@ -228,11 +240,24 @@ export const useCart = create<State>()(
       for (const r of rows) {
         const p = productBySku(r.sku);
         if (!p) continue;
-        const qty = Math.max(1, Math.floor(r.quantity));
-        const found = lines.find((l) => l.sku === p.sku);
-        // Дубли артикулов из Excel складываются, а не плодят строки.
+        const wanted = Math.max(1, Math.floor(r.quantity));
+        // Остаток артикула общий на все цвета: суммируем уже набранное.
+        const free = availableFor(lines, p.sku);
+        const qty = Number.isFinite(free) ? Math.min(wanted, Math.max(0, free)) : wanted;
+        if (qty <= 0) continue;
+        const color = r.color ?? undefined;
+        const key = lineKey({ sku: p.sku, color });
+        // Композитный ключ «артикул + цвет»: синие и жёлтые заглушки не сливаются.
+        const found = lines.find((l) => lineKey(l) === key);
         if (found) found.quantity += qty;
-        else lines.push({ sku: p.sku, name: p.name, quantity: qty, originalName: r.originalName });
+        else
+          lines.push({
+            sku: p.sku,
+            name: p.name,
+            quantity: qty,
+            originalName: r.originalName,
+            color,
+          });
       }
       return { lines, review: null, parsing: false };
     }),
@@ -241,7 +266,9 @@ export const useCart = create<State>()(
   setQuoting: (quoting) => set({ quoting }),
   setQuoteError: (quoteError) => set({ quoteError, quotes: [] }),
 
-  setParsing: (v) => set({ parsing: v }),
+  setParsing: (v) => set({ parsing: v, parseProgress: v ? 0 : 100 }),
+
+  setParseProgress: (v) => set({ parseProgress: Math.max(0, Math.min(100, Math.round(v))) }),
 
   bindOrganization: (organizationId, userId) =>
     set((s) => ({

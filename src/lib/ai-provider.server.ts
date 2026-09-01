@@ -42,6 +42,8 @@ export type AiRequest = {
   /** Детерминированность: 0 для классификаторов, undefined — дефолт провайдера. */
   temperature?: number;
   timeoutMs?: number;
+  /** Потолок ответа: короткий JSON классификатора не должен превращаться в эссе. */
+  maxTokens?: number;
 };
 
 export type AiResponse = { text: string; usage: AiUsage; model: string; provider: AiProviderId };
@@ -235,6 +237,9 @@ async function chatCompletions(r: Resolved, req: AiRequest): Promise<AiResponse>
   }
   if (typeof req.temperature === "number") {
     body["temperature"] = req.temperature;
+  }
+  if (typeof req.maxTokens === "number") {
+    body["max_tokens"] = req.maxTokens;
   }
 
   const res = await postJson(r, "/chat/completions", body, req.timeoutMs ?? 20_000, req.task);

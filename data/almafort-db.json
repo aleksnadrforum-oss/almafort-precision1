@@ -183,7 +183,7 @@
     {
       "id": "fbf6c744-4069-4a56-83b3-86c803ea1774",
       "created_at": "2026-08-22T14:34:50.592Z",
-      "updated_at": "2026-09-01T08:33:30.821Z",
+      "updated_at": "2026-09-01T08:33:49.306Z",
       "user_id": "7602a0fc-f63d-4482-9aa3-c50b6e3a7677",
       "lines": [
         {
@@ -730,19 +730,7 @@
       "used": false
     }
   ],
-  "otp_codes": [
-    {
-      "id": "93586e19-3930-439e-9d09-fc8076fecd1b",
-      "created_at": "2026-09-01T08:33:33.678Z",
-      "updated_at": "2026-09-01T08:33:33.678Z",
-      "email": "sashamoskalenko0@gmail.com",
-      "ip": "195.200.17.34",
-      "salt": "7e3181f8b23ba517b1dea70a54cbe7e3",
-      "code_hash": "49163714c982baf24f35040c0232340fa7b7b6e4d85a8cd7fe434aba9c8d99889987e025071ee22e0cbe02098f6eaa4e709f01e7ec534013745dc20841c7f635",
-      "attempts": 0,
-      "expires_at": "2026-09-01T08:38:33.678Z"
-    }
-  ],
+  "otp_codes": [],
   "crm_queue": [],
   "inventory_holds": [
     {

@@ -25,7 +25,7 @@ function Lightbox({ doc, onClose }: { doc: Doc | null; onClose: () => void }) {
       aria-modal="true"
       aria-label={doc.alt}
       onClick={onClose}
-      className="fixed inset-0 z-[100] flex flex-col bg-foreground/90 backdrop-blur-sm"
+      className="fixed inset-0 z-[100] flex flex-col overscroll-contain bg-foreground"
     >
       {/* Верхняя панель: всегда видима, учитывает «чёлку» и панель Safari */}
       <div

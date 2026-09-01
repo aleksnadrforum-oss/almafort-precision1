@@ -176,6 +176,48 @@ export const Route = createFileRoute("/api/checkout/submit")({
           return { ok: false, detail: "Очередь 1С недоступна" };
         });
 
+        // Сквозная фиксация заказа в БД: комментарий клиента должен быть
+        // виден и в кабинете снабженца, и менеджеру в админке.
+        const customerComment = (parsed.customer.comment ?? "").trim();
+        try {
+          const { readSessionCookie } = await import("@/lib/session-cookie.server");
+          const { verifyToken } = await import("@/lib/auth.server");
+          const claims = verifyToken(readSessionCookie(request) ?? "");
+          if (claims?.sub) {
+            const { db } = await import("@/lib/db.server");
+            const now = new Date().toISOString();
+            const { data: companies } = await db
+              .from("companies")
+              .select("*")
+              .eq("user_id", claims.sub);
+            const company =
+              (companies ?? []).find(
+                (c: { inn?: string }) => c.inn === (parsed.inn ?? "").replace(/\D/g, ""),
+              ) ?? null;
+            await db.from("orders").insert({
+              id: db.newId(),
+              user_id: claims.sub,
+              company_id: company?.id ?? null,
+              number: orderNumber,
+              status: "awaiting_payment",
+              items: parsed.items,
+              goods_price: parsed.goodsPrice,
+              delivery_price: parsed.deliveryPrice,
+              total: parsed.total,
+              carrier: CARRIER_LABEL[parsed.carrier],
+              city: parsed.city,
+              // Комментарий клиента — отдельное поле, а не примесь к адресу.
+              comment: customerComment || null,
+              created_at: now,
+              updated_at: now,
+            });
+          }
+        } catch (e) {
+          console.error("[checkout] order persist failed", e);
+        }
+
+
+
         return Response.json({
           ok: true,
           orderId: orderNumber,

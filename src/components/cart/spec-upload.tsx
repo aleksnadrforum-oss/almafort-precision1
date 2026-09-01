@@ -2,7 +2,7 @@ import { useCallback } from "react";
 import { useDropzone, type FileRejection } from "react-dropzone";
 import { FileSpreadsheet, UploadCloud } from "lucide-react";
 import { toast } from "sonner";
-import { useCart } from "@/store/cart-store";
+import { useCart, type ReviewRow } from "@/store/cart-store";
 
 const MAX_BYTES = 10 * 1024 * 1024;
 
@@ -15,6 +15,16 @@ const ACCEPT = {
   "text/plain": [".csv"],
   "application/octet-stream": [".xls", ".xlsx", ".xlsm", ".csv"],
   "application/zip": [".xlsx", ".xlsm"],
+};
+
+type UploadResponse = {
+  error?: string;
+  fileName?: string;
+  truncated?: boolean;
+  columnMap?: { sheet: string; sku: string | null; name: string | null; qty: string | null } | null;
+  rows?: ReviewRow[];
+  matched?: number;
+  rowsScanned?: number;
 };
 
 const BAD_FORMAT = "Ошибка: Файл поврежден или имеет неверный формат. Загрузите корректный документ Excel";
@@ -78,7 +88,7 @@ export function SpecUpload({ compact = false }: { compact?: boolean }) {
       try {
         const body = new FormData();
         body.append("file", file);
-        const json = await new Promise<any>((resolve, reject) => {
+        const json = await new Promise<UploadResponse>((resolve, reject) => {
           const xhr = new XMLHttpRequest();
           xhr.open("POST", "/api/parser/upload");
           xhr.upload.onprogress = (e) => {

@@ -647,7 +647,7 @@ export function ProductSheet({
                                 setSwatchIndex(i);
                                 onColorChange?.({ label: sw.label, hex: sw.hex });
                               }}
-                              className={`h-8 w-8 min-h-0 shrink-0 cursor-pointer rounded-full border border-gray-200 transition aspect-square ${
+                              className={`h-8 w-8 !min-h-0 shrink-0 cursor-pointer rounded-full border border-gray-200 transition aspect-square ${
                                 i === swatchIndex
                                   ? "ring-2 ring-offset-2 ring-red-600"
                                   : "hover:opacity-80"

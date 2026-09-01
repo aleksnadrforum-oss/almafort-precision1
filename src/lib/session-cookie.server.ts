@@ -1,5 +1,10 @@
 /**
- * Сессионная кука ALMAFORT: HttpOnly + SameSite=Strict (+ Secure на HTTPS).
+ * Сессионная кука ALMAFORT: HttpOnly и Secure на HTTPS.
+ *
+ * HTTPS-предпросмотр Lovable работает внутри iframe другого сайта, поэтому
+ * SameSite=Strict заставляет браузер молча отбросить cookie после успешного
+ * ввода OTP. На HTTPS используем SameSite=None + Secure; на локальном HTTP —
+ * SameSite=Lax, поскольку None без Secure браузеры не принимают.
  * Токен НИКОГДА не попадает в localStorage — только в куку, недоступную JS.
  */
 export const SESSION_COOKIE = "almafort_session";
@@ -17,22 +22,30 @@ function isHttps(request: Request) {
 
 export function sessionCookie(request: Request, token: string, expiresAtSec: number): string {
   const maxAge = Math.max(60, expiresAtSec - Math.floor(Date.now() / 1000));
+  const secure = isHttps(request);
   const parts = [
     `${SESSION_COOKIE}=${token}`,
     "Path=/",
     "HttpOnly",
-    "SameSite=Strict",
+    secure ? "SameSite=None" : "SameSite=Lax",
     `Max-Age=${maxAge}`,
   ];
   // Secure нельзя ставить на http — иначе браузер молча выбросит куку
   // (self-host по IP до выпуска сертификата).
-  if (isHttps(request)) parts.push("Secure");
+  if (secure) parts.push("Secure", "Partitioned");
   return parts.join("; ");
 }
 
 export function clearSessionCookie(request: Request): string {
-  const parts = [`${SESSION_COOKIE}=`, "Path=/", "HttpOnly", "SameSite=Strict", "Max-Age=0"];
-  if (isHttps(request)) parts.push("Secure");
+  const secure = isHttps(request);
+  const parts = [
+    `${SESSION_COOKIE}=`,
+    "Path=/",
+    "HttpOnly",
+    secure ? "SameSite=None" : "SameSite=Lax",
+    "Max-Age=0",
+  ];
+  if (secure) parts.push("Secure", "Partitioned");
   return parts.join("; ");
 }
 

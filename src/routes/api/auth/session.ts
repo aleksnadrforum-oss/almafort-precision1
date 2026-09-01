@@ -10,12 +10,13 @@ export const Route = createFileRoute("/api/auth/session")({
     handlers: {
       GET: async ({ request }) => {
         const raw = readSessionCookie(request) ?? "";
-        if (raw.split(".").length !== 3) return Response.json({ authed: false });
+        const headers = { "Cache-Control": "no-store, private" };
+        if (raw.split(".").length !== 3) return Response.json({ authed: false }, { headers });
         try {
           const { verifyToken } = await import("@/lib/auth.server");
-          return Response.json({ authed: Boolean(verifyToken(raw)) });
+          return Response.json({ authed: Boolean(verifyToken(raw)) }, { headers });
         } catch {
-          return Response.json({ authed: false });
+          return Response.json({ authed: false }, { headers });
         }
       },
     },

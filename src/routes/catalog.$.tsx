@@ -354,7 +354,13 @@ function FacetPage() {
         <section className="mt-8" style={{ minHeight: 320 }} aria-label="Позиции раздела">
           <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 lg:gap-5 xl:grid-cols-4">
             {items.map((p) => (
-              <ProductCard key={p.sku} p={p} thumb={assetGroups.get(p.sku)?.images[0]?.thumb_url ?? null} />
+              <ProductCard
+                key={p.sku}
+                p={p}
+                thumb={assetGroups.get(p.sku)?.images[0]?.thumb_url ?? null}
+                onOpen={openProduct}
+              />
+
             ))}
           </ul>
         </section>

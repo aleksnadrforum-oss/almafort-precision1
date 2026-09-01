@@ -725,7 +725,7 @@ export function CartPanel() {
                 onChange={(e) => setForm((f) => ({ ...f, phone: formatPhone(e.target.value) }))}
                 type="tel"
                 required
-                inputMode="tel"
+                inputMode="numeric"
                 autoComplete="tel"
                 maxLength={18}
                 placeholder="+7 (___) ___-__-__"

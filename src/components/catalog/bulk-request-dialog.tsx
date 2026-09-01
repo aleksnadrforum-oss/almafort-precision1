@@ -202,7 +202,7 @@ export function BulkRequestDialog({
                   autoComplete="tel"
                   maxLength={18}
                   placeholder="+7 (___) ___-__-__"
-                  inputMode="tel"
+                  inputMode="numeric"
                   aria-invalid={Boolean(err("phone", phone))}
                   className={inputClass(Boolean(err("phone", phone)))}
                 />

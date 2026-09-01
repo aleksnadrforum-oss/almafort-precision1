@@ -315,7 +315,8 @@ export function EngineeringQuiz() {
                 <div>
                   <input
                     placeholder="+7 (999) 999-99-99"
-                    inputMode="tel"
+                    type="tel"
+                    inputMode="numeric"
                     {...register("phone")}
                     onChange={(e) =>
                       setValue("phone", formatPhone(e.target.value), {

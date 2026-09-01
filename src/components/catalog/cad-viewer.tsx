@@ -278,6 +278,9 @@ export function CadViewer({
   const [wire, setWire] = useState(false);
   const [auto, setAuto] = useState(true);
   const [grabbing, setGrabbing] = useState(false);
+  const [lost, setLost] = useState(false);
+  // На смартфонах режем нагрузку: без сглаживания и теней, dpr не выше 1.5.
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
   const glRef = useRef<{
     dispose: () => void;
     forceContextLoss?: () => void;
@@ -317,10 +320,16 @@ export function CadViewer({
     >
       <Canvas
         camera={{ position: [2.6, 1.8, 2.6], fov: 40 }}
-        dpr={[1, 2]}
-        gl={{ antialias: true }}
+        dpr={isMobile ? [1, 1.5] : [1, 2]}
+        shadows={!isMobile}
+        gl={{ antialias: !isMobile, powerPreference: "default" }}
         onCreated={({ gl, scene }) => {
           glRef.current = gl as unknown as typeof glRef.current;
+          const canvas = (gl as unknown as { domElement: HTMLCanvasElement }).domElement;
+          canvas.addEventListener("webglcontextlost", (e) => {
+            e.preventDefault();
+            setLost(true);
+          });
           void scene;
         }}
         onPointerDown={() => {
@@ -368,6 +377,12 @@ export function CadViewer({
           touches={{ ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_PAN }}
         />
       </Canvas>
+
+      {lost && (
+        <div className="absolute inset-0 grid place-items-center bg-surface p-6 text-center font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
+          3D-просмотр недоступен на этом устройстве
+        </div>
+      )}
 
       <CadLoader />
 

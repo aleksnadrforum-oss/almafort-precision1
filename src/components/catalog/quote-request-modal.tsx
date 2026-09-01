@@ -113,7 +113,7 @@ export function QuoteRequestModal({
           <Field label="Телефон" required error={err("phone", form.phone)}>
             <input
               value={form.phone}
-              inputMode="tel"
+              inputMode="numeric"
               onChange={(e) => setForm((f) => ({ ...f, phone: formatPhone(e.target.value) }))}
               type="tel"
               required

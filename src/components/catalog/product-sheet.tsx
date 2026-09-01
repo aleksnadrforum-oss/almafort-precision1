@@ -23,6 +23,7 @@ import {
 import { stockLimit, useCart } from "@/store/cart-store";
 import { useEffect, useMemo, useRef, useState, type ComponentType } from "react";
 import { ClientOnly } from "@tanstack/react-router";
+import { ProductThumb } from "@/components/catalog/product-thumb";
 import { createClientOnlyFn } from "@tanstack/react-start";
 import { Download, FileText, Layers, Ruler, Truck } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -418,16 +419,29 @@ export function ProductSheet({
   const [bulkOpen, setBulkOpen] = useState(false);
   const [quoteOpen, setQuoteOpen] = useState(false);
   const [CadViewer, setCadViewer] = useState<ComponentType<CadViewerProps> | null>(null);
+  /** Если WebGL не поднялся за 3 секунды — показываем статичное 2D-изображение. */
+  const [cad3dFailed, setCad3dFailed] = useState(false);
 
   useEffect(() => {
     let active = true;
-    void loadCadViewer().then((Viewer) => {
-      if (active) setCadViewer(() => Viewer);
-    });
+    const timer = window.setTimeout(() => {
+      if (active) setCad3dFailed(true);
+    }, 3000);
+    void loadCadViewer()
+      .then((Viewer) => {
+        if (!active) return;
+        window.clearTimeout(timer);
+        setCadViewer(() => Viewer);
+      })
+      .catch(() => {
+        if (active) setCad3dFailed(true);
+      });
     return () => {
       active = false;
+      window.clearTimeout(timer);
     };
   }, []);
+
 
   useEffect(() => {
     if (!product) return;
@@ -604,10 +618,13 @@ export function ProductSheet({
                       color={partColor}
                       material={partMaterial}
                     />
+                  ) : cad3dFailed ? (
+                    <CadStaticFallback product={product} />
                   ) : (
                     <CadViewerPlaceholder />
                   )}
                 </ClientOnly>
+
 
                 <div className="mt-4">
                   <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -862,6 +879,20 @@ export function ProductSheet({
         )}
       </DialogContent>
     </Dialog>
+  );
+}
+
+/** Статичное 2D-изображение детали: страховка на случай, когда WebGL не поднялся. */
+function CadStaticFallback({ product }: { product: Product }) {
+  return (
+    <div className="grid h-64 place-items-center overflow-hidden rounded-lg border border-border bg-surface p-6 sm:h-72 lg:h-[380px]">
+      <div className="w-40 max-w-full">
+        <ProductThumb src={product.image_url} alt={product.name} />
+        <p className="mt-3 text-center font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+          3D-просмотр недоступен на этом устройстве
+        </p>
+      </div>
+    </div>
   );
 }
 

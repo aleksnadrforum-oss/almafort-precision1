@@ -12,6 +12,7 @@ import tailwindcss from "@tailwindcss/vite";
 import tsConfigPaths from "vite-tsconfig-paths";
 import { VitePWA } from "vite-plugin-pwa";
 import { fileURLToPath } from "node:url";
+import { mirrorDist } from "./scripts/dist-mirror.mjs";
 
 const srcDir = fileURLToPath(new URL("./src", import.meta.url));
 
@@ -46,6 +47,19 @@ export default defineConfig({
     },
   },
   plugins: [
+    // dist-check в облаке запускает голый `vite build` и ждёт dist/client.
+    {
+      name: "almafort-dist-mirror",
+      apply: "build" as const,
+      closeBundle() {
+        mirrorDist();
+      },
+      buildStart() {
+        process.once("exit", () => {
+          mirrorDist();
+        });
+      },
+    },
     tailwindcss(),
     tsConfigPaths({ projects: ["./tsconfig.json"] }),
     tanstackStart(),

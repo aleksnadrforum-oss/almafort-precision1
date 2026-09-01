@@ -11,29 +11,49 @@ import { linePrice, productBySku, useCart, type ReviewRow } from "@/store/cart-s
 import { BulkRequestDialog } from "@/components/catalog/bulk-request-dialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
-type Tone = "green" | "yellow" | "red" | "grey";
+type UiStatus = "valid" | "warning" | "error";
 
 const stockOf = (sku: string | null) => (sku ? (productBySku(sku)?.stock.qty ?? 0) : 0);
 
-function toneOf(r: ReviewRow): Tone {
-  if (r.status === "ERROR") return "red";
-  if (r.status === "NEEDS_SIZE") return "red";
-  if (r.status === "NOT_FOUND") return "grey";
-  if (r.status === "AMBIGUOUS") return "yellow";
-  if (r.sku && r.quantity > stockOf(r.sku)) return "yellow";
-  if (r.notes.length) return "yellow";
-  return "green";
+function deriveUiStatus(r: ReviewRow): UiStatus {
+  if (r.status === "ERROR" || r.status === "NEEDS_SIZE" || r.status === "NOT_FOUND") return "error";
+  if (r.error) return "error";
+  if (r.status === "AMBIGUOUS") return "warning";
+  if (r.sku && r.quantity > stockOf(r.sku)) return "warning";
+  const warningNote = r.notes.some(
+    (n) =>
+      n.includes("не заявлен в палитре") ||
+      n.includes("не указан в файле") ||
+      n.includes("Количество не распознано") ||
+      n.includes("не указан диаметр"),
+  );
+  if (warningNote) return "warning";
+  return "valid";
 }
 
-const TONE_BG: Record<Tone, string> = {
-  green: "border-l-4 border-l-[#16A34A] bg-[#F2FBF5]",
-  yellow: "border-l-4 border-l-[#D97706] bg-[#FFFBEB]",
-  red: "border-l-4 border-l-[#DC2626] bg-[#FEF2F2]",
-  grey: "border-l-4 border-l-[#9CA3AF] bg-[#F6F7F8]",
+const STATUS_BG: Record<UiStatus, string> = {
+  valid:
+    "border-l-4 border-l-emerald-500 bg-white transition-colors duration-300",
+  warning:
+    "border-l-4 border-l-amber-400 bg-amber-50 transition-colors duration-300",
+  error:
+    "border-l-4 border-l-red-500 bg-red-50 transition-colors duration-300",
+};
+
+const STATUS_SELECT: Record<UiStatus, string> = {
+  valid: "border border-gray-300 focus:border-gray-400 focus:ring-1 focus:ring-gray-200",
+  warning:
+    "border-2 border-amber-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-200",
+  error:
+    "border-2 border-red-400 focus:border-red-500 focus:ring-1 focus:ring-red-200",
 };
 
 const btn =
   "inline-flex min-h-[44px] items-center justify-center gap-2 rounded-sm px-4 text-sm font-semibold transition-colors";
+
+function isColorWarning(n: string) {
+  return n.includes("не заявлен в палитре") || n.includes("не указан в файле");
+}
 
 export function SpecReview() {
   const review = useCart((s) => s.review);
@@ -41,7 +61,9 @@ export function SpecReview() {
   const commitReview = useCart((s) => s.commitReview);
   const existing = useCart((s) => s.lines);
 
-  const [rows, setRows] = useState<ReviewRow[]>(() => review?.rows ?? []);
+  const [rows, setRows] = useState<ReviewRow[]>(() =>
+    (review?.rows ?? []).map((r) => ({ ...r, uiStatus: r.uiStatus ?? deriveUiStatus(r) })),
+  );
   const [conflict, setConflict] = useState(false);
   const [leadOpen, setLeadOpen] = useState(false);
 
@@ -50,7 +72,13 @@ export function SpecReview() {
   if (!review) return null;
 
   const patch = (id: string, next: Partial<ReviewRow>) =>
-    setRows((prev) => prev.map((r) => (r.id === id ? { ...r, ...next } : r)));
+    setRows((prev) =>
+      prev.map((r) => {
+        if (r.id !== id) return r;
+        const merged = { ...r, ...next };
+        return { ...merged, uiStatus: deriveUiStatus(merged as ReviewRow) };
+      }),
+    );
 
   const remove = (id: string) => setRows((prev) => prev.filter((r) => r.id !== id));
 
@@ -95,9 +123,10 @@ export function SpecReview() {
     });
   };
 
-  const greens = rows.filter((r) => toneOf(r) === "green" && r.sku);
-  const resolved = rows.filter((r) => r.sku && r.quantity > 0 && r.status !== "ERROR");
+  const greens = rows.filter((r) => r.uiStatus === "valid" && r.sku);
+  const resolved = rows.filter((r) => r.uiStatus === "valid");
   const unmatched = rows.filter((r) => r.status === "NOT_FOUND");
+  const hasUnresolved = rows.some((r) => r.uiStatus !== "valid");
 
   const total = resolved.reduce((sum, r) => sum + linePrice(r.sku!, r.quantity).sum, 0);
 
@@ -156,7 +185,7 @@ export function SpecReview() {
         <button
           type="button"
           className={`${btn} bg-primary text-primary-foreground disabled:opacity-40`}
-          disabled={!greens.length}
+          disabled={!greens.length || hasUnresolved}
           onClick={() => commitGuarded(greens)}
         >
           <Check className="size-4" /> Добавить все зелёные строки ({greens.length})
@@ -182,13 +211,14 @@ export function SpecReview() {
 
       <ul className="divide-y divide-border">
         {rows.map((r) => {
-          const tone = toneOf(r);
+          const status = r.uiStatus ?? deriveUiStatus(r);
           const stock = stockOf(r.sku);
           const product = r.sku ? productBySku(r.sku) : undefined;
           const palette = product ? paletteForProduct(product) : null;
           const partial = Boolean(r.sku) && r.quantity > stock;
+          const selectClass = `${STATUS_SELECT[status]} mt-2 h-11 w-full max-w-xs rounded-sm bg-background px-2 text-base`;
           return (
-            <li key={r.id} className={`px-5 py-4 ${TONE_BG[tone]}`}>
+            <li key={r.id} className={`px-5 py-4 ${STATUS_BG[status]}`}>
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm text-muted-foreground">{r.originalString}</p>
@@ -208,12 +238,17 @@ export function SpecReview() {
                   )}
                   {palette && palette.length > 1 && (
                     <select
-                      className="mt-2 h-11 w-full max-w-xs rounded-sm border border-[#D1D5DB] bg-background px-2 text-base"
+                      className={selectClass}
                       value={r.color?.label ?? ""}
                       aria-label="Цвет позиции"
                       onChange={(e) => {
                         const sw = palette.find((x) => x.label === e.target.value);
-                        if (sw) patch(r.id, { color: { label: sw.label, hex: sw.hex }, colorRecognized: true });
+                        if (!sw) return;
+                        patch(r.id, {
+                          color: { label: sw.label, hex: sw.hex },
+                          colorRecognized: true,
+                          notes: r.notes.filter((n) => !isColorWarning(n)),
+                        });
                       }}
                     >
                       {palette.map((sw) => (
@@ -245,7 +280,7 @@ export function SpecReview() {
 
                   {(r.status === "AMBIGUOUS" || r.status === "NEEDS_SIZE") && r.candidates.length > 0 && (
                     <select
-                      className="mt-2 h-11 w-full max-w-md rounded-sm border border-[#D1D5DB] bg-background px-2 text-base"
+                      className={`${selectClass} max-w-md`}
                       defaultValue=""
                       onChange={(e) => e.target.value && pick(r, e.target.value)}
                       aria-label="Выберите подходящий размер"
@@ -303,7 +338,7 @@ export function SpecReview() {
         <button
           type="button"
           className={`${btn} bg-primary text-primary-foreground disabled:opacity-40`}
-          disabled={!resolved.length}
+          disabled={!resolved.length || hasUnresolved}
           onClick={() => commitGuarded()}
         >
           Перенести в корзину

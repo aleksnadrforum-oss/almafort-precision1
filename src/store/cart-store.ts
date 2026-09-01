@@ -149,6 +149,8 @@ export type ReviewRow = {
   /** Цвет позиции (единая структура для всех SKU, услуги → «Базовый»). */
   color: { label: string; hex: string };
   colorRecognized: boolean;
+  /** Локальный UI-статус строки на этапе проверки: valid / warning / error. */
+  uiStatus?: "valid" | "warning" | "error";
 };
 
 export type ReviewState = {

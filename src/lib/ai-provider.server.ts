@@ -237,7 +237,7 @@ async function chatCompletions(r: Resolved, req: AiRequest): Promise<AiResponse>
     body["temperature"] = req.temperature;
   }
 
-  const res = await postJson(r, "/chat/completions", body, req.timeoutMs ?? 30_000, req.task);
+  const res = await postJson(r, "/chat/completions", body, req.timeoutMs ?? 20_000, req.task);
   const json = (await res.json()) as {
     choices?: Array<{ message?: { content?: string } }>;
     usage?: { prompt_tokens?: number; completion_tokens?: number };

@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { FileText } from "lucide-react";
+import { FileText, MessageSquare } from "lucide-react";
 import {
   adminAttachDocument,
   adminGetOrder,

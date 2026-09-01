@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { MapPin, Send, MessageCircle, X } from "lucide-react";
 import { trackContact } from "@/lib/metrika";
 import { COMPANY, companyEmail } from "@/lib/company";
+import { useAuth } from "@/lib/use-auth";
 
 const LAT = COMPANY.lat;
 const LON = COMPANY.lon;
@@ -147,6 +148,7 @@ function LazyMap() {
 }
 
 export function SiteFooter() {
+  const { cabinetHref } = useAuth();
   const [modal, setModal] = useState(false);
   // Антиспам: адрес собирается только в браузере — в исходном коде страницы его нет.
   const [mail, setMail] = useState("");

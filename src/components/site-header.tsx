@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Clock, MapPin, Phone, UserRound, Menu, ShoppingCart, X } from "lucide-react";
+import { MapPin, Phone, UserRound, Menu, ShoppingCart, X } from "lucide-react";
 import { currentUser, onAuthChange } from "@/lib/session";
 import { useCart } from "@/store/cart-store";
 import { trackContact } from "@/lib/metrika";
@@ -69,10 +69,6 @@ export function SiteHeader() {
         </nav>
 
         <div className="hidden lg:flex lg:shrink-0 lg:items-center lg:gap-4 xl:gap-5">
-          <span className="hidden items-center gap-2 whitespace-nowrap text-[13px] leading-none text-muted-foreground 2xl:flex">
-            <Clock className="size-4 shrink-0" strokeWidth={1.5} />
-            Пн-Пт 08:00–19:00 (МСК+4)
-          </span>
           <span className="hidden max-w-[220px] items-center gap-2 text-[13px] leading-none text-muted-foreground 2xl:flex">
             <MapPin className="size-4 shrink-0" strokeWidth={1.5} />
             <span className="truncate">Нижний проезд, 15/1</span>

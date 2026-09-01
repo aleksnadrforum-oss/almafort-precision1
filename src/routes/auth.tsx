@@ -5,6 +5,7 @@ import { Loader2, Mail, ShieldCheck } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { BackLink } from "@/components/back-link";
 import { getServerSession, writeSession, type SessionUser } from "@/lib/session";
+import { invalidateSessionCache } from "@/lib/use-auth";
 import { ConsentCheckbox } from "@/components/consent-checkbox";
 
 const emailOk = (v: string) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v.trim());
@@ -155,6 +156,7 @@ function AuthPage() {
 
       if (body.status === "ok" && body.user && body.expiresAt) {
         writeSession({ user: body.user, expiresAt: body.expiresAt });
+        invalidateSessionCache();
         // Жёсткий переход: браузер гарантированно отправит cookie almafort_session
         window.location.href = "/cabinet";
         return;

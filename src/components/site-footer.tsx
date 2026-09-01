@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { MapPin, Send, MessageCircle, X } from "lucide-react";
 import { trackContact } from "@/lib/metrika";
 import { COMPANY, companyEmail } from "@/lib/company";
+import { useAuth } from "@/lib/use-auth";
 
 const LAT = COMPANY.lat;
 const LON = COMPANY.lon;
@@ -147,6 +148,7 @@ function LazyMap() {
 }
 
 export function SiteFooter() {
+  const { cabinetHref } = useAuth();
   const [modal, setModal] = useState(false);
   // Антиспам: адрес собирается только в браузере — в исходном коде страницы его нет.
   const [mail, setMail] = useState("");
@@ -236,7 +238,7 @@ export function SiteFooter() {
         <div className="mx-auto flex max-w-[1440px] flex-col gap-2 px-[max(5vw,20px)] py-5 text-[12px] leading-[1.6] text-[#9CA3AF] sm:flex-row sm:items-center sm:justify-between lg:px-10">
           <p>© 2006–2026 ALMAFORT · ИП Сазонов Е. О..  Официально зарегистрированный товарный знак (№ 1192250).</p>
           <div className="flex flex-wrap gap-6">
-            <Link to="/auth" className="inline-flex min-h-11 items-center font-semibold text-white transition-colors hover:text-[#9CA3AF]">
+            <Link to={cabinetHref} className="inline-flex min-h-11 items-center font-semibold text-white transition-colors hover:text-[#9CA3AF]">
               Кабинет снабженца
             </Link>
             <Link to="/privacy" className="inline-flex min-h-11 items-center underline underline-offset-2 transition-colors hover:text-white">

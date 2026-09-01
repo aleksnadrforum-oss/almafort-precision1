@@ -1,3 +1,4 @@
+import { useAuth } from "@/lib/use-auth";
 import { Link, useLocation } from "@tanstack/react-router";
 import { Home, LayoutGrid, ShoppingCart, Sparkles, UserRound } from "lucide-react";
 import { useEffect } from "react";
@@ -27,6 +28,7 @@ export function MobileTabBar() {
     };
   }, []);
 
+  const { cabinetHref } = useAuth();
   const location = useLocation();
   const lines = useCart((s) => s.lines);
   const count = lines.length;
@@ -90,7 +92,7 @@ export function MobileTabBar() {
         </Link>
 
         <Link
-          to="/cabinet"
+          to={cabinetHref}
           className={item(isActive("/cabinet"))}
           aria-current={isActive("/cabinet") ? "page" : undefined}
         >

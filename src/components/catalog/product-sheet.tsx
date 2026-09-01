@@ -546,7 +546,7 @@ export function ProductSheet({
   return (
     <Dialog open={!!product} onOpenChange={(o) => !o && onClose()}>
       <DialogContent
-        className="max-h-[90dvh] max-w-6xl overflow-y-auto overscroll-contain max-md:inset-x-0 max-md:bottom-0 max-md:top-auto max-md:max-h-[92dvh] max-md:w-full max-md:max-w-none max-md:translate-x-0 max-md:translate-y-0 max-md:rounded-t-2xl max-md:rounded-b-none max-md:p-4 max-md:pb-[env(safe-area-inset-bottom)] max-md:data-[state=closed]:slide-out-to-bottom max-md:data-[state=open]:slide-in-from-bottom"
+        className="max-h-[90dvh] max-w-6xl overflow-y-auto overscroll-contain max-md:inset-x-0 max-md:bottom-0 max-md:top-auto max-md:max-h-[92dvh] max-md:w-full max-md:max-w-none max-md:translate-x-0 max-md:translate-y-0 max-md:rounded-t-2xl max-md:rounded-b-none max-md:p-4 max-md:pb-0 max-md:data-[state=closed]:slide-out-to-bottom max-md:data-[state=open]:slide-in-from-bottom"
       >
         {/* Индикатор шторки: подсказывает жест «свайп вниз» на мобильных */}
         <div aria-hidden className="mx-auto -mt-1 h-1.5 w-12 shrink-0 rounded-full bg-border md:hidden" />

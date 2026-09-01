@@ -209,7 +209,8 @@ export function SpecReview() {
         )}
       </div>
 
-      <ul className="divide-y divide-border">
+      {/* Мобильные карточки (<md) / классические строки спецификации (>=md) */}
+      <ul className="px-4 py-3 md:divide-y md:divide-border md:px-0 md:py-0">
         {rows.map((r) => {
           const status = r.uiStatus ?? deriveUiStatus(r);
           const stock = stockOf(r.sku);
@@ -218,11 +219,16 @@ export function SpecReview() {
           const partial = Boolean(r.sku) && r.quantity > stock;
           const selectClass = `${STATUS_SELECT[status]} mt-2 h-11 w-full max-w-xs rounded-sm bg-background px-2 text-base`;
           return (
-            <li key={r.id} className={`px-5 py-4 ${STATUS_BG[status]}`}>
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm text-muted-foreground">{r.originalString}</p>
-                  <p className="mt-0.5 text-base font-semibold text-foreground">
+            <li
+              key={r.id}
+              className={`mb-3 rounded-xl border border-gray-100 p-4 shadow-sm md:mb-0 md:rounded-none md:border-0 md:px-5 md:py-4 md:shadow-none ${STATUS_BG[status]}`}
+            >
+              <div className="flex flex-col md:flex-row md:flex-wrap md:items-start md:justify-between md:gap-3">
+                <div className="w-full min-w-0 md:w-auto md:flex-1">
+                  <p className="break-words text-left text-sm leading-snug text-muted-foreground [overflow-wrap:break-word] [word-break:normal]">
+                    {r.originalString}
+                  </p>
+                  <p className="mt-0.5 w-full break-words text-left text-sm font-medium leading-snug text-foreground [overflow-wrap:break-word] [word-break:normal] md:text-base md:font-semibold">
                     {r.sku ? `${r.name} (${r.sku})` : "Позиция не найдена в каталоге"}
                   </p>
                   {r.sku && r.color && (

@@ -150,7 +150,9 @@ export async function identifyPart(imageDataUrl: string): Promise<VisionVerdict>
       // без markdown-обёрток и галлюцинаций.
       jsonObject: true,
       temperature: 0,
-      timeoutMs: 20_000,
+      // Короткий ответ + запас на медленный ответ шлюза: лучше подождать, чем ложный обрыв.
+      maxTokens: 500,
+      timeoutMs: 40_000,
     });
   } catch (e) {
     void logLlmCall({

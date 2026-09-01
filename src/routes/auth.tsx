@@ -46,8 +46,9 @@ function AuthPage() {
   const inputs = useRef<Array<HTMLInputElement | null>>([]);
 
   useEffect(() => {
-    if (readSession()) void navigate({ to: "/cabinet", replace: true });
-  }, [navigate]);
+    if (readSession()) window.location.replace("/cabinet");
+  }, []);
+
 
   // Таймер повторной отправки: кнопка блокируется на 60 секунд.
   useEffect(() => {

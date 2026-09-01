@@ -61,16 +61,17 @@ module.exports = {
       out_file: "./logs/almafort-out.log",
       error_file: "./logs/almafort-error.log",
       env: {
-        NODE_ENV: "production",
-        HOST: "127.0.0.1",
-        PORT: 3000,
         ...fileEnv,
+        NODE_ENV: "production",
+        // Слушаем все интерфейсы: сайт открывается напрямую по IP:3000.
+        HOST: fileEnv.HOST || "0.0.0.0",
+        PORT: fileEnv.PORT || 3000,
       },
       env_production: {
-        NODE_ENV: "production",
-        HOST: fileEnv.HOST || "127.0.0.1",
-        PORT: fileEnv.PORT || 3000,
         ...fileEnv,
+        NODE_ENV: "production",
+        HOST: fileEnv.HOST || "0.0.0.0",
+        PORT: fileEnv.PORT || 3000,
       },
     },
   ],

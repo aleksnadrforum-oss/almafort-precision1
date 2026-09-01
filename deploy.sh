@@ -14,7 +14,10 @@ fail() { printf "\n\033[1;31mОШИБКА: %s\033[0m\n" "$*" >&2; exit 1; }
 command -v node >/dev/null || fail "Node.js не установлен (нужен v20 LTS)"
 command -v npm  >/dev/null || fail "npm не найден"
 NODE_MAJOR="$(node -p 'process.versions.node.split(".")[0]')"
-[ "$NODE_MAJOR" -ge 20 ] || fail "Нужен Node.js >= 20 (сейчас v$NODE_MAJOR)"
+[ "$NODE_MAJOR" -ge 20 ] || fail "Нужен Node.js 20 LTS (сейчас v$NODE_MAJOR)"
+if [ "$NODE_MAJOR" -gt 20 ]; then
+  printf "\n\033[1;33mВНИМАНИЕ: Node v%s. Рекомендуется строго v20 LTS — на новых рантаймах возможны конфликты модулей при SSR.\033[0m\n" "$NODE_MAJOR"
+fi
 [ -f .env ] || fail "Нет файла .env — скопируйте .env.example и заполните значения"
 
 # 2. Обязательные переменные -------------------------------------------------
@@ -54,23 +57,31 @@ else
 fi
 
 # 3. Зависимости -------------------------------------------------------------
-log "Установка зависимостей (npm ci)"
-if [ -f package-lock.json ]; then
-  npm ci
-else
-  echo "package-lock.json отсутствует — используем npm install (создаст lockfile)"
-  npm install
-fi
+log "Очистка старых кэшей (node_modules, .output, .nitro, dist)"
+rm -rf node_modules .output .nitro dist
+
+log "Установка свежих зависимостей (npm install)"
+npm install
 
 # 4. Сборка под Node-сервер --------------------------------------------------
 log "Сборка (Nitro preset: node-server)"
-rm -rf .output
 DEPLOY_TARGET=vps NITRO_PRESET=node-server NODE_ENV=production npm run build
 [ -f .output/server/index.mjs ] || fail "Сборка не создала .output/server/index.mjs"
 
 # 5. Запуск через PM2 --------------------------------------------------------
 mkdir -p logs
 command -v pm2 >/dev/null || { log "Устанавливаю PM2 глобально"; npm i -g pm2; }
+
+# Ротация логов PM2: диск не забивается старыми ошибками.
+if ! pm2 describe pm2-logrotate >/dev/null 2>&1 && ! pm2 ls | grep -q logrotate; then
+  log "Подключаю pm2-logrotate"
+  pm2 install pm2-logrotate || true
+fi
+pm2 set pm2-logrotate:max_size 10M      || true
+pm2 set pm2-logrotate:retain 7          || true
+pm2 set pm2-logrotate:compress true     || true
+pm2 set pm2-logrotate:rotateInterval '0 0 * * *' || true
+
 
 log "Перезапуск PM2-процесса $APP_NAME"
 if pm2 describe "$APP_NAME" >/dev/null 2>&1; then

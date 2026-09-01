@@ -301,7 +301,13 @@ export function CartPanel() {
       );
       return;
     }
-    if (!(await holdInventory())) return;
+    const holdResult = await holdInventory();
+    if (holdResult === "blocked") return;
+    if (holdResult === "unverified") {
+      toast.error("Подтвердите ИНН плательщика — без этого счёт с резервом склада не выставляется");
+      return;
+    }
+
     setSubmitting(true);
     const ecomItems = lines.map((l) => ({
       sku: l.sku,

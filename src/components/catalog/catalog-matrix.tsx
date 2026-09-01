@@ -362,7 +362,7 @@ function MobileCard({
         type="button"
         onClick={() => void add()}
         disabled={state === "loading" || outOfStock}
-        className={`mt-3 flex h-12 w-full items-center justify-center gap-2 rounded-md text-sm font-semibold tabular-nums transition-colors active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed ${
+        className={`mt-3 flex min-h-[48px] w-full flex-nowrap items-center justify-center gap-x-1 whitespace-nowrap rounded-xl text-xs sm:text-sm font-semibold tabular-nums transition-colors active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed ${
           outOfStock
             ? "border border-[#E5E7EB] bg-[#F3F4F6] text-[#9CA3AF]"
             : state === "done"
@@ -373,25 +373,33 @@ function MobileCard({
         }`}
       >
         {state === "loading" ? (
-          <Loader2 className="size-4 animate-spin" strokeWidth={1.75} />
+          <Loader2 className="size-4 shrink-0 animate-spin" strokeWidth={1.75} />
         ) : state === "done" ? (
-          <Check className="size-4" strokeWidth={2} />
+          <Check className="size-4 shrink-0" strokeWidth={2} />
         ) : onRequest ? (
-          <MessageSquareQuote className="size-4" strokeWidth={1.75} />
+          <MessageSquareQuote className="size-4 shrink-0" strokeWidth={1.75} />
         ) : (
-          <ShoppingCart className="size-4" strokeWidth={1.75} />
+          <ShoppingCart className="size-4 shrink-0" strokeWidth={1.75} />
         )}
-        {outOfStock
-          ? "Нет в наличии"
-          : state === "loading"
-          ? "Добавляем…"
-          : state === "done"
-            ? "Добавлено"
-            : onRequest
-              ? "Запросить расчёт"
-              : hasSum
-                ? `В корзину · ${formatPrice(lineTotal(p, qty))}`
-                : "В корзину"}
+        <span className="shrink-0">
+          {outOfStock
+            ? "Нет в наличии"
+            : state === "loading"
+              ? "Добавляем…"
+              : state === "done"
+                ? "Добавлено"
+                : onRequest
+                  ? "Запросить расчёт"
+                  : "В корзину"}
+        </span>
+        {!outOfStock && state !== "loading" && state !== "done" && !onRequest && hasSum && (
+          <>
+            <span aria-hidden className="shrink-0">·</span>
+            <span className="shrink-0">{qty.toLocaleString("ru-RU")} шт</span>
+            <span aria-hidden className="shrink-0">·</span>
+            <span className="shrink-0 tabular-nums">{formatPrice(lineTotal(p, qty))}</span>
+          </>
+        )}
       </button>
 
       {inCart > 0 && (

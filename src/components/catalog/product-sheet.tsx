@@ -642,7 +642,7 @@ export function ProductSheet({
                   </p>
                   {/* Единый дизайн-код каталога: компактная сетка свотчей + тултип. */}
                   <TooltipProvider delayDuration={120}>
-                    <div className="mt-2 flex flex-wrap items-center gap-2.5">
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
                       {swatches.map((sw, i) => (
                         <Tooltip key={sw.hex + sw.label}>
                           <TooltipTrigger asChild>
@@ -654,7 +654,7 @@ export function ProductSheet({
                                 setSwatchIndex(i);
                                 onColorChange?.({ label: sw.label, hex: sw.hex });
                               }}
-                              className={`h-8 w-8 !min-h-0 shrink-0 cursor-pointer rounded-full border border-gray-200 transition aspect-square ${
+                              className={`h-8 w-8 !min-h-0 flex-shrink-0 aspect-square cursor-pointer rounded-full border border-gray-200 transition aspect-square ${
                                 i === swatchIndex
                                   ? "ring-2 ring-offset-2 ring-red-600"
                                   : "hover:opacity-80"
@@ -684,7 +684,7 @@ export function ProductSheet({
               </div>
 
 
-              <div className="pb-28 md:pb-0">
+              <div>
                 <dl className="scrollbar-thin grid max-h-[350px] grid-cols-2 gap-x-6 gap-y-3 overflow-y-auto border-b border-border pb-6 pr-1 text-sm">
                   {normalizeSpecs(
                     (product.specRows

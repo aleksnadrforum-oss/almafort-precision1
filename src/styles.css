@@ -324,7 +324,6 @@ select,
 button {
   -webkit-appearance: none;
   appearance: none;
-  border-radius: 0;
 }
 input[type="checkbox"],
 input[type="radio"] {
@@ -434,7 +433,7 @@ summary {
 /* Контент не должен прятаться под нижней панелью навигации */
 @media (max-width: 767px) {
   body {
-    padding-bottom: calc(var(--tabbar-total) + 4rem);
+    padding-bottom: var(--safe-b);
   }
   /* Липкие блоки внутри страниц приклеены строго НАД панелью */
   .above-tabbar {
@@ -718,4 +717,184 @@ body.kb-open .above-tabbar-float {
 }
 .scrollbar-thin::-webkit-scrollbar-track {
   background: transparent;
+}
+
+/* --- КРОССБРАУЗЕРНЫЙ ФИКС: Safari < 16.4 без @property ----------------
+   Tailwind v4 объявляет служебные переменные через @property. В Safari 15/16.0
+   var(--tw-border-style) не резолвится → border-style: none, тени и кольца
+   исчезают, и вся вёрстка «плывёт» без рамок. Явная инициализация переменных
+   возвращает границы во всех браузерах. */
+*,
+::before,
+::after,
+::backdrop {
+  --tw-border-style: solid;
+  --tw-outline-style: solid;
+  --tw-leading: initial;
+  --tw-font-weight: initial;
+  --tw-tracking: initial;
+  --tw-shadow: 0 0 #0000;
+  --tw-shadow-color: initial;
+  --tw-shadow-alpha: 100%;
+  --tw-inset-shadow: 0 0 #0000;
+  --tw-inset-shadow-color: initial;
+  --tw-inset-shadow-alpha: 100%;
+  --tw-ring-color: initial;
+  --tw-ring-shadow: 0 0 #0000;
+  --tw-inset-ring-color: initial;
+  --tw-inset-ring-shadow: 0 0 #0000;
+  --tw-ring-inset: initial;
+  --tw-ring-offset-width: 0px;
+  --tw-ring-offset-color: #fff;
+  --tw-ring-offset-shadow: 0 0 #0000;
+  --tw-blur: initial;
+  --tw-brightness: initial;
+  --tw-contrast: initial;
+  --tw-grayscale: initial;
+  --tw-hue-rotate: initial;
+  --tw-invert: initial;
+  --tw-opacity: initial;
+  --tw-saturate: initial;
+  --tw-sepia: initial;
+  --tw-drop-shadow: initial;
+  --tw-backdrop-blur: initial;
+  --tw-backdrop-brightness: initial;
+  --tw-backdrop-contrast: initial;
+  --tw-backdrop-grayscale: initial;
+  --tw-backdrop-hue-rotate: initial;
+  --tw-backdrop-invert: initial;
+  --tw-backdrop-opacity: initial;
+  --tw-backdrop-saturate: initial;
+  --tw-backdrop-sepia: initial;
+  --tw-duration: initial;
+  --tw-ease: initial;
+  --tw-scale-x: 1;
+  --tw-scale-y: 1;
+  --tw-scale-z: 1;
+  --tw-rotate-x: initial;
+  --tw-rotate-y: initial;
+  --tw-rotate-z: initial;
+  --tw-skew-x: initial;
+  --tw-skew-y: initial;
+  --tw-space-y-reverse: 0;
+  --tw-space-x-reverse: 0;
+  --tw-divide-y-reverse: 0;
+  --tw-gradient-position: initial;
+  --tw-gradient-from: #0000;
+  --tw-gradient-via: #0000;
+  --tw-gradient-to: #0000;
+  --tw-gradient-stops: initial;
+  --tw-gradient-via-stops: initial;
+  --tw-gradient-from-position: 0%;
+  --tw-gradient-via-position: 50%;
+  --tw-gradient-to-position: 100%;
+}
+
+/* Никакого системного синего блика при тапе */
+html,
+body,
+a,
+button,
+label,
+input,
+textarea,
+select,
+[role="button"] {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* --- ПОЛЯ ВВОДА: гарантированный контейнерный стиль -------------------
+   Базовый слой, а не утилиты: даже если класс не применился, поле остаётся
+   видимым «контейнером», а не сырым текстом. Утилиты Tailwind перебивают. */
+@layer base {
+  input:where(
+      [type="text"],
+      [type="tel"],
+      [type="email"],
+      [type="number"],
+      [type="search"],
+      [type="password"],
+      [type="url"],
+      [type="date"],
+      :not([type])
+    ):not([class*="border"]):not([class*="bg-"]),
+  textarea:not([class*="border"]):not([class*="bg-"]),
+  select:not([class*="border"]):not([class*="bg-"]) {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.5rem;
+    min-height: 48px;
+    padding: 0.875rem;
+    color: var(--color-foreground);
+  }
+
+  input:where(:not([type="checkbox"], [type="radio"], [type="file"], [type="range"])):focus,
+  textarea:focus,
+  select:focus {
+    outline: none;
+    border-color: #dc2626;
+    box-shadow: 0 0 0 2px rgb(220 38 38 / 0.2);
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--placeholder-foreground);
+  }
+
+  /* Чекбоксы согласия — крупная, заметная цель */
+  input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    min-height: 20px;
+    accent-color: var(--primary);
+  }
+}
+
+/* iOS убирает скругление у полей/кнопок — но border-radius: 0 глобально
+   стирал и наши rounded-*. Возвращаем: appearance гасим точечно. */
+/* --- ПЛАВАЮЩИЙ КРЕСТИК ЗАКРЫТИЯ -------------------------------------- */
+@utility modal-close {
+  position: fixed;
+  top: max(16px, env(safe-area-inset-top));
+  right: max(16px, env(safe-area-inset-right));
+  z-index: 99999;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  min-height: 44px;
+  border-radius: 9999px;
+  background-color: rgb(255 255 255 / 0.92);
+  color: #0f172a;
+  box-shadow: 0 6px 20px rgb(15 23 42 / 0.28);
+  backdrop-filter: blur(6px);
+  touch-action: manipulation;
+}
+
+/* Закрытое окно не должно оставлять «фантомную» шторку внизу экрана */
+[data-state="closed"][data-bottom-sheet],
+[hidden],
+.is-closed {
+  display: none !important;
+  pointer-events: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+/* Полноэкранные окна: динамическая высота вместо 100vh */
+@supports (height: 100dvh) {
+  .h-screen {
+    height: 100dvh;
+  }
+  .min-h-screen {
+    min-height: 100dvh;
+  }
+}
+
+/* Нижняя плавающая панель не перекрывает CTA и поля на скролл-страницах */
+@media (max-width: 767px) {
+  main,
+  [data-page-scroll] {
+    padding-bottom: calc(100px + env(safe-area-inset-bottom));
+  }
 }

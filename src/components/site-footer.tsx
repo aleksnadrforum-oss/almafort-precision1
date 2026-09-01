@@ -195,12 +195,8 @@ export function SiteFooter() {
             {mail || "отдел продаж — почта"}
           </a>
 
-          <a
-            href={COMPANY.siteUrl}
-            className="mt-1 inline-flex min-h-11 items-center text-sm text-[#9CA3AF] hover:text-white"
-          >
-            {COMPANY.site}
-          </a>
+
+
 
           <div className="mt-6 space-y-1 text-sm leading-[1.6] text-[#9CA3AF]">
             <p className="font-semibold text-white">Производство и склад</p>

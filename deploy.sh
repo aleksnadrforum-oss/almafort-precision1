@@ -14,7 +14,10 @@ fail() { printf "\n\033[1;31mОШИБКА: %s\033[0m\n" "$*" >&2; exit 1; }
 command -v node >/dev/null || fail "Node.js не установлен (нужен v20 LTS)"
 command -v npm  >/dev/null || fail "npm не найден"
 NODE_MAJOR="$(node -p 'process.versions.node.split(".")[0]')"
-[ "$NODE_MAJOR" -ge 20 ] || fail "Нужен Node.js >= 20 (сейчас v$NODE_MAJOR)"
+[ "$NODE_MAJOR" -ge 20 ] || fail "Нужен Node.js 20 LTS (сейчас v$NODE_MAJOR)"
+if [ "$NODE_MAJOR" -gt 20 ]; then
+  printf "\n\033[1;33mВНИМАНИЕ: Node v%s. Рекомендуется строго v20 LTS — на новых рантаймах возможны конфликты модулей при SSR.\033[0m\n" "$NODE_MAJOR"
+fi
 [ -f .env ] || fail "Нет файла .env — скопируйте .env.example и заполните значения"
 
 # 2. Обязательные переменные -------------------------------------------------

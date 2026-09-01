@@ -744,6 +744,19 @@
       "prompt_tokens": 4785,
       "completion_tokens": 382,
       "cost_usd": 0.009801
+    },
+    {
+      "id": "c3e5dc47-55ef-4700-92c5-0cfe04c8a881",
+      "created_at": "2026-09-01T13:49:59.608Z",
+      "updated_at": "2026-09-01T13:49:59.608Z",
+      "kind": "configurator",
+      "prompt": "пппп111рппанели",
+      "response": "{\"error\":\"Запрос вне компетенции конфигуратора ALMAFORT\",\"recommended_items\":[],\"engineering_logic\":\"Текст запроса не содержит осмысленного описания задачи по подбору мебельной фурнитуры, крепежа, трубных заглушек, опор, сэндвич-панелей или услуг по ним. Без габаритов, назначения и количества невозможно корректно подобрать артикулы из каталога ALMAFORT. Коэффициент запаса не рассчитывается — нет исходной массы и понятной схемы нагружения.\",\"safety_margin_factor\":null,\"is_service\":false}",
+      "parse_status": "ok",
+      "model": "gpt-5.1-instant",
+      "prompt_tokens": 7023,
+      "completion_tokens": 141,
+      "cost_usd": 0.010189
     }
   ],
   "llm_prompts": [],

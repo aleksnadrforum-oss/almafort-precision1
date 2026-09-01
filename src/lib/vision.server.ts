@@ -107,7 +107,12 @@ export async function logVisionFail(imageDataUrl: string, verdict: VisionVerdict
 }
 
 export async function identifyPart(imageDataUrl: string): Promise<VisionVerdict> {
-  const system = (await activePrompt("vision")) ?? SYSTEM_PROMPT;
+  const base = (await activePrompt("vision")) ?? SYSTEM_PROMPT;
+  // Инъекция актуального каталога: {{CATALOG}} в кастомном промпте или дописываем в конец.
+  const catalog = catalogGrounding();
+  const system = base.includes("{{CATALOG}}")
+    ? base.replace("{{CATALOG}}", catalog)
+    : `${base}\nОПИРАЙСЯ СТРОГО НА ЭТОТ КАТАЛОГ:\n${catalog}\nЕсли совпадения нет — верни status "NOT_FOUND".`;
 
   let completion;
   try {
@@ -156,7 +161,13 @@ export async function identifyPart(imageDataUrl: string): Promise<VisionVerdict>
 
   const rawStatus = String(parsed.status ?? "").toUpperCase();
   const status: VisionStatus =
-    rawStatus === "FOREIGN" ? "FOREIGN" : rawStatus === "INVALID" ? "INVALID" : "VALID";
+    rawStatus === "FOREIGN"
+      ? "FOREIGN"
+      : rawStatus === "INVALID"
+        ? "INVALID"
+        : rawStatus === "NOT_FOUND" || rawStatus === "NOTFOUND"
+          ? "NOT_FOUND"
+          : "VALID";
 
   // Модель отдаёт 0..100, но иногда 0..1 — нормализуем в долю.
   const rawConf = Number(parsed.confidence);
@@ -168,7 +179,12 @@ export async function identifyPart(imageDataUrl: string): Promise<VisionVerdict>
     shape: String(parsed.shape ?? "").toLowerCase(),
     color: String(parsed.color ?? "").toLowerCase(),
     has_threads: Boolean(parsed.has_threads),
-    confidence: status === "INVALID" ? Math.min(0.09, conf) : Math.min(1, Math.max(0, conf)),
+    confidence:
+      status === "INVALID"
+        ? Math.min(0.09, conf)
+        : status === "NOT_FOUND"
+          ? Math.min(0.49, conf)
+          : Math.min(1, Math.max(0, conf)),
     observed: String(parsed.observed ?? "").slice(0, 160),
     hands_present: Boolean(parsed.hands_present),
     low_light: Boolean(parsed.low_light),

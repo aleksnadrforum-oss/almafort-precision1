@@ -76,6 +76,8 @@ function AuthPage() {
         method: "POST",
         headers: { "content-type": "application/json" },
         credentials: "same-origin",
+        // Без таймаута зависшая сеть = вечный спиннер на кнопке.
+        signal: AbortSignal.timeout(30_000),
         body: JSON.stringify({ email: email.trim().toLowerCase() }),
       });
       const body = (await res.json().catch(() => ({}))) as {
@@ -96,8 +98,13 @@ function AuthPage() {
       setCooldown(60);
       setStep("code");
       toast.success(`Код отправлен на ${email.trim()}`);
-    } catch {
-      toast.error("Сеть недоступна. Проверьте соединение.");
+    } catch (e) {
+      const slow = (e as Error)?.name === "TimeoutError";
+      toast.error(
+        slow
+          ? "Сервер не ответил за 30 секунд. Повторите попытку."
+          : "Сеть недоступна. Проверьте соединение.",
+      );
     } finally {
       setBusy(false);
     }
@@ -125,6 +132,7 @@ function AuthPage() {
         method: "POST",
         headers: { "content-type": "application/json" },
         credentials: "same-origin",
+        signal: AbortSignal.timeout(30_000),
         body: JSON.stringify({ email: email.trim().toLowerCase(), code }),
       });
       const body = (await res.json().catch(() => ({}))) as {
@@ -149,8 +157,12 @@ function AuthPage() {
         return;
       }
       failCode(body.error ?? "Неверный код");
-    } catch {
-      failCode("Сеть недоступна. Повторите попытку.");
+    } catch (e) {
+      failCode(
+        (e as Error)?.name === "TimeoutError"
+          ? "Сервер не ответил за 30 секунд. Повторите попытку."
+          : "Сеть недоступна. Повторите попытку.",
+      );
     } finally {
       setBusy(false);
     }

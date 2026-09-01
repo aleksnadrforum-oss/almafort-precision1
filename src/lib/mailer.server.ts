@@ -18,7 +18,8 @@ const FROM_ADDRESS = "onboarding@resend.dev";
 const RESEND_API = "https://api.resend.com";
 
 function resendApiKey(): string {
-  const apiKey = (process.env["RESEND_API_KEY"] ?? "").trim();
+  // Ключ иногда копируют с пробелом/переводом строки — чистим всё «белое».
+  const apiKey = (process.env["RESEND_API_KEY"] ?? "").replace(/\s+/g, "");
   if (!apiKey) throw new Error("RESEND_API_KEY не задан в переменных окружения");
   return apiKey;
 }
@@ -32,14 +33,26 @@ async function resendRequest(
   path: string,
   init: { method: string; body?: unknown },
 ): Promise<Record<string, unknown>> {
-  const response = await fetch(`${RESEND_API}${path}`, {
-    method: init.method,
-    headers: {
-      Authorization: `Bearer ${resendApiKey()}`,
-      "Content-Type": "application/json",
-    },
-    ...(init.body !== undefined ? { body: JSON.stringify(init.body) } : {}),
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${RESEND_API}${path}`, {
+      method: init.method,
+      headers: {
+        Authorization: `Bearer ${resendApiKey()}`,
+        "Content-Type": "application/json",
+      },
+      ...(init.body !== undefined ? { body: JSON.stringify(init.body) } : {}),
+      // Без таймаута зависший исходящий запрос держит HTTP-хендлер вечно —
+      // на фронте это выглядит как бесконечная загрузка.
+      signal: AbortSignal.timeout(15_000),
+    });
+  } catch (e) {
+    const name = (e as Error)?.name;
+    if (name === "TimeoutError" || name === "AbortError") {
+      throw new Error("Почтовый сервис не ответил за 15 секунд");
+    }
+    throw new Error(`Почтовый сервис недоступен: ${(e as Error)?.message ?? "сеть"}`);
+  }
   const text = await response.text();
   let json: Record<string, unknown> = {};
   try {

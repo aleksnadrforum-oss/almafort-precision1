@@ -171,14 +171,18 @@ export async function verifyOtp(emailRaw: string, code: string): Promise<VerifyR
   await ensureOwnerRole(user);
 
   if (isNew) {
-    try {
-      const { sendMail, welcomeEmail } = await import("@/lib/mailer.server");
-      const tpl = welcomeEmail();
-      await sendMail({ to: email, subject: tpl.subject, html: tpl.html });
-    } catch (e) {
-      console.error("[otp] приветственное письмо не отправлено", e);
-    }
+    // Письмо-приветствие не должно задерживать вход: отправляем в фоне.
+    void (async () => {
+      try {
+        const { sendMail, welcomeEmail } = await import("@/lib/mailer.server");
+        const tpl = welcomeEmail();
+        await sendMail({ to: email, subject: tpl.subject, html: tpl.html });
+      } catch (e) {
+        console.error("[otp] приветственное письмо не отправлено", e);
+      }
+    })();
   }
+
 
   const { token, expiresAt } = issueToken(user);
   return { status: "ok", token, expiresAt, user, isNew };

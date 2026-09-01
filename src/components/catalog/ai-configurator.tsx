@@ -233,6 +233,8 @@ export function AiConfigurator() {
     if (busy) return; // защита от многократного нажатия «Подобрать решение»
     const controller = new AbortController();
     abortRef.current = controller;
+    // Жёсткий потолок ожидания: иначе при «зависшем» шлюзе спиннер вечный.
+    const timeoutId = window.setTimeout(() => controller.abort(), 90_000);
     setBusy(true);
     setResult(null);
     setFallback(null);
@@ -277,6 +279,7 @@ export function AiConfigurator() {
         "Связь с ИИ-инженером прервалась. Оставьте заявку в свободной форме — живой специалист подберёт смету в течение 10 минут.",
       );
     } finally {
+      window.clearTimeout(timeoutId);
       abortRef.current = null;
       setBusy(false);
     }

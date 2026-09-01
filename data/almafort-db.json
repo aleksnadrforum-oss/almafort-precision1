@@ -427,6 +427,17 @@
       "code_hash": "23a541613684b675a42eea9c296710a8a507cace1aa6a5273d63d93efe92bb68a462e499b7863fe07dac9c7330aec072e049e6b66e2c4ec94ea21692237f3444",
       "attempts": 0,
       "expires_at": "2026-09-01T07:52:42.224Z"
+    },
+    {
+      "id": "95f10398-b15a-441a-a9b1-a9ed99e8bf5b",
+      "created_at": "2026-09-01T07:48:55.439Z",
+      "updated_at": "2026-09-01T07:48:55.439Z",
+      "email": "sashamoskalenko0@gmail.com",
+      "ip": "unknown",
+      "salt": "b1604e524013a0b4116741463a1c8ebd",
+      "code_hash": "e85fc86cea98071a76d205a14c3a19bf1ea94d17af61ba2b425eae517973e5a2127cb6792e423be62fd9a6b51a54cb1b64f0d470e68557fc0c51bf7ca2cc8927",
+      "attempts": 0,
+      "expires_at": "2026-09-01T07:53:55.439Z"
     }
   ],
   "crm_queue": [],

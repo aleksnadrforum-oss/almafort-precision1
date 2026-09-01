@@ -18,7 +18,12 @@ type SolutionItem = {
   on_request: boolean;
   image_url: string | null;
   dims: string;
+  color: { label: string; hex: string } | null;
 };
+
+/** Композитный ключ строки: один артикул в разных цветах — разные позиции. */
+const rowKey = (r: { sku: string; color?: { label: string } | null }) =>
+  `${r.sku}|${r.color?.label ?? ""}`;
 
 type ApiResult = {
   solution: {
@@ -150,6 +155,7 @@ export function AiConfigurator() {
           on_request: isOnRequest(p),
           image_url: p.image_url,
           dims: p.dims,
+          color: null,
         };
       })
       .filter((x): x is SolutionItem => Boolean(x));
@@ -174,7 +180,7 @@ export function AiConfigurator() {
     const items = result?.solution.recommended_items ?? [];
     return items.map((item) => {
       const p = PRODUCTS.find((x) => x.sku === item.sku);
-      const q = Math.max(1, Math.floor(qty[item.sku] ?? item.quantity));
+      const q = Math.max(1, Math.floor(qty[rowKey(item)] ?? item.quantity));
       if (!p) return { ...item, quantity: q };
       const onRequest = isOnRequest(p);
       return {
@@ -308,7 +314,7 @@ export function AiConfigurator() {
         safety: result?.solution.safety_margin_factor ?? null,
         rows: rows.map((r) => ({
           sku: r.sku,
-          name: r.name,
+          name: r.color ? `${r.name} (${r.color.label})` : r.name,
           dims: r.dims,
           quantity: r.quantity,
           unit_price: r.unit_price,
@@ -330,7 +336,8 @@ export function AiConfigurator() {
     }
     const payable = rows.filter((r) => !r.on_request);
     if (payable.length === 0) return;
-    for (const r of payable) addLine(r.sku, r.quantity);
+    for (const r of payable)
+      addLine(r.sku, r.quantity, undefined, r.color ?? undefined);
     toast.success(`Спецификация в корзине: ${payable.length} поз. на ${formatPrice(total)}`);
   };
 
@@ -372,13 +379,22 @@ export function AiConfigurator() {
         />
         <button
           type="button"
-          onClick={() => solve(query, Boolean(history))}
+          onClick={() => solve(query, false)}
           disabled={busy}
           className="flex h-fit min-h-[52px] w-full cursor-pointer items-center justify-center gap-2 rounded-sm bg-primary px-7 py-4 lg:w-auto text-sm font-semibold text-primary-foreground shadow-[0_6px_18px_-6px_oklch(0.573_0.221_27.5/0.55)] transition-[background-color,transform,box-shadow] duration-200 hover:bg-[#B91C1C] hover:shadow-[0_10px_24px_-8px_oklch(0.573_0.221_27.5/0.7)] active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-60"
         >
           {busy ? <Loader2 className="size-4 animate-spin" /> : <Calculator className="size-4" />}
-          {busy ? "Инженерный анализ…" : history ? "Пересчитать" : "Подобрать решение"}
+          {busy ? "Инженерный анализ…" : "Подобрать решение"}
         </button>
+        {history && !busy && (
+          <button
+            type="button"
+            onClick={() => solve(query, true)}
+            className="flex h-fit min-h-[52px] w-full cursor-pointer items-center justify-center gap-2 rounded-sm border border-[#D1D5DB] bg-card px-5 text-sm font-semibold text-foreground lg:w-auto"
+          >
+            Уточнить прошлый расчёт
+          </button>
+        )}
         {busy && (
           <button
             type="button"
@@ -404,8 +420,8 @@ export function AiConfigurator() {
 
       {history && !busy && (
         <p className="mt-3 text-xs text-muted-foreground">
-          Диалог с контекстом: можно уточнить прошлую смету — например «а если труба квадратная
-          60х60?». Количество из предыдущего расчёта сохранится.
+          Каждый новый расчёт считается с нуля. Чтобы уточнить предыдущую смету («а если труба
+          60х60?»), нажмите «Уточнить прошлый расчёт» — только тогда прошлый контекст учитывается.
         </p>
       )}
 
@@ -516,7 +532,7 @@ export function AiConfigurator() {
             <ul className="mt-4 divide-y divide-border">
               {rows.map((r) => (
                 <li
-                  key={r.sku}
+                  key={rowKey(r)}
                   className="grid grid-cols-[56px_minmax(0,1fr)] items-center gap-4 py-4 lg:grid-cols-[56px_minmax(0,1fr)_110px_150px_130px]"
                 >
                   <ProductThumb src={r.image_url} alt={r.name} />
@@ -524,6 +540,7 @@ export function AiConfigurator() {
                     <p className="truncate text-sm font-semibold text-foreground">{r.name}</p>
                     <p className="mt-0.5 text-xs text-muted-foreground">
                       {r.sku} · {r.dims}
+                      {r.color ? ` · ${r.color.label}` : ""}
                     </p>
                   </div>
                   <div className="col-start-2 lg:col-start-3">
@@ -534,8 +551,10 @@ export function AiConfigurator() {
                       aria-label={`Количество ${r.sku}`}
                       value={r.quantity}
                       onChange={(e) => {
-                        const v = Math.max(1, Math.floor(Number(e.target.value) || 1));
-                        setQty((prev) => ({ ...prev, [r.sku]: v }));
+                        // Без обрезки разрядов: 26 880 остаётся 26 880.
+                        const digits = e.target.value.replace(/[^\d]/g, "");
+                        const v = Math.max(1, Math.floor(Number(digits) || 1));
+                        setQty((prev) => ({ ...prev, [rowKey(r)]: v }));
                       }}
                       className="h-12 w-full rounded-sm border border-[#D1D5DB] bg-card px-3 text-sm tabular-nums md:h-auto md:py-2 text-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                     />

@@ -9,6 +9,7 @@
 import { KNOWLEDGE_BASE, type KbChunk } from "@/data/knowledge-base";
 import { PRODUCTS, isOnRequest, tierOf } from "@/data/catalog";
 import { unitPriceOf, lineTotal } from "@/lib/pricing";
+import { extractColors, resolveColor, type ColorRef } from "@/data/palettes";
 import { aiComplete } from "@/lib/ai-provider.server";
 import { activePrompt, logLlmCall } from "@/lib/llm-log.server";
 import {
@@ -39,6 +40,8 @@ export type SolutionItem = {
   on_request: boolean;
   image_url: string | null;
   dims: string;
+  /** Цвет варианта: разные цвета одного артикула — разные строки спецификации. */
+  color: ColorRef | null;
 };
 
 export type AssemblySolution = {
@@ -196,6 +199,12 @@ const SYSTEM_PROMPT = `Ты — строгий инженер-сметчик п�
 ЯЗЫК ОТВЕТА:
 Поле engineering_logic пишется ТОЛЬКО на русском языке, живым инженерным текстом для клиента. Категорически запрещено упоминать в тексте служебные имена полей и технические термины схемы (safety_margin_factor, is_service, recommended_items, SKU-переменные, null, true/false, JSON). Вместо «safety_margin_factor = null» пиши «коэффициент запаса не рассчитывается — нет исходной массы». Никаких английских слов и подчёркиваний в тексте.
 
+РАЗДЕЛЕНИЕ ЦВЕТОВЫХ ВАРИАНТОВ:
+Если клиент запрашивает несколько цветов для одного и того же артикула, ты ОБЯЗАН создать отдельные объекты для каждого цвета в массиве recommended_items (например: один объект на 12000 шт. «Белый», второй объект на 12000 шт. «Коричневый»). Никогда не сливай разные цвета в одну строку. Количество каждого объекта — точное число штук именно этого цвета, без округления и без потери разрядов (26880 остаётся 26880). Если цвет не указан клиентом, ставь «базовый».
+
+ИЗОЛЯЦИЯ ЗАПРОСА:
+Считай ТОЛЬКО активную задачу клиента из текущего сообщения. Данные из других расчётов, примеров и подсказок интерфейса использовать запрещено: если числа нет в текущем запросе — не подставляй его из памяти.
+
 Отвечай строго в заданной JSON-структуре, без markdown-разметки.`;
 
 const SCHEMA = {
@@ -211,8 +220,13 @@ const SCHEMA = {
         properties: {
           sku: { type: "string" },
           quantity: { type: "integer" },
+          color: {
+            type: "string",
+            description:
+              "Цвет варианта словом (например «Белый», «Коричневый») или «базовый», если цвет не задан клиентом",
+          },
         },
-        required: ["sku", "quantity"],
+        required: ["sku", "quantity", "color"],
       },
     },
     engineering_logic: { type: "string", description: "Текст расчёта и обоснования" },
@@ -242,14 +256,21 @@ function catalogContext() {
 
 /** Пересчёт спецификации по каталогу: ИИ предлагает состав, цену считает бэкенд. */
 export function priceItems(
-  items: Array<{ sku: string; quantity: number }>,
+  items: Array<{ sku: string; quantity: number; color?: string | null }>,
 ): SolutionItem[] {
   const out: SolutionItem[] = [];
   const seen = new Set<string>();
-  for (const { sku, quantity } of items) {
+  for (const { sku, quantity, color } of items) {
     const p = PRODUCTS.find((x) => x.sku === sku);
-    if (!p || seen.has(p.sku)) continue;
-    seen.add(p.sku);
+    if (!p) continue;
+    // Цвет из ответа модели → канонический образец палитры артикула.
+    const canonicals = color ? extractColors(String(color)).colors : [];
+    const resolved = resolveColor(p, canonicals);
+    const lineColor: ColorRef | null = p.is_service ? null : resolved.color;
+    // Композитный ключ: «белые» и «коричневые» заглушки одного артикула — разные строки.
+    const key = `${p.sku}|${lineColor?.label ?? ""}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
     const qty = Math.max(1, Math.round(Number(quantity) || 1));
     const onRequest = isOnRequest(p);
     out.push({
@@ -263,6 +284,7 @@ export function priceItems(
       on_request: onRequest,
       image_url: p.image_url,
       dims: p.dims,
+      color: lineColor,
     });
   }
   return out;
@@ -398,7 +420,7 @@ export async function solveConfiguration(
   }
 
   let parsed: {
-    recommended_items?: Array<{ sku?: string; quantity?: number }>;
+    recommended_items?: Array<{ sku?: string; quantity?: number; color?: string | null }>;
     engineering_logic?: string;
     safety_margin_factor?: number | null;
     is_service?: boolean;
@@ -449,7 +471,11 @@ export async function solveConfiguration(
     routedToService
       ? [{ sku: "SRV-RE3D", quantity: 1 }, { sku: "SRV-INJ", quantity: 1 }]
       : proposed
-  ).map((i) => ({ sku: String(i.sku ?? ""), quantity: Number(i.quantity ?? 1) }));
+  ).map((i) => ({
+    sku: String(i.sku ?? ""),
+    quantity: Number(i.quantity ?? 1),
+    color: "color" in i && i.color ? String(i.color) : null,
+  }));
 
   const capped = requested.map((i) => {
     const p = PRODUCTS.find((x) => x.sku === i.sku);
@@ -459,7 +485,7 @@ export async function solveConfiguration(
     warnings.push(
       `${p.sku}: на складе доступно ${stock.toLocaleString("ru-RU")} шт — они в смете. Оставшиеся ${backorder.toLocaleString("ru-RU")} шт будут оформлены под заказ.`,
     );
-    return { sku: i.sku, quantity: stock };
+    return { sku: i.sku, quantity: stock, color: i.color };
   });
 
   const items = priceItems(capped);

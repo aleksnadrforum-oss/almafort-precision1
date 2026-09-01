@@ -841,7 +841,7 @@ export function ProductSheet({
                         }`,
                       );
                     }}
-                    className={`flex min-h-[48px] w-full cursor-pointer flex-wrap items-center justify-center gap-x-1 rounded-xl px-4 py-2 text-sm font-semibold leading-tight transition-colors duration-200 md:mt-6 md:rounded-sm md:px-6 disabled:cursor-not-allowed ${
+                    className={`flex min-h-[48px] w-full cursor-pointer flex-nowrap items-center justify-center gap-x-1 whitespace-nowrap rounded-xl px-4 py-2 text-xs md:text-sm font-semibold transition-colors duration-200 md:mt-6 md:rounded-sm md:px-6 disabled:cursor-not-allowed ${
                       outOfStock
                         ? "bg-[#E5E7EB] text-[#9CA3AF]"
                         : "bg-primary text-primary-foreground hover:opacity-90"
@@ -851,11 +851,11 @@ export function ProductSheet({
                       "Нет в наличии"
                     ) : (
                       <>
-                        <span>В корзину</span>
-                        <span aria-hidden>·</span>
-                        <span>{ctaQty.toLocaleString("ru-RU")} шт</span>
-                        <span aria-hidden>·</span>
-                        <span className="tabular-nums">{formatPrice(ctaTotal)}</span>
+                        <span className="shrink-0">В корзину</span>
+                        <span aria-hidden className="shrink-0">·</span>
+                        <span className="shrink-0">{ctaQty.toLocaleString("ru-RU")} шт</span>
+                        <span aria-hidden className="shrink-0">·</span>
+                        <span className="shrink-0 tabular-nums">{formatPrice(ctaTotal)}</span>
                       </>
                     )}
                   </button>

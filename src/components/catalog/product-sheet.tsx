@@ -608,6 +608,7 @@ export function ProductSheet({
               </DialogTitle>
             </DialogHeader>
 
+            <DialogBody className="py-1">
             <CollapsibleText text={profile.description} className="-mt-1" />
 
             {profile.disclaimer && (
@@ -616,7 +617,8 @@ export function ProductSheet({
               </div>
             )}
 
-            <div className="grid gap-8 lg:grid-cols-2">
+            <div className="mt-4 grid gap-8 lg:grid-cols-2">
+
               <div>
                 <ClientOnly fallback={<CadViewerPlaceholder />}>
                   {CadViewer ? (

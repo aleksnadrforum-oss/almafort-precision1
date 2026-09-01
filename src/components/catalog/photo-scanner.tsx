@@ -316,7 +316,7 @@ export function PhotoScanner({ open, onClose }: { open: boolean; onClose: () => 
       return;
     }
 
-    // Сжимаем на клиенте: 800×800 WebP вместо 4K/8 МБ — иначе на 3G ответа не дождаться.
+    // Сжимаем на клиенте: 1024×1024 WebP вместо 4K/8 МБ — иначе на 3G ответа не дождаться.
     const prepared = compress(decoded.source, decoded.width, decoded.height);
     setFrozen(prepared.dataUrl);
     // Превью загруженного файла живёт независимо от статуса анализа:
@@ -431,7 +431,7 @@ export function PhotoScanner({ open, onClose }: { open: boolean; onClose: () => 
         type="button"
         onClick={onClose}
         aria-label="Закрыть сканер"
-        className="absolute right-4 top-4 z-20 grid size-11 cursor-pointer place-items-center rounded-full bg-black/50 text-white"
+        className="absolute right-4 top-4 z-[60] grid size-11 cursor-pointer place-items-center rounded-full bg-black/50 p-2 text-white backdrop-blur-sm transition hover:bg-black/65"
         style={{ top: "calc(1rem + env(safe-area-inset-top))" }}
       >
         <X className="size-5" strokeWidth={2} />
@@ -541,7 +541,7 @@ export function PhotoScanner({ open, onClose }: { open: boolean; onClose: () => 
                 Перетащите фото детали сюда или выберите файл на компьютере
               </h2>
               <p className="mx-auto mt-2 max-w-[46ch] text-sm leading-[1.6] text-white/70">
-                Подойдёт снимок с телефона: сожмём его прямо в браузере до 800×800 и отправим на
+                Подойдёт снимок с телефона: сожмём его прямо в браузере до 1024×1024 и отправим на
                 распознавание. JPG, PNG, WEBP, HEIC.
               </p>
               <button

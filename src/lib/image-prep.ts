@@ -1,8 +1,8 @@
 // Клиентская предобработка фото для ИИ-камеры: декодирование (включая HEIC с iPhone),
-// сжатие до 800×800 WebP/JPEG и оценка условий съёмки (темнота, слияние с фоном).
+// сжатие до 1024×1024 WebP/JPEG и оценка условий съёмки (темнота, слияние с фоном).
 // Цель — не гонять 4K/8 МБ на сервер: на 3G это гарантированный отказ клиента.
 
-export const TARGET_SIDE = 800;
+export const TARGET_SIDE = 1024;
 /** Предел стороны при декодировании: телефонные 12–50 Мп рушат память Safari. */
 export const DECODE_MAX_SIDE = 1600;
 /** Жёсткий потолок полезной нагрузки: сервер режет кадры тяжелее 3 МБ. */
@@ -81,7 +81,7 @@ export function compress(
   height: number,
   opts: { square?: boolean; quality?: number } = {},
 ): Prepared {
-  const quality = opts.quality ?? 0.82;
+  const quality = opts.quality ?? 0.8;
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
 

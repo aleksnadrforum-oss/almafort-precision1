@@ -570,7 +570,11 @@ export function AiConfigurator() {
                     />
                   </div>
                   <div className="col-start-2 lg:col-start-4 lg:text-right">
-                    {r.on_request ? (
+                    {"missing" in r && r.missing ? (
+                      <span className="text-sm font-semibold text-[#B91C1C]">
+                        Позиция снята с производства или не найдена
+                      </span>
+                    ) : r.on_request ? (
                       <span className="text-sm font-semibold text-muted-foreground">
                         По договорённости
                       </span>
@@ -588,7 +592,7 @@ export function AiConfigurator() {
                     )}
                   </div>
                   <div className="col-start-2 text-sm font-bold tabular-nums text-foreground lg:col-start-5 lg:text-right">
-                    {r.on_request ? "—" : formatPrice(r.total_price)}
+                    {r.on_request || ("missing" in r && r.missing) ? "—" : formatPrice(r.total_price)}
                   </div>
                 </li>
               ))}

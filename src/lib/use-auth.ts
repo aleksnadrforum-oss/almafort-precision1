@@ -44,6 +44,15 @@ export type AuthStatus = {
   checked: boolean;
   /** Куда вести пользователя из точек входа «Кабинет снабженца». */
   cabinetHref: "/cabinet" | "/auth";
+  /** Сохранить вход (после подтверждения кода) и обновить навигацию. */
+  login: (user: SessionUser, expiresAt: number) => void;
+  /** Выход: гасим куку на сервере и локальный снимок профиля. */
+  logout: () => void;
+  /**
+   * Единый обработчик для «Кабинет снабженца» / «Вход для партнёров» /
+   * «Профиль»: авторизованного ведём сразу в кабинет, остальных — на вход.
+   */
+  goToCabinet: (event?: { preventDefault: () => void }) => void;
 };
 
 export function useAuth(): AuthStatus {
@@ -70,10 +79,36 @@ export function useAuth(): AuthStatus {
     return onAuthChange(() => refresh(true));
   }, [refresh]);
 
+  const login = useCallback((nextUser: SessionUser, expiresAt: number) => {
+    invalidateSessionCache();
+    writeSession({ user: nextUser, expiresAt });
+    setUser(nextUser);
+    setChecked(true);
+  }, []);
+
+  const logout = useCallback(() => {
+    invalidateSessionCache();
+    clearSession();
+    setUser(null);
+    setChecked(true);
+  }, []);
+
+  const goToCabinet = useCallback(
+    (event?: { preventDefault: () => void }) => {
+      event?.preventDefault();
+      window.location.href = user ? "/cabinet" : "/auth";
+    },
+    [user],
+  );
+
   return {
     user,
     isAuthenticated: Boolean(user),
     checked,
     cabinetHref: user ? "/cabinet" : "/auth",
+    login,
+    logout,
+    goToCabinet,
   };
 }
+

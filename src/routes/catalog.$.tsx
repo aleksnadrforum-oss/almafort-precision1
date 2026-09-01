@@ -122,7 +122,10 @@ function ProductCard({ p, thumb }: { p: Product; thumb?: string | null }) {
           {p.sku}
         </span>
 
-        <h3 className="mt-1 line-clamp-2 text-base font-semibold leading-snug text-foreground">
+        <h3
+          className="mt-1 line-clamp-3 text-base font-semibold leading-snug text-foreground"
+          title={p.name}
+        >
           {p.name}
         </h3>
 

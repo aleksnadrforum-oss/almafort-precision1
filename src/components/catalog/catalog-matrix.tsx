@@ -191,16 +191,16 @@ function useRowState(p: Product, onAdd: Props["onAdd"]) {
 
   const hasSum = !onRequest && qty > 0 && state !== "done";
 
+  // Статус «уже в корзине» показываем только бейджем под кнопкой —
+  // дублировать его в подписи кнопки нельзя, текст обрезается.
   const label = onRequest
     ? "Расчёт"
-
     : state === "done"
       ? "Добавлено"
       : hasSum
         ? formatPrice(lineTotal(p, qty))
-        : inCart > 0
-          ? `В корзине · ${inCart.toLocaleString("ru-RU")} шт`
-          : null;
+        : null;
+
 
   return {
     qty,

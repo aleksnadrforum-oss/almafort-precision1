@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
-import { PRODUCTS, tierOf, unitPrice } from "@/data/catalog";
+import { PRODUCTS, isService, tierOf, unitPrice } from "@/data/catalog";
+import { baseColorForProduct, type ColorRef } from "@/data/palettes";
 import type { Candidate } from "@/lib/spec-matcher";
 import {
   FALLBACK_VOLUME_M3,
@@ -52,6 +53,21 @@ export const lineKey = (l: { sku: string; color?: { label: string } | null | und
   `${l.sku}::${l.color?.label ?? ""}`;
 
 export const productBySku = (sku: string) => PRODUCTS.find((p) => p.sku === sku);
+
+/**
+ * Единая точка правды по цвету строки спецификации.
+ * Любой путь добавления (таблица, карточка, сканер, конфигуратор, разбор сметы,
+ * серверное слияние корзины) обязан пройти через неё: если цвет явно не выбран,
+ * подтягиваем базовый цвет артикула из каталога. Услуги остаются без цвета.
+ */
+export function resolveLineColor(
+  p: { sku: string; category: string; parent: string },
+  color?: ColorRef | null,
+): ColorRef | undefined {
+  if (color?.label) return { label: color.label, hex: color.hex };
+  if (isService(p)) return undefined;
+  return baseColorForProduct(p);
+}
 
 /**
  * Серверные доступные остатки (availableStock = physical − reserved).
@@ -268,7 +284,7 @@ export const useCart = create<State>()(
         const free = availableFor(lines, p.sku);
         const qty = Number.isFinite(free) ? Math.min(wanted, Math.max(0, free)) : wanted;
         if (qty <= 0) continue;
-        const color = r.color ?? undefined;
+        const color = resolveLineColor(p, r.color);
         const key = lineKey({ sku: p.sku, color });
         // Композитный ключ «артикул + цвет»: синие и жёлтые заглушки не сливаются.
         const found = lines.find((l) => lineKey(l) === key);
@@ -342,7 +358,13 @@ export const useCart = create<State>()(
       const p = productBySku(sku);
       const qty = Math.max(1, Math.floor(Number(quantity) || 0));
       if (!p) return s;
-      const next: CartLine = { sku, name: p.name, quantity: qty, originalName, color };
+      const next: CartLine = {
+        sku,
+        name: p.name,
+        quantity: qty,
+        originalName,
+        color: resolveLineColor(p, color),
+      };
       const key = lineKey(next);
       // Остаток общий на артикул: свободный объём = склад − уже набранное всеми цветами.
       const free = availableFor(s.lines, sku);
@@ -360,7 +382,14 @@ export const useCart = create<State>()(
       lines: rows
         .map((r) => {
           const p = productBySku(r.sku);
-          return p ? { sku: r.sku, name: p.name, quantity: Math.max(1, Math.floor(r.quantity)) } : null;
+          return p
+            ? {
+                sku: r.sku,
+                name: p.name,
+                quantity: Math.max(1, Math.floor(r.quantity)),
+                color: resolveLineColor(p),
+              }
+            : null;
         })
         .filter((l): l is CartLine => Boolean(l)),
     })),

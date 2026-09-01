@@ -274,16 +274,12 @@ export function AiConfigurator() {
       }
     } catch (e) {
       // Отмена пользователем — не ошибка сервиса.
-      if (e instanceof DOMException && e.name === "AbortError") {
-        if (timeoutId && !controller.signal.reason) {
-          /* отмена пользователем */
-        }
-        return;
-      }
+      if (e instanceof DOMException && e.name === "AbortError") return;
       setFallback(
         "Связь с ИИ-инженером прервалась. Оставьте заявку в свободной форме — живой специалист подберёт смету в течение 10 минут.",
       );
     } finally {
+      window.clearTimeout(timeoutId);
       abortRef.current = null;
       setBusy(false);
     }

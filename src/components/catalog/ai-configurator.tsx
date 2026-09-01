@@ -233,6 +233,8 @@ export function AiConfigurator() {
     if (busy) return; // защита от многократного нажатия «Подобрать решение»
     const controller = new AbortController();
     abortRef.current = controller;
+    // Жёсткий потолок ожидания: иначе при «зависшем» шлюзе спиннер вечный.
+    const timeoutId = window.setTimeout(() => controller.abort(), 90_000);
     setBusy(true);
     setResult(null);
     setFallback(null);
@@ -272,7 +274,12 @@ export function AiConfigurator() {
       }
     } catch (e) {
       // Отмена пользователем — не ошибка сервиса.
-      if (e instanceof DOMException && e.name === "AbortError") return;
+      if (e instanceof DOMException && e.name === "AbortError") {
+        if (timeoutId && !controller.signal.reason) {
+          /* отмена пользователем */
+        }
+        return;
+      }
       setFallback(
         "Связь с ИИ-инженером прервалась. Оставьте заявку в свободной форме — живой специалист подберёт смету в течение 10 минут.",
       );

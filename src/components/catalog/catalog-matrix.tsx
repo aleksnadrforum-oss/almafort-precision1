@@ -430,13 +430,14 @@ function MobileCard({
         disabled={state === "loading" || outOfStock}
         className={`mt-3 flex h-12 w-full items-center justify-center gap-2 rounded-md text-sm font-semibold tabular-nums transition-colors active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed ${
           outOfStock
-            ? "bg-[#E5E7EB] text-[#9CA3AF]"
+            ? "border border-[#E5E7EB] bg-[#F3F4F6] text-[#9CA3AF]"
             : state === "done"
               ? "bg-[#10B981] text-white"
-              : "bg-primary text-primary-foreground"
+              : hasSum
+                ? "bg-[#F3F4F6] text-foreground hover:bg-primary hover:text-primary-foreground"
+                : "border border-[#D1D5DB] bg-[#F3F4F6] text-muted-foreground hover:border-primary hover:bg-primary hover:text-primary-foreground"
         }`}
       >
-
         {state === "loading" ? (
           <Loader2 className="size-4 animate-spin" strokeWidth={1.75} />
         ) : state === "done" ? (

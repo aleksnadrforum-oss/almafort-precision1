@@ -1,9 +1,10 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { useState } from "react";
-import { isOnRequest, type Product } from "@/data/catalog";
+import { useCallback, useEffect, useState } from "react";
+import { isOnRequest, PRODUCTS, type Product } from "@/data/catalog";
 import { BackLink } from "@/components/back-link";
 import { QuoteRequestModal } from "@/components/catalog/quote-request-modal";
 import { ProductThumb } from "@/components/catalog/product-thumb";
+import { ProductSheet } from "@/components/catalog/product-sheet";
 import { useAssetGroups } from "@/lib/asset-groups";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
@@ -24,14 +25,21 @@ import {
   slugify,
 } from "@/lib/seo";
 
-type Search = { page?: number | undefined; sort?: string | undefined; utm_source?: string | undefined };
+type Search = {
+  page?: number | undefined;
+  sort?: string | undefined;
+  utm_source?: string | undefined;
+  sku?: string | undefined;
+};
 
 export const Route = createFileRoute("/catalog/$")({
   validateSearch: (search: Record<string, unknown>): Search => ({
     page: search['page'] ? Number(search['page']) : undefined,
     sort: typeof search['sort'] === "string" ? search['sort'] : undefined,
     utm_source: typeof search['utm_source'] === "string" ? search['utm_source'] : undefined,
+    sku: typeof search['sku'] === "string" ? search['sku'] : undefined,
   }),
+
   loader: ({ params }): { facets: ReturnType<typeof parseFacetPath>; items: Product[] } => {
     const segments = (params._splat ?? "").split("/").filter(Boolean);
     const facets = parseFacetPath(segments);

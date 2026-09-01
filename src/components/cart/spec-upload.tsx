@@ -78,7 +78,7 @@ export function SpecUpload({ compact = false }: { compact?: boolean }) {
       try {
         const body = new FormData();
         body.append("file", file);
-        const json = await new Promise<Record<string, unknown> & { error?: string }>((resolve, reject) => {
+        const json = await new Promise<any>((resolve, reject) => {
           const xhr = new XMLHttpRequest();
           xhr.open("POST", "/api/parser/upload");
           xhr.upload.onprogress = (e) => {
@@ -106,12 +106,12 @@ export function SpecUpload({ compact = false }: { compact?: boolean }) {
         });
         setProgress(100);
         setReview({
-          fileName: (json.fileName as string) ?? file.name,
+          fileName: json.fileName ?? file.name,
           truncated: Boolean(json.truncated),
           columnMap: json.columnMap ?? null,
           rows: json.rows ?? [],
         });
-        const { matched = 0, rowsScanned = 0 } = json as { matched?: number; rowsScanned?: number };
+        const { matched = 0, rowsScanned = 0 } = json;
         toast.success(`Обработано ${rowsScanned} строк: ${matched} распознано`, {
           description: "Проверьте позиции перед переносом в корзину.",
           action: {

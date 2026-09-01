@@ -370,7 +370,9 @@ function FacetPage() {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd(crumbs)) }}
         />
       </main>
+      <ProductSheet product={active} onClose={closeProduct} />
       <SiteFooter />
+
     </div>
   );
 }

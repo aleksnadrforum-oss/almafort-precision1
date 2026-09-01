@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Loader2, Mail, ShieldCheck } from "lucide-react";
@@ -33,7 +33,6 @@ export const Route = createFileRoute("/auth")({
 });
 
 function AuthPage() {
-  const navigate = useNavigate();
   const [step, setStep] = useState<"email" | "code">("email");
   const [email, setEmail] = useState("");
   const [consent, setConsent] = useState(false);
@@ -46,8 +45,9 @@ function AuthPage() {
   const inputs = useRef<Array<HTMLInputElement | null>>([]);
 
   useEffect(() => {
-    if (readSession()) void navigate({ to: "/cabinet", replace: true });
-  }, [navigate]);
+    if (readSession()) window.location.replace("/cabinet");
+  }, []);
+
 
   // Таймер повторной отправки: кнопка блокируется на 60 секунд.
   useEffect(() => {
@@ -144,9 +144,11 @@ function AuthPage() {
 
       if (body.status === "ok" && body.user && body.expiresAt) {
         writeSession({ user: body.user, expiresAt: body.expiresAt });
-        void navigate({ to: "/cabinet", replace: true });
+        // Жёсткий переход: браузер гарантированно отправит cookie almafort_session
+        window.location.href = "/cabinet";
         return;
       }
+
       if (body.status === "locked") {
         setCooldown(0);
         failCode(body.error ?? "Попытки исчерпаны. Запросите код заново", true);

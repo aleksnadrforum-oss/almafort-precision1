@@ -125,6 +125,7 @@ function useRowState(p: Product, onAdd: Props["onAdd"]) {
     setState("loading");
     try {
       const res = await fetch("/api/cart", {
+        signal: AbortSignal.timeout(20_000),
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ sku: p.sku, quantity: safeQty }),

@@ -22,7 +22,8 @@ export async function pingSearchEngines(
   const results = await Promise.all(
     TARGETS(sitemap).map(async (url) => {
       try {
-        const res = await fetch(url, { method: "GET" });
+        const res = await fetch(url, {
+    signal: AbortSignal.timeout(15_000), method: "GET" });
         return { url, ok: res.ok };
       } catch {
         return { url, ok: false };

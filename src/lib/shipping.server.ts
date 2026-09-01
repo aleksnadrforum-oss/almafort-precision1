@@ -87,6 +87,7 @@ let cdekToken: { value: string; expires: number } | null = null;
 async function cdekAuth(id: string, secret: string) {
   if (cdekToken && cdekToken.expires > Date.now() + 60_000) return cdekToken.value;
   const res = await fetch("https://api.cdek.ru/v2/oauth/token", {
+    signal: AbortSignal.timeout(15_000),
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({
@@ -110,6 +111,7 @@ async function cdekQuote(dest: Destination, parcel: Parcel): Promise<ShippingQuo
 
   const token = await cdekAuth(id, secret);
   const res = await fetch("https://api.cdek.ru/v2/calculator/tarifflist", {
+    signal: AbortSignal.timeout(15_000),
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
     body: JSON.stringify({
@@ -156,6 +158,7 @@ async function dlQuote(dest: Destination, parcel: Parcel): Promise<ShippingQuote
   if (!key) return dlModel(dest, parcel);
 
   const res = await fetch("https://api.dellin.ru/v3/calculator.json", {
+    signal: AbortSignal.timeout(15_000),
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({

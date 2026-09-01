@@ -65,6 +65,7 @@ export function InnField({
     void (async () => {
       try {
         const res = await fetch("/api/dadata/party", {
+        signal: AbortSignal.timeout(20_000),
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ inn: digits }),

@@ -20,6 +20,7 @@ export async function verifyRecaptcha(token: string | undefined): Promise<Captch
 
   try {
     const res = await fetch("https://www.google.com/recaptcha/api/siteverify", {
+    signal: AbortSignal.timeout(15_000),
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams({ secret, response: token }),

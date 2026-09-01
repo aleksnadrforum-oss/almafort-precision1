@@ -91,6 +91,7 @@ export function BulkRequestDialog({
     setState("sending");
     try {
       const res = await fetch("/api/leads/bulk", {
+        signal: AbortSignal.timeout(20_000),
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

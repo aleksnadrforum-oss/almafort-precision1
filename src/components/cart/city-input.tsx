@@ -109,7 +109,7 @@ export function CityInput({
                 role="option"
                 aria-selected={i === active}
                 onMouseEnter={() => setActive(i)}
-                onMouseDown={(e) => e.preventDefault()}
+                onPointerDown={(e) => e.preventDefault()}
                 onClick={() => pick(s)}
                 className={`flex w-full cursor-pointer items-baseline justify-between gap-3 px-3 py-2 text-left text-sm transition-colors ${
                   i === active ? "bg-[#F1F5F9]" : "hover:bg-[#F8F9FA]"

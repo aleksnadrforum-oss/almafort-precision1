@@ -68,6 +68,7 @@ async function alertAdmin(lead: QuizLead, reason: string) {
   }
   try {
     const res = await fetch("https://api.resend.com/emails", {
+    signal: AbortSignal.timeout(15_000),
       method: "POST",
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -89,6 +90,7 @@ async function bitrix(lead: QuizLead, hook: string): Promise<QuizCrmResult> {
   // 1. Ищем контакт по телефону, создаём при отсутствии.
   let contactId: number | undefined;
   const found = await fetch(`${base}/crm.duplicate.findbycomm.json`, {
+    signal: AbortSignal.timeout(15_000),
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ entity_type: "CONTACT", type: "PHONE", values: [lead.phone] }),
@@ -99,6 +101,7 @@ async function bitrix(lead: QuizLead, hook: string): Promise<QuizCrmResult> {
   }
   if (!contactId) {
     const created = await fetch(`${base}/crm.contact.add.json`, {
+    signal: AbortSignal.timeout(15_000),
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -119,6 +122,7 @@ async function bitrix(lead: QuizLead, hook: string): Promise<QuizCrmResult> {
 
   // 2. Сделка в первичной стадии «Неразобранное».
   const deal = await fetch(`${base}/crm.deal.add.json`, {
+    signal: AbortSignal.timeout(15_000),
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -142,6 +146,7 @@ async function bitrix(lead: QuizLead, hook: string): Promise<QuizCrmResult> {
 async function amo(lead: QuizLead, baseUrl: string, token: string): Promise<QuizCrmResult> {
   const base = baseUrl.replace(/\/+$/, "");
   const res = await fetch(`${base}/api/v4/leads/complex`, {
+    signal: AbortSignal.timeout(15_000),
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
     body: JSON.stringify([

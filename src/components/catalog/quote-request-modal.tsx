@@ -43,6 +43,7 @@ export function QuoteRequestModal({
     setBusy(true);
     try {
       await fetch("/api/quiz/submit", {
+        signal: AbortSignal.timeout(20_000),
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

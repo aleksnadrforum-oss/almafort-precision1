@@ -51,6 +51,7 @@ export async function findPartyByInn(inn: string): Promise<PartyInfo> {
   if (!token) return fallback;
 
   const res = await fetch("https://suggestions.dadata.ru/suggestions/api/4_1/rs/findById/party", {
+    signal: AbortSignal.timeout(15_000),
     method: "POST",
     headers: {
       "Content-Type": "application/json",

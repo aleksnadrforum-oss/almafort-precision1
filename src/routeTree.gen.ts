@@ -41,6 +41,7 @@ import { Route as ApiAuthConsumeLinkRouteImport } from './routes/api/auth/consum
 import { Route as ApiAuthLogoutRouteImport } from './routes/api/auth/logout'
 import { Route as ApiAuthOtpRequestRouteImport } from './routes/api/auth/otp-request'
 import { Route as ApiAuthOtpVerifyRouteImport } from './routes/api/auth/otp-verify'
+import { Route as ApiAuthSessionRouteImport } from './routes/api/auth/session'
 import { Route as ApiCheckoutSubmitRouteImport } from './routes/api/checkout/submit'
 import { Route as ApiConfiguratorSolveRouteImport } from './routes/api/configurator/solve'
 import { Route as ApiDadataCityRouteImport } from './routes/api/dadata/city'
@@ -229,6 +230,11 @@ const ApiAuthOtpVerifyRoute = ApiAuthOtpVerifyRouteImport.update({
   path: '/api/auth/otp-verify',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAuthSessionRoute = ApiAuthSessionRouteImport.update({
+  id: '/api/auth/session',
+  path: '/api/auth/session',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiCheckoutSubmitRoute = ApiCheckoutSubmitRouteImport.update({
   id: '/api/checkout/submit',
   path: '/api/checkout/submit',
@@ -360,6 +366,7 @@ export interface FileRoutesByFullPath {
   '/api/auth/logout': typeof ApiAuthLogoutRoute
   '/api/auth/otp-request': typeof ApiAuthOtpRequestRoute
   '/api/auth/otp-verify': typeof ApiAuthOtpVerifyRoute
+  '/api/auth/session': typeof ApiAuthSessionRoute
   '/api/checkout/submit': typeof ApiCheckoutSubmitRoute
   '/api/configurator/solve': typeof ApiConfiguratorSolveRoute
   '/api/dadata/city': typeof ApiDadataCityRoute
@@ -410,6 +417,7 @@ export interface FileRoutesByTo {
   '/api/auth/logout': typeof ApiAuthLogoutRoute
   '/api/auth/otp-request': typeof ApiAuthOtpRequestRoute
   '/api/auth/otp-verify': typeof ApiAuthOtpVerifyRoute
+  '/api/auth/session': typeof ApiAuthSessionRoute
   '/api/checkout/submit': typeof ApiCheckoutSubmitRoute
   '/api/configurator/solve': typeof ApiConfiguratorSolveRoute
   '/api/dadata/city': typeof ApiDadataCityRoute
@@ -464,6 +472,7 @@ export interface FileRoutesById {
   '/api/auth/logout': typeof ApiAuthLogoutRoute
   '/api/auth/otp-request': typeof ApiAuthOtpRequestRoute
   '/api/auth/otp-verify': typeof ApiAuthOtpVerifyRoute
+  '/api/auth/session': typeof ApiAuthSessionRoute
   '/api/checkout/submit': typeof ApiCheckoutSubmitRoute
   '/api/configurator/solve': typeof ApiConfiguratorSolveRoute
   '/api/dadata/city': typeof ApiDadataCityRoute
@@ -518,6 +527,7 @@ export interface FileRouteTypes {
     | '/api/auth/logout'
     | '/api/auth/otp-request'
     | '/api/auth/otp-verify'
+    | '/api/auth/session'
     | '/api/checkout/submit'
     | '/api/configurator/solve'
     | '/api/dadata/city'
@@ -568,6 +578,7 @@ export interface FileRouteTypes {
     | '/api/auth/logout'
     | '/api/auth/otp-request'
     | '/api/auth/otp-verify'
+    | '/api/auth/session'
     | '/api/checkout/submit'
     | '/api/configurator/solve'
     | '/api/dadata/city'
@@ -621,6 +632,7 @@ export interface FileRouteTypes {
     | '/api/auth/logout'
     | '/api/auth/otp-request'
     | '/api/auth/otp-verify'
+    | '/api/auth/session'
     | '/api/checkout/submit'
     | '/api/configurator/solve'
     | '/api/dadata/city'
@@ -664,6 +676,7 @@ export interface RootRouteChildren {
   ApiAuthLogoutRoute: typeof ApiAuthLogoutRoute
   ApiAuthOtpRequestRoute: typeof ApiAuthOtpRequestRoute
   ApiAuthOtpVerifyRoute: typeof ApiAuthOtpVerifyRoute
+  ApiAuthSessionRoute: typeof ApiAuthSessionRoute
   ApiCheckoutSubmitRoute: typeof ApiCheckoutSubmitRoute
   ApiConfiguratorSolveRoute: typeof ApiConfiguratorSolveRoute
   ApiDadataCityRoute: typeof ApiDadataCityRoute
@@ -910,6 +923,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthOtpVerifyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/auth/session': {
+      id: '/api/auth/session'
+      path: '/api/auth/session'
+      fullPath: '/api/auth/session'
+      preLoaderRoute: typeof ApiAuthSessionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/checkout/submit': {
       id: '/api/checkout/submit'
       path: '/api/checkout/submit'
@@ -1132,6 +1152,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAuthLogoutRoute: ApiAuthLogoutRoute,
   ApiAuthOtpRequestRoute: ApiAuthOtpRequestRoute,
   ApiAuthOtpVerifyRoute: ApiAuthOtpVerifyRoute,
+  ApiAuthSessionRoute: ApiAuthSessionRoute,
   ApiCheckoutSubmitRoute: ApiCheckoutSubmitRoute,
   ApiConfiguratorSolveRoute: ApiConfiguratorSolveRoute,
   ApiDadataCityRoute: ApiDadataCityRoute,

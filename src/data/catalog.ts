@@ -1,3 +1,5 @@
+import { visualFeaturesFor } from "@/data/visual-features";
+
 export type Stock = { qty: number; lead?: string };
 
 /**
@@ -31,6 +33,8 @@ export type Product = {
   /** Кастомные строки технической сетки для конкретного SKU (метка/значение).
    *  Если задано, заменяют блок Материал/Нагрузка/Стандарт/Особенности. */
   specRows?: [string, string][];
+  /** Обязательное описание физической геометрии для Vision-грундинга. */
+  visualFeatures: string;
   weight: number; // kg, вес единицы
   volume: number; // m3, объём единицы в упаковке
   stock: Stock;
@@ -378,6 +382,7 @@ export const PRODUCTS: Product[] = raw.map(
     load: spec?.load ?? "до 240 кг статической нагрузки",
     ...(spec?.features ? { features: spec.features } : {}),
     ...(SKU_SPEC_ROWS[sku] ? { specRows: SKU_SPEC_ROWS[sku] } : {}),
+    visualFeatures: visualFeaturesFor(sku, category),
     weight,
     volume,
     stock:

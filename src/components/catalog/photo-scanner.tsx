@@ -27,7 +27,7 @@ type Item = {
 };
 
 type Verdict = {
-  status: "VALID" | "FOREIGN" | "INVALID";
+  status: "VALID" | "FOREIGN" | "INVALID" | "NOT_FOUND";
   type: string;
   shape: string;
   color: string;
@@ -48,11 +48,17 @@ type Result =
       question?: string;
       groups: Array<{ category: string; items: Item[] }>;
     }
+  | { scenario: "notfound"; verdict: Verdict; matches: Item[] }
   | { scenario: "foreign"; verdict: Verdict }
   | { scenario: "lowlight"; verdict: Verdict }
   | { scenario: "invalid"; verdict: Verdict };
 
 const BLUR_THRESHOLD = 45;
+
+/** Единый текст отказа: ИИ не имеет права подставлять «похожий» артикул. */
+const NOT_RECOGNIZED =
+  "Деталь не распознана. Пожалуйста, сфотографируйте деталь на контрастном фоне при хорошем " +
+  "освещении, либо выберите товар вручную из каталога";
 
 /** ПК без тач-экрана: снабженец не будет подносить грязный подпятник к монитору. */
 function detectDesktop(): boolean {
@@ -268,6 +274,13 @@ export function PhotoScanner({ open, onClose }: { open: boolean; onClose: () => 
       if (!json) throw new Error("Сервер вернул некорректный ответ");
       const data = json as unknown as Result;
       setResult(data);
+      if (data.scenario === "notfound") {
+        // Строгий серый B2B-тост: рандомный товар вместо отказа выдавать запрещено.
+        toast(NOT_RECOGNIZED, {
+          duration: 9000,
+          className: "!bg-zinc-100 !border !border-zinc-300 !text-zinc-800",
+        });
+      }
       setSize("");
       // Сценарии «переснимите» — камеру не глушим, клиент повторит кадр.
       if (data.scenario !== "invalid" && data.scenario !== "lowlight") stop();
@@ -316,7 +329,7 @@ export function PhotoScanner({ open, onClose }: { open: boolean; onClose: () => 
       return;
     }
 
-    // Сжимаем на клиенте: 800×800 WebP вместо 4K/8 МБ — иначе на 3G ответа не дождаться.
+    // Сжимаем на клиенте: 1024×1024 WebP вместо 4K/8 МБ — иначе на 3G ответа не дождаться.
     const prepared = compress(decoded.source, decoded.width, decoded.height);
     setFrozen(prepared.dataUrl);
     // Превью загруженного файла живёт независимо от статуса анализа:
@@ -431,7 +444,7 @@ export function PhotoScanner({ open, onClose }: { open: boolean; onClose: () => 
         type="button"
         onClick={onClose}
         aria-label="Закрыть сканер"
-        className="absolute right-4 top-4 z-20 grid size-11 cursor-pointer place-items-center rounded-full bg-black/50 text-white"
+        className="absolute right-4 top-4 z-[60] grid size-11 cursor-pointer place-items-center rounded-full bg-black/50 p-2 text-white backdrop-blur-sm transition hover:bg-black/65"
         style={{ top: "calc(1rem + env(safe-area-inset-top))" }}
       >
         <X className="size-5" strokeWidth={2} />
@@ -541,7 +554,7 @@ export function PhotoScanner({ open, onClose }: { open: boolean; onClose: () => 
                 Перетащите фото детали сюда или выберите файл на компьютере
               </h2>
               <p className="mx-auto mt-2 max-w-[46ch] text-sm leading-[1.6] text-white/70">
-                Подойдёт снимок с телефона: сожмём его прямо в браузере до 800×800 и отправим на
+                Подойдёт снимок с телефона: сожмём его прямо в браузере до 1024×1024 и отправим на
                 распознавание. JPG, PNG, WEBP, HEIC.
               </p>
               <button
@@ -989,6 +1002,52 @@ export function PhotoScanner({ open, onClose }: { open: boolean; onClose: () => 
                 </ul>
               )}
             </>
+          )}
+
+          {result.scenario === "notfound" && (
+            <div className="rounded-md border border-zinc-300 bg-zinc-50 p-5">
+              <h3 className="text-base font-bold leading-[1.35] text-zinc-800">
+                Деталь не распознана
+              </h3>
+              <p className="mt-2 text-sm leading-[1.6] text-zinc-600">
+                Сфотографируйте деталь на контрастном фоне при хорошем освещении, либо выберите
+                товар вручную из каталога.
+              </p>
+              {result.matches.length > 0 && (
+                <>
+                  <p className="mt-4 text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                    Возможно, вам подойдёт
+                  </p>
+                  <ul className="mt-2 grid gap-2">
+                    {result.matches.map((m) => (
+                      <li
+                        key={m.sku}
+                        className="flex items-center gap-3 rounded-md border border-zinc-200 bg-white p-3"
+                      >
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate text-sm font-semibold text-foreground">
+                            {m.name}
+                          </span>
+                          <span className="block text-xs text-muted-foreground">
+                            {m.sku} · {m.dims} · {formatPrice(m.price)}
+                          </span>
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            addLine(m.sku, 1);
+                            toast.success(`${m.sku} добавлен в корзину`);
+                          }}
+                          className="min-h-[40px] shrink-0 cursor-pointer rounded-sm border border-zinc-300 px-3 text-xs font-semibold text-foreground hover:border-primary hover:text-primary"
+                        >
+                          В корзину
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )}
+            </div>
           )}
 
           {result.scenario === "foreign" && (

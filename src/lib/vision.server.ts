@@ -6,7 +6,7 @@ import { aiComplete } from "@/lib/ai-provider.server";
 import { activePrompt, logLlmCall } from "@/lib/llm-log.server";
 import { uploadObject } from "@/lib/s3.server";
 
-export type VisionStatus = "VALID" | "FOREIGN" | "INVALID";
+export type VisionStatus = "VALID" | "FOREIGN" | "INVALID" | "NOT_FOUND";
 
 export type VisionVerdict = {
   /** VALID — техническая деталь класса ALMAFORT, FOREIGN — деталь не из матрицы,
@@ -30,15 +30,38 @@ export type VisionVerdict = {
 
 const MODEL = "google/gemini-3.6-flash";
 
+/**
+ * RAG-инъекция: перед запросом собираем актуальную выжимку каталога ALMAFORT
+ * (категория → примеры позиций с артикулами). Без неё модель галлюцинирует
+ * и «узнаёт» детали, которых у завода нет.
+ */
+export function catalogGrounding(perCategory = 4): string {
+  const byCategory = new Map<string, Product[]>();
+  for (const p of PRODUCTS) {
+    if (p.is_service) continue;
+    const list = byCategory.get(p.category) ?? [];
+    if (list.length < perCategory) list.push(p);
+    byCategory.set(p.category, list);
+  }
+  return Array.from(byCategory.entries())
+    .map(
+      ([category, items]) =>
+        `- ${category}: ${items.map((p) => `${p.name} (${p.sku})`).join("; ")}`,
+    )
+    .join("\n");
+}
+
 const SYSTEM_PROMPT =
-  "Ты — инженер ALMAFORT и промышленный сканер каталога. На фото — кадр, обрезанный по рамке " +
-  "видоискателя. Твоя задача — классифицировать объект, а не угадывать артикул и размер до миллиметра.\n" +
+  "Ты — эксперт-комплектовщик на заводе пластиковых деталей ALMAFORT и промышленный сканер " +
+  "каталога. На фото — кадр, обрезанный по рамке видоискателя. Твоя задача — классифицировать " +
+  "деталь, а не угадывать артикул и размер до миллиметра.\n" +
+  "ОПИРАЙСЯ СТРОГО НА ЭТОТ КАТАЛОГ:\n{{CATALOG}}\n" +
+  "Если деталь на фото не похожа ни на одну позицию из списка — не выдумывай, верни " +
+  'status "NOT_FOUND".\n' +
   "Стадия изоляции: если объект лежит на ладони или его держат пальцами — мысленно вырежи руки и " +
   "фон, анализируй только геометрию неорганического предмета. Если в кадре ТОЛЬКО рука, лицо, " +
   "животное, еда, клавиатура, кадр чёрный/пустой/смазанный — верни status INVALID.\n" +
-  "Если это техническая пластиковая или металлическая деталь, но её формы нет среди классов " +
-  "ALMAFORT (заглушки внутренние, заглушки декоративные, опоры и подпятники, мебельный крепёж, " +
-  "комплектующие для ДПК, комплектующие для канистр, детали для сэндвич-панелей) — верни status FOREIGN.\n" +
+  "Если это техническая деталь, но её формы нет среди классов ALMAFORT — верни status FOREIGN.\n" +
   "Иначе верни status VALID и класс детали.\n" +
   "Масштаб по фото не определяется: НИКОГДА не называй конкретный размер (15х15 или 100х100 " +
   "выглядят на снимке одинаково) — определяй только класс и форму.\n" +
@@ -46,10 +69,11 @@ const SYSTEM_PROMPT =
   "«цельный пластик», «фактура металла», «широкая шляпка», «резьбовой шток».\n" +
   "low_light=true, если кадр тёмный, засвечен бликом или деталь по цвету сливается с фоном — " +
   "в этом случае не угадывай класс.\n" +
-  "confidence — целое 0..100: насколько уверенно объект соответствует классу ALMAFORT.\n" +
+  "confidence — целое 0..100: насколько уверенно объект соответствует классу ALMAFORT. " +
+  "Ставь confidence ниже 50, если сомневаешься — ложный артикул хуже отказа.\n" +
   "Ответ СТРОГО JSON без markdown: " +
-  '{"status":"VALID|FOREIGN|INVALID","type":"заглушка/опора/крепеж/колпачок/хомут","shape":' +
-  '"квадрат/круг/прямоугольник","color":"черный/серый/белый","has_threads":true|false,' +
+  '{"status":"VALID|FOREIGN|INVALID|NOT_FOUND","type":"заглушка/опора/крепеж/колпачок/хомут",' +
+  '"shape":"квадрат/круг/прямоугольник","color":"черный/серый/белый","has_threads":true|false,' +
   '"confidence":0-100,"observed":"что видно на фото","hands_present":true|false,' +
   '"low_light":true|false,"markers":["металлический каркас"]}';
 
@@ -83,7 +107,12 @@ export async function logVisionFail(imageDataUrl: string, verdict: VisionVerdict
 }
 
 export async function identifyPart(imageDataUrl: string): Promise<VisionVerdict> {
-  const system = (await activePrompt("vision")) ?? SYSTEM_PROMPT;
+  const base = (await activePrompt("vision")) ?? SYSTEM_PROMPT;
+  // Инъекция актуального каталога: {{CATALOG}} в кастомном промпте или дописываем в конец.
+  const catalog = catalogGrounding();
+  const system = base.includes("{{CATALOG}}")
+    ? base.replace("{{CATALOG}}", catalog)
+    : `${base}\nОПИРАЙСЯ СТРОГО НА ЭТОТ КАТАЛОГ:\n${catalog}\nЕсли совпадения нет — верни status "NOT_FOUND".`;
 
   let completion;
   try {
@@ -132,7 +161,13 @@ export async function identifyPart(imageDataUrl: string): Promise<VisionVerdict>
 
   const rawStatus = String(parsed.status ?? "").toUpperCase();
   const status: VisionStatus =
-    rawStatus === "FOREIGN" ? "FOREIGN" : rawStatus === "INVALID" ? "INVALID" : "VALID";
+    rawStatus === "FOREIGN"
+      ? "FOREIGN"
+      : rawStatus === "INVALID"
+        ? "INVALID"
+        : rawStatus === "NOT_FOUND" || rawStatus === "NOTFOUND"
+          ? "NOT_FOUND"
+          : "VALID";
 
   // Модель отдаёт 0..100, но иногда 0..1 — нормализуем в долю.
   const rawConf = Number(parsed.confidence);
@@ -144,7 +179,12 @@ export async function identifyPart(imageDataUrl: string): Promise<VisionVerdict>
     shape: String(parsed.shape ?? "").toLowerCase(),
     color: String(parsed.color ?? "").toLowerCase(),
     has_threads: Boolean(parsed.has_threads),
-    confidence: status === "INVALID" ? Math.min(0.09, conf) : Math.min(1, Math.max(0, conf)),
+    confidence:
+      status === "INVALID"
+        ? Math.min(0.09, conf)
+        : status === "NOT_FOUND"
+          ? Math.min(0.49, conf)
+          : Math.min(1, Math.max(0, conf)),
     observed: String(parsed.observed ?? "").slice(0, 160),
     hands_present: Boolean(parsed.hands_present),
     low_light: Boolean(parsed.low_light),

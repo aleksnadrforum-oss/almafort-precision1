@@ -73,6 +73,18 @@ export const Route = createFileRoute("/api/vision/identify")({
             return Response.json({ scenario: "invalid", verdict });
           }
 
+          // Модель прямо сказала «в каталоге такого нет»: артикул не выдумываем,
+          // показываем 2–3 ближайших варианта и предлагаем ручной выбор.
+          if (verdict.status === "NOT_FOUND") {
+            void logVisionFail(image, verdict);
+            return Response.json({
+              scenario: "notfound",
+              verdict,
+              matches: matchProducts(verdict, 3).map(brief),
+            });
+          }
+
+
           if (verdict.status === "VALID" && score < 0.4) {
             void logVisionFail(image, verdict);
             return Response.json({ scenario: "lowlight", verdict });

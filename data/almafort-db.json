@@ -183,7 +183,7 @@
     {
       "id": "fbf6c744-4069-4a56-83b3-86c803ea1774",
       "created_at": "2026-08-22T14:34:50.592Z",
-      "updated_at": "2026-09-01T15:21:04.715Z",
+      "updated_at": "2026-09-01T15:34:33.023Z",
       "user_id": "7602a0fc-f63d-4482-9aa3-c50b6e3a7677",
       "lines": [
         {
@@ -797,15 +797,15 @@
   ],
   "otp_codes": [
     {
-      "id": "fedf4b5d-906b-466e-a949-7b40db5331f7",
-      "created_at": "2026-09-01T13:15:50.530Z",
-      "updated_at": "2026-09-01T13:15:50.530Z",
-      "email": "sashamoskalenko0@gmail.com",
-      "ip": "195.200.17.34",
-      "salt": "e2a7d67e9a10c661266d4a3ff3086eb3",
-      "code_hash": "3629484e3ec70ac3624b808d58c202b0eb2bee65428ee844b25707259eb285c0c50787147c6a579921cbe6485f8ba0ea1da81fa390fc39b84068c43894ab02c2",
+      "id": "46442fcf-d361-4d2d-bb76-76364ec33360",
+      "created_at": "2026-09-01T15:35:08.964Z",
+      "updated_at": "2026-09-01T15:35:08.964Z",
+      "email": "qa-test@example.com",
+      "ip": "unknown",
+      "salt": "2dcd84e95b4017f70f87c929f0cad1d3",
+      "code_hash": "8994aca52f0a541e4925720f398cc33094272e844d7e2d3b36ea0c03a4456db9846f2c07b17c507f9cc7f77d0e3ba3d31e6cad66cdf247b126788018ca49691a",
       "attempts": 0,
-      "expires_at": "2026-09-01T13:20:50.530Z"
+      "expires_at": "2026-09-01T15:40:08.964Z"
     }
   ],
   "crm_queue": [],

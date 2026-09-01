@@ -416,7 +416,19 @@
       "used": false
     }
   ],
-  "otp_codes": [],
+  "otp_codes": [
+    {
+      "id": "0819af56-026d-4419-a77a-544ffc1967d6",
+      "created_at": "2026-09-01T07:47:42.224Z",
+      "updated_at": "2026-09-01T07:47:42.224Z",
+      "email": "test-eperm-check@example.com",
+      "ip": "unknown",
+      "salt": "6b51cc4ce15f7318bce4302d5fe1a1b2",
+      "code_hash": "23a541613684b675a42eea9c296710a8a507cace1aa6a5273d63d93efe92bb68a462e499b7863fe07dac9c7330aec072e049e6b66e2c4ec94ea21692237f3444",
+      "attempts": 0,
+      "expires_at": "2026-09-01T07:52:42.224Z"
+    }
+  ],
   "crm_queue": [],
   "inventory_holds": [
     {

@@ -11,30 +11,7 @@ import viteReact from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import tsConfigPaths from "vite-tsconfig-paths";
 import { VitePWA } from "vite-plugin-pwa";
-import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-
-/**
- * Ассеты `*.asset.json` ссылаются на внешний CDN, который на собственном VDS
- * отдаёт 404. Все файлы продублированы в `public/media/`, поэтому подменяем
- * url на локальный ещё на этапе сборки.
- */
-const localAssetsPlugin = {
-  name: "almafort:local-media-assets",
-  enforce: "pre" as const,
-  load(id: string) {
-    const file = id.split("?")[0] ?? "";
-    if (!file.endsWith(".asset.json") || !existsSync(file)) return null;
-    try {
-      const json = JSON.parse(readFileSync(file, "utf8")) as Record<string, unknown>;
-      const name = String(json["original_filename"] ?? "");
-      if (name) json["url"] = `/media/${name}`;
-      return { code: `export default ${JSON.stringify(json)};`, moduleType: "js" };
-    } catch {
-      return null;
-    }
-  },
-};
 
 const srcDir = fileURLToPath(new URL("./src", import.meta.url));
 
@@ -66,7 +43,6 @@ export default defineConfig({
     },
   },
   plugins: [
-    localAssetsPlugin,
     tailwindcss(),
     tsConfigPaths({ projects: ["./tsconfig.json"] }),
     tanstackStart(),

@@ -497,7 +497,7 @@ function Row({
         {onRequest ? (
           <span
             title={p.name}
-            className="block w-full overflow-hidden text-ellipsis whitespace-nowrap text-sm font-medium text-[oklch(0.19_0.01_264)]"
+            className="block w-full whitespace-normal text-left text-sm font-medium leading-snug text-[oklch(0.19_0.01_264)] line-clamp-2"
           >
             {p.name}
           </span>
@@ -506,7 +506,7 @@ function Row({
             type="button"
             onClick={() => onOpenProduct(p, palette?.[colorIndex]?.hex)}
             title={p.name}
-            className="tap-sm block w-full cursor-pointer overflow-hidden text-ellipsis whitespace-nowrap text-left text-sm font-medium text-[oklch(0.19_0.01_264)] transition-colors hover:text-primary"
+            className="tap-sm block w-full cursor-pointer whitespace-normal text-left text-sm font-medium leading-snug text-[oklch(0.19_0.01_264)] transition-colors hover:text-primary line-clamp-2"
           >
             {p.name}
           </button>

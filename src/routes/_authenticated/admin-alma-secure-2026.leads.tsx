@@ -1,7 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
+import { MessageSquare } from "lucide-react";
 import { adminBulkRequests, adminSetBulkStatus } from "@/lib/admin.functions";
+
 import { formatPrice } from "@/lib/pricing";
 
 export const Route = createFileRoute("/_authenticated/admin-alma-secure-2026/leads")({
@@ -64,7 +66,16 @@ function BulkLeads() {
               {r.email ? ` · ${r.email}` : ""}
               {r.inn ? ` · ИНН ${r.inn}` : ""}
             </p>
-            {r.comment && <p className="mt-1 text-muted-foreground">{r.comment}</p>}
+            {typeof r.comment === "string" && r.comment.trim() !== "" && (
+              <div className="mt-2 flex gap-2 rounded-md border border-amber-200 bg-amber-50 p-3 text-amber-900">
+                <MessageSquare className="mt-0.5 size-4 shrink-0" strokeWidth={1.75} />
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold">Комментарий клиента</p>
+                  <p className="mt-1 whitespace-pre-line text-sm">{r.comment.trim()}</p>
+                </div>
+              </div>
+            )}
+
             <p className="mt-1 text-xs text-muted-foreground">
               {new Date(r.created_at).toLocaleString("ru-RU")}
             </p>

@@ -417,7 +417,7 @@ export function PhotoScanner({ open, onClose }: { open: boolean; onClose: () => 
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-[oklch(0.16_0.01_264)]"
+      className="fixed inset-0 z-[9999] bg-[oklch(0.16_0.01_264)]"
       onDragOver={(e) => {
         e.preventDefault();
         setDragOver(true);

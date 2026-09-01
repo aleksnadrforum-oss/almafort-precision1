@@ -71,11 +71,14 @@ const SYSTEM_PROMPT =
   "в этом случае не угадывай класс.\n" +
   "confidence — целое 0..100: насколько уверенно объект соответствует классу ALMAFORT. " +
   "Ставь confidence ниже 50, если сомневаешься — ложный артикул хуже отказа.\n" +
-  "Ответ СТРОГО JSON без markdown: " +
-  '{"status":"VALID|FOREIGN|INVALID|NOT_FOUND","type":"заглушка/опора/крепеж/колпачок/хомут",' +
-  '"shape":"квадрат/круг/прямоугольник","color":"черный/серый/белый","has_threads":true|false,' +
+  "Ответ СТРОГО валидным JSON без markdown и пояснений: " +
+  '{"found":true|false,"status":"VALID|FOREIGN|INVALID|NOT_FOUND",' +
+  '"type":"заглушка/опора/крепеж/колпачок/хомут","shape":"квадрат/круг/прямоугольник",' +
+  '"color":"черный/серый/белый","has_threads":true|false,' +
   '"confidence":0-100,"observed":"что видно на фото","hands_present":true|false,' +
-  '"low_light":true|false,"markers":["металлический каркас"]}';
+  '"low_light":true|false,"markers":["металлический каркас"]}\n' +
+  "Поле found — главное: true только если деталь совпадает с позицией каталога выше; " +
+  "при любом сомнении верни found=false и status NOT_FOUND.";
 
 function dataUrlToBytes(dataUrl: string): { bytes: Uint8Array; mime: string } | null {
   const m = dataUrl.match(/^data:([^;]+);base64,(.+)$/);
@@ -123,6 +126,10 @@ export async function identifyPart(imageDataUrl: string): Promise<VisionVerdict>
         { type: "text", text: "Классифицируй объект на фото." },
         { type: "image_url", image_url: { url: imageDataUrl } },
       ],
+      // Нулевая креативность + принудительный JSON: детерминированный вердикт
+      // без markdown-обёрток и галлюцинаций.
+      jsonObject: true,
+      temperature: 0,
       timeoutMs: 25_000,
     });
   } catch (e) {
@@ -159,14 +166,17 @@ export async function identifyPart(imageDataUrl: string): Promise<VisionVerdict>
   });
 
 
+  // Флаг found приоритетнее текстового статуса: false — совпадения нет,
+  // даже если модель попыталась выдумать VALID.
+  const foundFlag = (parsed as { found?: boolean }).found;
   const rawStatus = String(parsed.status ?? "").toUpperCase();
   const status: VisionStatus =
-    rawStatus === "FOREIGN"
-      ? "FOREIGN"
-      : rawStatus === "INVALID"
-        ? "INVALID"
-        : rawStatus === "NOT_FOUND" || rawStatus === "NOTFOUND"
-          ? "NOT_FOUND"
+    foundFlag === false || rawStatus === "NOT_FOUND" || rawStatus === "NOTFOUND"
+      ? "NOT_FOUND"
+      : rawStatus === "FOREIGN"
+        ? "FOREIGN"
+        : rawStatus === "INVALID"
+          ? "INVALID"
           : "VALID";
 
   // Модель отдаёт 0..100, но иногда 0..1 — нормализуем в долю.

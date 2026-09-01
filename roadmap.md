@@ -1,0 +1,1 @@
+- [x] Починить dist-check: генерировать dist/client/index.html после сборки

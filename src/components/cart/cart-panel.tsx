@@ -410,13 +410,20 @@ export function CartPanel() {
       toast.error("Корзина пуста — добавьте позиции или загрузите спецификацию");
       return;
     }
-    if (!(await holdInventory())) return;
+    // Без подтверждённого ИНН резерв не создаётся, но КП скачать можно.
+    const holdResult = await holdInventory();
+    if (holdResult === "blocked") return;
     try {
       await generateInvoicePdfInBrowser({ lines, carrier, city, delivery });
-      toast.success("PDF-счёт сформирован");
+      toast.success(
+        holdResult === "unverified"
+          ? "Коммерческое предложение сформировано. Остатки не забронированы — подтвердите ИНН для резерва"
+          : "PDF-счёт сформирован, остатки забронированы на 72 часа",
+      );
     } catch {
       toast.error("Не удалось сформировать счёт");
     }
+
   };
 
   return (

@@ -507,10 +507,19 @@ export function CartPanel() {
                   </p>
                 )}
                 {shortages[l.sku] !== undefined && (
-                  <p className="mt-1 inline-flex rounded-md bg-amber-100 px-2 py-1 text-xs font-medium text-amber-800">
-                    Доступно только {shortages[l.sku]!.toLocaleString("ru-RU")} шт из{" "}
-                    {l.quantity.toLocaleString("ru-RU")} шт
-                  </p>
+                  <div className="mt-1 flex flex-wrap items-center gap-2 rounded-md bg-amber-100 px-2 py-1 text-xs font-medium text-amber-800">
+                    <span>
+                      Остаток на складе изменился. Доступно:{" "}
+                      {shortages[l.sku]!.toLocaleString("ru-RU")} шт
+                    </span>
+                    <button
+                      type="button"
+                      onClick={fixQuantities}
+                      className="cursor-pointer rounded-sm border border-amber-400 px-2 py-0.5 font-semibold text-amber-900 transition-colors hover:bg-amber-200"
+                    >
+                      Скорректировать количество
+                    </button>
+                  </div>
                 )}
                 {l.originalName && l.originalName !== l.name && (
                   <p className="truncate text-xs text-muted-foreground">

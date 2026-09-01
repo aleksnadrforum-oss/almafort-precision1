@@ -29,6 +29,7 @@ import { Download, FileText, Layers, Ruler, Truck } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import type { Product } from "@/data/catalog";
+import { formatPrice, lineTotal } from "@/lib/pricing";
 import { trackCadDownload, trackViewItem } from "@/lib/metrika";
 import { CityInput, type CityValue } from "@/components/cart/city-input";
 import { BulkRequestDialog } from "@/components/catalog/bulk-request-dialog";
@@ -416,6 +417,8 @@ export function ProductSheet({
     toast.error(`Доступно для заказа только ${Math.max(0, maxBatch).toLocaleString("ru-RU")} шт.`);
     return Math.max(0, maxBatch);
   };
+  const ctaQty = Math.max(1, Math.floor(batch) || 1);
+  const ctaTotal = product ? lineTotal(product, ctaQty) : 0;
   const [bulkOpen, setBulkOpen] = useState(false);
   const [quoteOpen, setQuoteOpen] = useState(false);
   const [CadViewer, setCadViewer] = useState<ComponentType<CadViewerProps> | null>(null);
@@ -549,10 +552,10 @@ export function ProductSheet({
         <div aria-hidden className="mx-auto -mt-1 h-1.5 w-12 shrink-0 rounded-full bg-border md:hidden" />
         {product && service && (
           <>
-            <DialogHeader>
-              <DialogTitle className="text-xl font-extrabold text-foreground">
+            <DialogHeader className="pr-14 text-left">
+              <DialogTitle className="text-left text-xl font-extrabold text-foreground">
                 {product.name}
-                <span className="ml-2 text-sm font-normal text-muted-foreground">
+                <span className="ml-2 block text-sm font-normal text-muted-foreground sm:inline">
                   {product.sku}
                 </span>
               </DialogTitle>
@@ -591,10 +594,10 @@ export function ProductSheet({
         {product && !service && (
           <>
 
-            <DialogHeader>
-              <DialogTitle className="text-xl font-extrabold text-foreground">
+            <DialogHeader className="pr-14 text-left">
+              <DialogTitle className="text-left text-xl font-extrabold text-foreground">
                 {product.name}
-                <span className="ml-2 text-sm font-normal text-muted-foreground">
+                <span className="ml-2 block text-sm font-normal text-muted-foreground sm:inline">
                   {product.sku}
                 </span>
               </DialogTitle>
@@ -632,7 +635,7 @@ export function ProductSheet({
                   </p>
                   {/* Единый дизайн-код каталога: компактная сетка свотчей + тултип. */}
                   <TooltipProvider delayDuration={120}>
-                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                    <div className="mt-2 flex flex-wrap items-center gap-2.5">
                       {swatches.map((sw, i) => (
                         <Tooltip key={sw.hex + sw.label}>
                           <TooltipTrigger asChild>
@@ -644,11 +647,9 @@ export function ProductSheet({
                                 setSwatchIndex(i);
                                 onColorChange?.({ label: sw.label, hex: sw.hex });
                               }}
-                              className={`h-8 w-8 shrink-0 cursor-pointer rounded-full transition md:h-5 md:w-5 ${
-                                isLightColor(sw.hex) || sw.opacity ? "border border-gray-200" : ""
-                              } ${
+                              className={`h-8 w-8 !min-h-0 shrink-0 cursor-pointer rounded-full border border-gray-200 transition aspect-square ${
                                 i === swatchIndex
-                                  ? "ring-2 ring-offset-2 ring-zinc-400"
+                                  ? "ring-2 ring-offset-2 ring-red-600"
                                   : "hover:opacity-80"
                               }`}
                               style={
@@ -797,11 +798,11 @@ export function ProductSheet({
                   {calcState === "ready" && (
                     <ul className="mt-3 space-y-2 text-sm">
                       {logistics.map((l) => (
-                        <li key={l.carrier} className="flex justify-between gap-4">
-                          <span className="text-muted-foreground">
+                        <li key={l.carrier} className="flex items-center justify-between gap-2">
+                          <span className="min-w-0 flex-1 text-muted-foreground">
                             {l.label} · {l.days} дн.
                           </span>
-                          <span className="font-medium tabular-nums text-foreground">
+                          <span className="whitespace-nowrap flex-shrink-0 font-medium tabular-nums text-foreground">
                             {l.price.toLocaleString("ru-RU")} ₽
                           </span>
                         </li>
@@ -817,41 +818,39 @@ export function ProductSheet({
                 </div>
 
                 {/* Мобильный CTA приклеен к низу шторки: цена и корзина всегда под большим пальцем */}
-                <div className="sticky bottom-0 z-10 -mx-4 mt-6 border-t border-border bg-background px-4 pb-[max(env(safe-area-inset-bottom),0.75rem)] pt-3 md:static md:mx-0 md:mt-0 md:border-0 md:bg-transparent md:p-0">
-                <button
-                  type="button"
-                  disabled={outOfStock}
-                  onClick={() => {
-                    const wanted = Math.max(1, Math.floor(batch) || 1);
-                    const qty = Math.max(0, Math.floor(clampBatch(wanted)));
-                    if (qty <= 0) return;
-                    if (qty !== wanted) setBatch(qty);
-                    addLine(
-                      product.sku,
-                      qty,
-                      undefined,
-                      activeSwatch
-                        ? { label: activeSwatch.label, hex: activeSwatch.hex }
-                        : undefined,
-                    );
-                    toast.success(
-                      `${product.sku} — ${qty.toLocaleString("ru-RU")} шт добавлено в корзину${
-                        activeSwatch ? ` (${activeSwatch.label})` : ""
-                      }`,
-                    );
-                  }}
-                  className={`inline-flex min-h-[48px] w-full cursor-pointer items-center justify-center rounded-sm px-6 text-sm font-semibold transition-colors duration-200 md:mt-6 disabled:cursor-not-allowed ${
-                    outOfStock
-                      ? "bg-[#E5E7EB] text-[#9CA3AF]"
-                      : "bg-primary text-primary-foreground hover:opacity-90"
-                  }`}
-                >
-                  {outOfStock
-                    ? "Нет в наличии"
-                    : `В корзину · ${Math.max(1, Math.floor(batch) || 1).toLocaleString("ru-RU")} шт`}
-                </button>
-
-
+                <div className="sticky bottom-0 z-10 -mx-4 mt-6 border-t border-border bg-background px-4 pb-[env(safe-area-inset-bottom)] pt-3 md:static md:mx-0 md:mt-0 md:border-0 md:bg-transparent md:p-0">
+                  <button
+                    type="button"
+                    disabled={outOfStock}
+                    onClick={() => {
+                      const wanted = Math.max(1, Math.floor(batch) || 1);
+                      const qty = Math.max(0, Math.floor(clampBatch(wanted)));
+                      if (qty <= 0) return;
+                      if (qty !== wanted) setBatch(qty);
+                      addLine(
+                        product.sku,
+                        qty,
+                        undefined,
+                        activeSwatch
+                          ? { label: activeSwatch.label, hex: activeSwatch.hex }
+                          : undefined,
+                      );
+                      toast.success(
+                        `${product.sku} — ${qty.toLocaleString("ru-RU")} шт добавлено в корзину${
+                          activeSwatch ? ` (${activeSwatch.label})` : ""
+                        }`,
+                      );
+                    }}
+                    className={`inline-flex min-h-[48px] w-full cursor-pointer items-center justify-center rounded-xl px-4 text-sm font-semibold transition-colors duration-200 md:mt-6 md:rounded-sm md:px-6 disabled:cursor-not-allowed ${
+                      outOfStock
+                        ? "bg-[#E5E7EB] text-[#9CA3AF]"
+                        : "bg-primary text-primary-foreground hover:opacity-90"
+                    }`}
+                  >
+                    {outOfStock
+                      ? "Нет в наличии"
+                      : `В корзину · ${ctaQty.toLocaleString("ru-RU")} шт · ${formatPrice(ctaTotal)}`}
+                  </button>
                 </div>
 
                 <button

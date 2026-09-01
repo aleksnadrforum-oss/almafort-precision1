@@ -204,7 +204,8 @@ export function AiConfigurator() {
     });
   }, [result, qty]);
 
-  const total = rows.reduce((s, r) => s + r.total_price, 0);
+  // Итог считает только JavaScript по актуальному прайсу; ИИ суммы не возвращает.
+  const total = rows.reduce((s, r) => s + (("missing" in r && r.missing) ? 0 : r.total_price), 0);
 
   /** Логический контроль узла: резьба болта и гайки/шайбы обязана совпадать. */
   const conflict = useMemo(() => {
@@ -322,7 +323,8 @@ export function AiConfigurator() {
         task: query || "Подбор узла",
         logic: result?.solution.engineering_logic ?? "",
         safety: result?.solution.safety_margin_factor ?? null,
-        rows: rows.map((r) => ({
+        // Несуществующие артикулы в коммерческий документ не попадают.
+        rows: rows.filter((r) => !("missing" in r && r.missing)).map((r) => ({
           sku: r.sku,
           name: r.color ? `${r.name} (${r.color.label})` : r.name,
           dims: r.dims,

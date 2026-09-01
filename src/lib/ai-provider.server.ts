@@ -42,6 +42,8 @@ export type AiRequest = {
   /** Детерминированность: 0 для классификаторов, undefined — дефолт провайдера. */
   temperature?: number;
   timeoutMs?: number;
+  /** Потолок ответа: короткий JSON классификатора не должен превращаться в эссе. */
+  maxTokens?: number;
 };
 
 export type AiResponse = { text: string; usage: AiUsage; model: string; provider: AiProviderId };

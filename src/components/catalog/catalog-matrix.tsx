@@ -355,7 +355,7 @@ function MobileCard({
               sku={p.sku}
             />
           ) : (
-            <div className="mt-1.5 min-h-[24px]" aria-hidden />
+            <div className="mt-1.5 min-h-8 md:min-h-5" aria-hidden />
           )}
           <div className="mt-1.5">
             <StockCell p={p} />
@@ -575,7 +575,7 @@ function Row({
         {!onRequest && palette ? (
           <MicroSwatches palette={palette} index={colorIndex} onPick={setColorIndex} sku={p.sku} />
         ) : (
-          <div className="mt-1.5 min-h-[24px]" aria-hidden />
+          <div className="mt-1.5 min-h-8 md:min-h-5" aria-hidden />
         )}
       </div>
       <div className={`${CELL} text-sm text-muted-foreground`}>

@@ -236,15 +236,17 @@ export function extractColors(raw: string): ColorExtraction {
   const found: Array<{ canonical: string; at: number }> = [];
 
   for (const entry of COLOR_DICTIONARY) {
+    let at = -1;
     for (const syn of entry.syn) {
       const re = new RegExp(`(^|[^а-яa-z0-9])${esc(norm(syn))}[а-я]{0,4}`, "gi");
       const m = re.exec(s);
       if (!m) continue;
-      found.push({ canonical: entry.canonical, at: m.index });
-      // Вырезаем токен из ядра: «светлая» больше не сбивает нечёткий поиск.
+      if (at < 0) at = m.index;
+      // Вырезаем все синонимы группы: «Ясень шимо светлый (Бамбук)» уходит целиком,
+      // и «светлая» больше не сбивает нечёткий поиск.
       s = s.replace(re, "$1 ");
-      break;
     }
+    if (at >= 0) found.push({ canonical: entry.canonical, at });
   }
 
   const core = s

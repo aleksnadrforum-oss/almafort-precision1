@@ -106,14 +106,27 @@ function FacetNotFound() {
   );
 }
 
-function ProductCard({ p, thumb }: { p: Product; thumb?: string | null }) {
+function ProductCard({
+  p,
+  thumb,
+  onOpen,
+}: {
+  p: Product;
+  thumb?: string | null;
+  onOpen: (p: Product) => void;
+}) {
   const [quote, setQuote] = useState(false);
   const onRequest = isOnRequest(p) || p.is_service;
 
   return (
     <li className="flex flex-col justify-between rounded-2xl border border-border/80 bg-card p-4 shadow-sm transition-all duration-200 hover:shadow-md">
       <div>
-        <div className="mb-3 flex aspect-[4/3] w-full items-center justify-center overflow-hidden rounded-xl border border-border/70 bg-muted/40">
+        <button
+          type="button"
+          onClick={() => onOpen(p)}
+          aria-label={`Открыть карточку ${p.name}`}
+          className="mb-3 flex aspect-[4/3] w-full cursor-pointer items-center justify-center overflow-hidden rounded-xl border border-border/70 bg-muted/40 !min-h-0 p-0"
+        >
           {thumb ? (
             <img
               src={thumb}
@@ -124,18 +137,20 @@ function ProductCard({ p, thumb }: { p: Product; thumb?: string | null }) {
           ) : (
             <ProductThumb src={p.image_url} alt={p.name} className="max-h-full" />
           )}
-        </div>
+        </button>
 
         <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           {p.sku}
         </span>
 
         <h3
-          className="mt-1 line-clamp-3 text-base font-semibold leading-snug text-foreground"
+          className="mt-1 line-clamp-3 cursor-pointer text-base font-semibold leading-snug text-foreground transition-colors hover:text-primary"
           title={p.name}
+          onClick={() => onOpen(p)}
         >
           {p.name}
         </h3>
+
 
         <div className="mt-2.5 flex items-center justify-between gap-2 border-b border-border/70 pb-3 text-xs text-muted-foreground">
           <span className="min-w-0 truncate">{p.dims || "Габариты по запросу"}</span>

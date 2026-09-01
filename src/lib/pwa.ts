@@ -1,7 +1,9 @@
 /**
  * Регистрация service worker'а.
- * Строго запрещена в дев-режиме, iframe и превью Lovable — иначе браузер
- * начинает отдавать закешированный HTML вместо свежей сборки.
+ * Строго запрещена в дев-режиме, внутри iframe и на превью-хостах — иначе
+ * браузер начинает отдавать закешированный HTML вместо свежей сборки.
+ * Боевой хост задаётся через VITE_PUBLIC_HOST (например, almafort.ru);
+ * если переменная не задана, ограничиваемся общими проверками.
  * Аварийный выключатель: любой URL с ?sw=off снимает регистрацию.
  */
 const SW_URL = "/sw.js";
@@ -12,14 +14,14 @@ function isBlockedContext(): boolean {
   if (window.self !== window.top) return true;
   const host = window.location.hostname;
   if (host.startsWith("id-preview--") || host.startsWith("preview--")) return true;
-  if (host === "lovableproject.com" || host.endsWith(".lovableproject.com")) return true;
-  if (host === "lovableproject-dev.com" || host.endsWith(".lovableproject-dev.com")) return true;
-  if (host === "beta.lovable.dev" || host.endsWith(".beta.lovable.dev")) return true;
+  const productionHost = (import.meta.env["VITE_PUBLIC_HOST"] as string | undefined)?.trim();
+  if (productionHost && host !== productionHost && !host.endsWith(`.${productionHost}`)) return true;
   if (new URLSearchParams(window.location.search).has("sw")) {
     if (new URLSearchParams(window.location.search).get("sw") === "off") return true;
   }
   return false;
 }
+
 
 async function unregisterAppWorkers() {
   if (!("serviceWorker" in navigator)) return;

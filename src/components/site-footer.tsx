@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { MapPin, Send, MessageCircle, X } from "lucide-react";
 import { trackContact } from "@/lib/metrika";
 import { COMPANY, companyEmail } from "@/lib/company";

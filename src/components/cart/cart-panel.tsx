@@ -495,7 +495,7 @@ export function CartPanel() {
           };
           return (
             <SwipeToDelete key={key} onDelete={() => removeLine(key)}>
-              <div className="cart-table-grid border-0 px-0 py-0 md:grid md:items-center md:border-b md:border-border md:px-5 md:py-3 md:last:border-b-0">
+              <div className="cart-table-grid border-0 px-4 py-2 md:grid md:items-center md:border-b md:border-border md:px-5 md:py-3 md:last:border-b-0">
                 {/* Мобильная карточка */}
                 <article className="m-3 rounded-xl border border-gray-100 bg-white p-4 shadow-sm last:mb-4 md:hidden">
                   <div className="flex items-start gap-3">

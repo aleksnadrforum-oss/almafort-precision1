@@ -91,14 +91,29 @@ export const Route = createFileRoute("/api/vision/identify")({
           }
 
 
+          // Смягчённый порог: класс распознан неточно — показываем аналоги, а не отказ.
           if (verdict.status === "VALID" && score < 0.4) {
             void logVisionFail(image, verdict);
-            return Response.json({ scenario: "lowlight", verdict });
+            return Response.json({
+              scenario: "notfound",
+              verdict,
+              matches: matchProducts(verdict, 3).map(brief),
+            });
           }
 
-          if (verdict.status === "FOREIGN" || score < 0.5 || !category) {
+          // «Посторонний объект» — только явный вердикт модели (лица, документы, чужие вещи).
+          if (verdict.status === "FOREIGN") {
             void logVisionFail(image, verdict);
             return Response.json({ scenario: "foreign", verdict });
+          }
+
+          if (!category) {
+            void logVisionFail(image, verdict);
+            return Response.json({
+              scenario: "notfound",
+              verdict,
+              matches: matchProducts(verdict, 3).map(brief),
+            });
           }
 
           if (score >= 0.85) {
@@ -111,7 +126,8 @@ export const Route = createFileRoute("/api/vision/identify")({
             });
           }
 
-          if (score >= 0.75) {
+          if (score >= 0.5) {
+
             const matches = matchProducts(verdict, 3).map(brief);
             const reinforced = matches.some((m) => /металл|усиленн/i.test(m.name));
             return Response.json({

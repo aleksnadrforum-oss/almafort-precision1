@@ -10,7 +10,6 @@ import { nitro } from "nitro/vite";
 import viteReact from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import tsConfigPaths from "vite-tsconfig-paths";
-import { VitePWA } from "vite-plugin-pwa";
 import { fileURLToPath } from "node:url";
 import { mirrorDist } from "./scripts/dist-mirror.mjs";
 
@@ -65,43 +64,5 @@ export default defineConfig({
     tanstackStart(),
     nitro({ preset: process.env["NITRO_PRESET"] || "node-server" }),
     viteReact(),
-    VitePWA({
-      strategies: "generateSW",
-      registerType: "autoUpdate",
-      injectRegister: null,
-      filename: "sw.js",
-      manifest: false,
-      outDir: ".output/public",
-      devOptions: { enabled: false },
-      workbox: {
-        globPatterns: ["**/*.{js,css,woff2,png,svg,webp,ico}"],
-        maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
-        navigateFallback: null,
-        navigateFallbackDenylist: [/^\/~oauth/, /^\/api\//],
-        cleanupOutdatedCaches: true,
-        clientsClaim: true,
-        skipWaiting: true,
-        runtimeCaching: [
-          // HTML-навигации НИКОГДА не кешируются: страницы отдаются SSR-стримом,
-          // и повторная выдача сохранённого/усечённого ответа ломает Safari
-          // («не удаётся произвести анализ ответа») при переходе в /catalog.
-
-          {
-            urlPattern: ({ request }: { request: Request }) =>
-              ["style", "script", "worker", "font"].includes(request.destination),
-            handler: "StaleWhileRevalidate",
-            options: { cacheName: "almafort-assets" },
-          },
-          {
-            urlPattern: ({ request }: { request: Request }) => request.destination === "image",
-            handler: "CacheFirst",
-            options: {
-              cacheName: "almafort-images",
-              expiration: { maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 * 30 },
-            },
-          },
-        ],
-      },
-    }),
   ],
 });

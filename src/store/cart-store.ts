@@ -382,14 +382,15 @@ export const useCart = create<State>()(
       lines: rows
         .map((r) => {
           const p = productBySku(r.sku);
-          return p
-            ? {
-                sku: r.sku,
-                name: p.name,
-                quantity: Math.max(1, Math.floor(r.quantity)),
-                color: resolveLineColor(p),
-              }
-            : null;
+          if (!p) return null;
+          const line: CartLine = {
+            sku: r.sku,
+            name: p.name,
+            quantity: Math.max(1, Math.floor(r.quantity)),
+            color: resolveLineColor(p),
+          };
+          return line;
+
         })
         .filter((l): l is CartLine => Boolean(l)),
     })),

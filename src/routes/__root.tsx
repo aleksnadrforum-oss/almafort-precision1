@@ -13,7 +13,7 @@ import { useLocation } from "@tanstack/react-router";
 import { getMaintenanceState } from "@/lib/public.functions";
 
 import appCss from "../styles.css?url";
-import { reportLovableError } from "../lib/lovable-error-reporting";
+import { reportClientError } from "../lib/error-reporting";
 import { Toaster } from "@/components/ui/sonner";
 import { MobileTabBar } from "@/components/mobile-tab-bar";
 import { ClientOnly } from "@/components/client-only";
@@ -47,7 +47,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
   const router = useRouter();
   useEffect(() => {
-    reportLovableError(error, { boundary: "tanstack_root_error_component" });
+    reportClientError(error, { boundary: "tanstack_root_error_component" });
   }, [error]);
 
   return (

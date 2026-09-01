@@ -262,8 +262,24 @@ export function matchRow(rawName: string, quantity: number): MatchResult {
   const qp = extractParams(core);
 
   // 2. Прямые семантические попадания (стеклодержатель, кляймер, крепсс, услуги…).
+  // Ведущая группа: если строка начинается с названия семейства («Опора … под
+  // евровинт»), уточняющее слово-аксессуар не должно перебивать сам товар.
+  const leadGroup = GROUPS.find((g) =>
+    g.triggers.some((t) => {
+      const at = query.indexOf(t);
+      return at >= 0 && at <= 2;
+    }),
+  );
+
   for (const [triggers, sku] of DIRECT_HITS) {
-    if (!triggers.some((t) => triggerHit(query, t))) continue;
+    const hit = triggers.find((t) => triggerHit(query, t));
+    if (!hit) continue;
+    if (leadGroup) {
+      const direct = bySku.get(sku.toLowerCase());
+      // Товар из другого семейства: «под евровинт», «для профиля» — это признак
+      // совместимости, а не сам артикул.
+      if (direct && !leadGroup.skus(direct)) continue;
+    }
     const p = bySku.get(sku.toLowerCase());
     if (!p) continue;
     return {

@@ -326,6 +326,9 @@ function walk(wb: XLSX.WorkBook): ParseResult {
       }
 
       const verdict = matchRow(label, quantity);
+      // Шапки и подписи («Заказ ООО … от 26.08.2026»): нет количества и нет
+      // совпадения с каталогом — это не позиция, а оформление документа.
+      if (!qtyRaw && parsed.qty === null && verdict.status !== "MATCHED") continue;
       // Проход 2: канонические цвета из строки → образец палитры конкретного SKU.
       const matchedProduct = verdict.sku ? (PRODUCTS.find((x) => x.sku === verdict.sku) ?? null) : null;
       const canonicals = verdict.colors.length ? verdict.colors : extractColors(label).colors;

@@ -225,7 +225,11 @@ export function CartPanel() {
   const ctaDisabled =
     !cartReady || unverified || Boolean(party?.blocked) || blockedByStock || holding;
 
-  const holdInventory = async () => {
+  /**
+   * Возвращает "ok" — резерв создан, "unverified" — ИНН не подтверждён
+   * (счёт-КП скачать можно, брони не будет), "blocked" — остатков нет.
+   */
+  const holdInventory = async (): Promise<"ok" | "unverified" | "blocked"> => {
     setHolding(true);
     try {
       const res = await fetch("/api/inventory/hold", {
@@ -238,12 +242,7 @@ export function CartPanel() {
           items: lines.map((l) => ({ sku: l.sku, quantity: l.quantity })),
         }),
       });
-      if (res.status === 403) {
-        toast.error(
-          "Резерв склада доступен после подтверждения ИНН. Сейчас можно скачать коммерческое предложение без брони остатков",
-        );
-        return false;
-      }
+      if (res.status === 403) return "unverified";
       if (res.status === 409) {
         const json = (await res.json()) as {
           reason?: string;
@@ -258,18 +257,19 @@ export function CartPanel() {
             ? "Для бронирования оптовой партии такого объёма требуется ручное подтверждение менеджера"
             : "Остаток на складе изменился — скорректируйте количество",
         );
-        return false;
+        return "blocked";
       }
       if (!res.ok) throw new Error("hold");
       setShortages({});
-      return true;
+      return "ok";
     } catch {
       // Недоступность сервиса резервирования не должна ломать выпуск счёта.
-      return true;
+      return "ok";
     } finally {
       setHolding(false);
     }
   };
+
 
   const idemKey = useRef<string | null>(null);
   // Стратегическому партнёру доступна отгрузка с отсрочкой платежа 15–30 дней.
@@ -301,7 +301,13 @@ export function CartPanel() {
       );
       return;
     }
-    if (!(await holdInventory())) return;
+    const holdResult = await holdInventory();
+    if (holdResult === "blocked") return;
+    if (holdResult === "unverified") {
+      toast.error("Подтвердите ИНН плательщика — без этого счёт с резервом склада не выставляется");
+      return;
+    }
+
     setSubmitting(true);
     const ecomItems = lines.map((l) => ({
       sku: l.sku,
@@ -404,13 +410,20 @@ export function CartPanel() {
       toast.error("Корзина пуста — добавьте позиции или загрузите спецификацию");
       return;
     }
-    if (!(await holdInventory())) return;
+    // Без подтверждённого ИНН резерв не создаётся, но КП скачать можно.
+    const holdResult = await holdInventory();
+    if (holdResult === "blocked") return;
     try {
       await generateInvoicePdfInBrowser({ lines, carrier, city, delivery });
-      toast.success("PDF-счёт сформирован");
+      toast.success(
+        holdResult === "unverified"
+          ? "Коммерческое предложение сформировано. Остатки не забронированы — подтвердите ИНН для резерва"
+          : "PDF-счёт сформирован, остатки забронированы на 72 часа",
+      );
     } catch {
       toast.error("Не удалось сформировать счёт");
     }
+
   };
 
   return (

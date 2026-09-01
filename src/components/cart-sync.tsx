@@ -22,7 +22,25 @@ export function CartSync() {
   const signedIn = useRef(false);
 
   useEffect(() => {
+    // Кука HttpOnly недоступна JS, поэтому сначала спрашиваем сервер:
+    // без этого протухшая сессия давала 401 от защищённой server-функции.
+    const hasServerSession = async () => {
+      try {
+        const res = await fetch("/api/auth/session", { credentials: "same-origin" });
+        const json = (await res.json()) as { authed?: boolean };
+        return Boolean(json?.authed);
+      } catch {
+        return false;
+      }
+    };
+
     const run = async () => {
+      if (!(await hasServerSession())) {
+        // Снимок профиля в localStorage пережил куку: тихо разлогиниваем.
+        signedIn.current = false;
+        if (isAuthed()) clearSession();
+        return;
+      }
       const guest = useCart.getState().lines.map((l) => ({ sku: l.sku, quantity: l.quantity }));
       try {
         const res = await merge({ data: { lines: guest } });
@@ -32,7 +50,6 @@ export function CartSync() {
         }
       } catch (e) {
         if (isUnauthorized(e)) {
-          // Снимок профиля в localStorage пережил HttpOnly-куку: тихо разлогиниваем.
           signedIn.current = false;
           clearSession();
           return;
@@ -40,6 +57,7 @@ export function CartSync() {
         console.warn("[cart-sync] слияние не выполнено", e);
       }
     };
+
 
 
     if (isAuthed() && !signedIn.current) {

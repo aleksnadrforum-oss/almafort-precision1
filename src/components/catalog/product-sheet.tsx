@@ -561,26 +561,31 @@ export function ProductSheet({
               </DialogTitle>
             </DialogHeader>
 
-            <div className="flex flex-col gap-6">
-              <CollapsibleText text={service.description} />
+            <DialogBody className="py-1">
+              <div className="flex flex-col gap-6">
+                <CollapsibleText text={service.description} />
 
-              <dl className="grid grid-cols-1 gap-x-6 gap-y-3 border-t border-border pt-6 text-sm sm:grid-cols-2">
-                {service.specs.map(([k, v]) => (
-                  <div key={k}>
-                    <dt className="text-xs uppercase tracking-wider text-muted-foreground">{k}</dt>
-                    <dd className="mt-0.5 font-medium text-foreground">{v}</dd>
-                  </div>
-                ))}
-              </dl>
+                <dl className="grid grid-cols-1 gap-x-6 gap-y-3 divide-y divide-gray-100 border-t border-gray-100 pt-6 text-sm sm:grid-cols-2 sm:divide-y-0">
+                  {service.specs.map(([k, v]) => (
+                    <div key={k} className="pt-2 sm:pt-0">
+                      <dt className="text-xs uppercase tracking-wider text-muted-foreground">{k}</dt>
+                      <dd className="mt-0.5 font-medium text-foreground">{v}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+            </DialogBody>
 
+            <DialogFooter>
               <button
                 type="button"
                 onClick={() => setQuoteOpen(true)}
-                className="mt-2 inline-flex min-h-[48px] w-full cursor-pointer items-center justify-center rounded-sm bg-primary px-6 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+                className="inline-flex h-12 w-full cursor-pointer items-center justify-center rounded-xl bg-primary px-6 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 active:opacity-80"
               >
                 Расчёт
               </button>
-            </div>
+            </DialogFooter>
+
 
             {quoteOpen && (
               <QuoteRequestModal

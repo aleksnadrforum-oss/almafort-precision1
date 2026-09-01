@@ -28,6 +28,7 @@ export function MobileTabBar() {
     };
   }, []);
 
+  const { cabinetHref } = useAuth();
   const location = useLocation();
   const lines = useCart((s) => s.lines);
   const count = lines.length;
@@ -91,7 +92,7 @@ export function MobileTabBar() {
         </Link>
 
         <Link
-          to="/cabinet"
+          to={cabinetHref}
           className={item(isActive("/cabinet"))}
           aria-current={isActive("/cabinet") ? "page" : undefined}
         >

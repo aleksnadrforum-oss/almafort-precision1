@@ -898,21 +898,3 @@ select,
     padding-bottom: calc(100px + env(safe-area-inset-bottom));
   }
 }
-
-/* Запрет фонового скролла при открытой модалке/шторке (Radix ставит data-scroll-locked) */
-body[data-scroll-locked],
-body.modal-open {
-  overflow: hidden !important;
-  touch-action: none;
-  overscroll-behavior: none;
-}
-
-/* Тач-отклик модальных элементов */
-[role="dialog"] button,
-[role="dialog"] a,
-[role="dialog"] input,
-[role="dialog"] select,
-[role="dialog"] textarea {
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-}

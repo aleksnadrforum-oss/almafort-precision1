@@ -9,7 +9,7 @@ import { formatPrice } from "@/lib/pricing";
 import { applyPack } from "@/lib/spec-sanitize";
 import { linePrice, productBySku, useCart, type ReviewRow } from "@/store/cart-store";
 import { BulkRequestDialog } from "@/components/catalog/bulk-request-dialog";
-import { Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 type UiStatus = "valid" | "warning" | "error";
 
@@ -353,20 +353,18 @@ export function SpecReview() {
       </footer>
 
       <Dialog open={conflict} onOpenChange={(o) => !o && setConflict(false)}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-left text-base font-bold leading-snug pr-3">
-              В вашей корзине уже есть товары
-            </DialogTitle>
+            <DialogTitle>В вашей корзине уже есть товары</DialogTitle>
           </DialogHeader>
-          <DialogBody className="py-2 text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             Очистить текущую корзину или добавить позиции из спецификации к существующим? Совпадающие
             артикулы будут просуммированы.
-          </DialogBody>
-          <DialogFooter className="sm:flex-col">
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2">
             <button
               type="button"
-              className="h-11 w-full cursor-pointer rounded-xl bg-red-600 text-sm font-medium text-white transition-colors active:bg-red-700"
+              className={`${btn} bg-primary text-primary-foreground`}
               onClick={() => {
                 setConflict(false);
                 doCommit("merge");
@@ -376,7 +374,7 @@ export function SpecReview() {
             </button>
             <button
               type="button"
-              className="h-11 w-full cursor-pointer rounded-xl border border-gray-200 bg-white text-sm font-medium text-gray-700 transition-colors active:bg-gray-100"
+              className={`${btn} border border-border bg-background text-foreground`}
               onClick={() => {
                 setConflict(false);
                 doCommit("replace");
@@ -384,8 +382,7 @@ export function SpecReview() {
             >
               Очистить и заменить
             </button>
-          </DialogFooter>
-
+          </div>
         </DialogContent>
       </Dialog>
 

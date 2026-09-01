@@ -1,6 +1,6 @@
 import { formatPhone } from "@/lib/phone";
 import { useEffect, useState } from "react";
-import { Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useSwipeClose } from "@/lib/use-swipe-close";
 import { getCabinet } from "@/lib/cabinet.functions";
 import { currentUser } from "@/lib/session";
@@ -123,12 +123,12 @@ export function BulkRequestDialog({
       <DialogContent
         data-bottom-sheet
         style={swipe.sheetStyle}
-        className="max-h-[92dvh] pb-[max(20px,env(safe-area-inset-bottom))] sm:max-w-lg sm:pb-6"
+        className="bottom-0 top-auto max-h-[88dvh] w-full max-w-full translate-y-0 overflow-y-auto rounded-t-2xl px-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] sm:bottom-auto sm:top-1/2 sm:max-w-lg sm:-translate-y-1/2 sm:rounded-lg sm:pb-6"
       >
         {/* Свайп вниз — привычный способ закрыть шторку на смартфоне */}
         <div className="sheet-grabber -mt-2 sm:hidden" aria-hidden {...swipe.handleProps} />
         <DialogHeader>
-          <DialogTitle className="pr-3 text-left text-base font-bold leading-snug sm:text-lg">Спеццена на крупную партию</DialogTitle>
+          <DialogTitle className="text-lg font-extrabold">Спеццена на крупную партию</DialogTitle>
         </DialogHeader>
 
         {state === "done" ? (
@@ -144,7 +144,7 @@ export function BulkRequestDialog({
                 менеджер согласует срок изготовления.
               </p>
             )}
-            <button type="button" onClick={onClose} className="h-11 w-full rounded-xl bg-foreground text-sm font-medium text-background active:opacity-80">
+            <button type="button" onClick={onClose} className="h-12 w-full rounded-sm bg-foreground text-sm font-semibold text-background">
               Закрыть
             </button>
           </div>
@@ -249,7 +249,7 @@ export function BulkRequestDialog({
             <button
               type="submit"
               disabled={state === "sending"}
-              className="h-12 w-full cursor-pointer rounded-xl bg-primary text-sm font-medium text-primary-foreground transition-colors hover:bg-[#B91C1C] active:opacity-80 disabled:cursor-not-allowed disabled:opacity-60"
+              className="h-12 w-full cursor-pointer rounded-sm bg-primary text-sm font-semibold text-primary-foreground transition-colors hover:bg-[#B91C1C] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {state === "sending" ? "Отправляем…" : "Отправить запрос в отдел оптовых продаж"}
             </button>

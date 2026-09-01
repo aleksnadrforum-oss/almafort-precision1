@@ -196,7 +196,7 @@ const CANISTER_CAP_PROFILE: PartProfile = {
   material: { roughness: 0.65, metalness: 0.0 },
   description:
     "Усиленная пластиковая крышка для промышленных и бытовых канистр, рассчитанная на экстремальные условия эксплуатации. Отличается увеличенной толщиной стенки и модифицированным профилем резьбы, что полностью исключает срыв при сильном затягивании и гарантирует многократное (вечное) использование. Абсолютная герметичность достигается за счет плотного внутреннего обтюратора (конуса).",
-  palette: [{ hex: "#000000", label: "Чёрный" }],
+  palette: BLACK_PALETTE,
 };
 
 /** Семейство «Тетрагедрон» — утилитарный матовый промышленный пластик. */
@@ -205,7 +205,7 @@ const TETRAHEDRON_PROFILE: PartProfile = {
   material: { roughness: 0.85, metalness: 0.0 },
   description:
     "Технологические пластиковые детали (тетрагедроны) для производственных линий по выпуску сэндвич-панелей. Разработаны специально для обеспечения правильной геометрии и технологического процесса на заводах-изготовителях панелей. Литьё из высокопрочного чёрного пластика с точным соблюдением допусков.",
-  palette: [{ hex: "#000000", label: "Чёрный" }],
+  palette: BLACK_PALETTE,
 };
 
 const SKU_PROFILES: Record<string, PartProfile> = {
@@ -268,7 +268,7 @@ const PROFILES: Record<string, PartProfile> = {
     colorLabel: "Чёрный",
     material: { roughness: 0.85, metalness: 0.0 },
     description: TETRAHEDRON_DESCRIPTION,
-    palette: [{ hex: "#000000", label: "Чёрный" }],
+    palette: BLACK_PALETTE,
   },
 };
 
@@ -282,15 +282,12 @@ export type ColorSwatch = Swatch;
 
 /** Палитра позиции для табличной сетки: null — у SKU нет вариаций цвета. */
 export function paletteForProduct(p: { sku: string; category: string }): Swatch[] | null {
-  const prof = SKU_PROFILES[p.sku] ?? PROFILES[p.category] ?? null;
-  return prof?.palette && prof.palette.length > 0 ? prof.palette : null;
+  return paletteFromData(p);
 }
 
 /** Базовый цвет позиции без палитры (для сквозной передачи в корзину). */
 export function baseColorForProduct(p: { sku: string; category: string }) {
-  const prof = SKU_PROFILES[p.sku] ?? PROFILES[p.category] ?? DEFAULT_PROFILE;
-  const sw = prof.palette?.[0];
-  return { label: sw?.label ?? prof.colorLabel, hex: sw?.hex ?? PART_COLOR_HEX };
+  return baseColorFromData(p);
 }
 
 /** Маркетинговое описание позиции — используется в JSON-LD микроразметке. */

@@ -705,6 +705,19 @@
       "prompt_tokens": 5306,
       "completion_tokens": 708,
       "cost_usd": 0.013712
+    },
+    {
+      "id": "15701776-8538-48a5-bed5-13edebfc0ec7",
+      "created_at": "2026-09-01T11:34:44.770Z",
+      "updated_at": "2026-09-01T11:34:44.770Z",
+      "kind": "configurator",
+      "prompt": "нужны заглушки на трубу 40х40, 200 штук",
+      "response": "{\"error\":null,\"recommended_items\":[{\"sku\":\"ZGV-40x40\",\"quantity\":200,\"color\":\"базовый\"}],\"engineering_logic\":\"Клиент указал профильную трубу 40×40 мм, под неё в каталоге есть прямая позиция ZGV-40x40. Заглушки носят только декоративную и защитную функцию, расчёт нагрузок и коэффициента запаса не выполняется. Норма расхода — одна заглушка на один торец, клиент запросил 200 штук, поэтому закладываем 200 шт ZGV-40x40 по базовой цене (объём ниже порога опта 1).\",\"safety_margin_factor\":null,\"is_service\":false}",
+      "parse_status": "ok",
+      "model": "gpt-5.1-instant",
+      "prompt_tokens": 7533,
+      "completion_tokens": 171,
+      "cost_usd": 0.011126
     }
   ],
   "llm_prompts": [],

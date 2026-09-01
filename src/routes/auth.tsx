@@ -144,9 +144,11 @@ function AuthPage() {
 
       if (body.status === "ok" && body.user && body.expiresAt) {
         writeSession({ user: body.user, expiresAt: body.expiresAt });
-        void navigate({ to: "/cabinet", replace: true });
+        // Жёсткий переход: браузер гарантированно отправит cookie almafort_session
+        window.location.href = "/cabinet";
         return;
       }
+
       if (body.status === "locked") {
         setCooldown(0);
         failCode(body.error ?? "Попытки исчерпаны. Запросите код заново", true);

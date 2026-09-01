@@ -44,6 +44,15 @@
       "password_hash": "scrypt:f239944b5492287bf74bb1265ee1bbf8:3901032e7d2aaf607ed16f65fdc70ffa4d64eace23d0f128992fa2ba404e36af71cc56172b0a87cd1fac229001797b0ac9876cf261f5ac0dbd7de56ce1434110",
       "full_name": null,
       "email_verified": true
+    },
+    {
+      "id": "e799de24-b9eb-4cd4-b4c1-45c352673a43",
+      "created_at": "2026-09-01T15:36:44.117Z",
+      "updated_at": "2026-09-01T15:36:44.117Z",
+      "email": "qa-test@example.com",
+      "password_hash": "scrypt:de2d59b911731b78e3e5a831353b0499:a09d99cd717a631af09808d6a8eca78f350be5ea76dd02b18d2898b0d5bd3236fde360eb266e61630f790d8669214ddebb1abcab6a71f46cc9aeea9f37356117",
+      "full_name": null,
+      "email_verified": true
     }
   ],
   "profiles": [
@@ -79,6 +88,13 @@
       "id": "f54d8aea-02ae-4b9d-b333-f58d2baa228d",
       "created_at": "2026-08-22T16:44:11.488Z",
       "updated_at": "2026-08-22T16:44:11.488Z",
+      "full_name": null,
+      "phone": null
+    },
+    {
+      "id": "e799de24-b9eb-4cd4-b4c1-45c352673a43",
+      "created_at": "2026-09-01T15:36:44.121Z",
+      "updated_at": "2026-09-01T15:36:44.121Z",
       "full_name": null,
       "phone": null
     }
@@ -795,19 +811,7 @@
       "used": false
     }
   ],
-  "otp_codes": [
-    {
-      "id": "46442fcf-d361-4d2d-bb76-76364ec33360",
-      "created_at": "2026-09-01T15:35:08.964Z",
-      "updated_at": "2026-09-01T15:35:08.964Z",
-      "email": "qa-test@example.com",
-      "ip": "unknown",
-      "salt": "2dcd84e95b4017f70f87c929f0cad1d3",
-      "code_hash": "8994aca52f0a541e4925720f398cc33094272e844d7e2d3b36ea0c03a4456db9846f2c07b17c507f9cc7f77d0e3ba3d31e6cad66cdf247b126788018ca49691a",
-      "attempts": 0,
-      "expires_at": "2026-09-01T15:40:08.964Z"
-    }
-  ],
+  "otp_codes": [],
   "crm_queue": [],
   "inventory_holds": [
     {

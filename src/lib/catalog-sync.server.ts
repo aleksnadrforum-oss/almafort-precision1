@@ -1,3 +1,4 @@
+import { visualFeaturesFor } from "@/data/visual-features";
 /**
  * Импорт товарного фида: санитизация, дедупликация и upsert по SKU.
  *
@@ -137,6 +138,7 @@ export function applyFeed(rows: FeedRow[], opts: { hideMissing?: boolean } = {})
         id: sku.toLowerCase(),
         sku,
         name: row.name || sku,
+        visualFeatures: visualFeaturesFor(sku, row.category?.trim() || "Прочее"),
         parent: "Прочее",
         is_service: false,
         category: row.category || "Прочее",

@@ -38,6 +38,10 @@ export type AiRequest = {
   content: AiContent;
   /** Строгий JSON-ответ по схеме (конфигуратор). */
   jsonSchema?: AiJsonSchema;
+  /** Принудительный JSON-ответ без схемы (vision: {found, status, ...}). */
+  jsonObject?: boolean;
+  /** Детерминированность: 0 для классификаторов, undefined — дефолт провайдера. */
+  temperature?: number;
   timeoutMs?: number;
 };
 
@@ -247,6 +251,11 @@ async function chatCompletions(r: Resolved, req: AiRequest): Promise<AiResponse>
       type: "json_schema",
       json_schema: { name: req.jsonSchema.name, strict: true, schema: req.jsonSchema.schema },
     };
+  } else if (req.jsonObject) {
+    body["response_format"] = { type: "json_object" };
+  }
+  if (typeof req.temperature === "number") {
+    body["temperature"] = req.temperature;
   }
 
   const res = await postJson(r, "/chat/completions", body, req.timeoutMs ?? 30_000, req.task);

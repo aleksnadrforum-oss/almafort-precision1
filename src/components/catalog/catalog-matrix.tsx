@@ -37,7 +37,7 @@ function MicroSwatches({
 }) {
   return (
     <TooltipProvider delayDuration={120}>
-      <div className="mt-1.5 flex min-h-[24px] flex-wrap items-center gap-1.5">
+      <div className="mt-1.5 flex flex-wrap items-center gap-2">
         {palette.map((sw, i) => (
           <Tooltip key={sw.hex + sw.label}>
             <TooltipTrigger asChild>
@@ -46,10 +46,12 @@ function MicroSwatches({
                 aria-label={`${sku}: ${sw.label}`}
                 aria-pressed={i === index}
                 onClick={() => onPick(i)}
-                className={`size-4 shrink-0 rounded-full border transition ${
+                className={`h-8 w-8 shrink-0 rounded-full transition md:h-5 md:w-5 ${
+                  isLightColor(sw.hex) || sw.opacity ? "border border-gray-200" : ""
+                } ${
                   i === index
-                    ? "border-foreground ring-1 ring-gray-400"
-                    : "border-border hover:border-foreground/60"
+                    ? "ring-2 ring-offset-2 ring-zinc-400"
+                    : "hover:opacity-80"
                 }`}
                 style={
                   sw.opacity
@@ -57,10 +59,7 @@ function MicroSwatches({
                         backgroundImage:
                           "linear-gradient(135deg, #ffffff 45%, #cfcfcf 45%, #cfcfcf 55%, #ffffff 55%)",
                       }
-                    : {
-                        backgroundColor: sw.hex,
-                        ...(sw.borderColor ? { borderColor: sw.borderColor } : {}),
-                      }
+                    : { backgroundColor: sw.hex }
                 }
               />
             </TooltipTrigger>
@@ -70,6 +69,16 @@ function MicroSwatches({
       </div>
     </TooltipProvider>
   );
+}
+
+/** Светлые оттенки (белый, бежевый и т.п.) нуждаются в деликатной границе, чтобы не сливаться с фоном. */
+function isLightColor(hex: string) {
+  const n = Number.parseInt(hex.replace("#", ""), 16);
+  if (Number.isNaN(n)) return false;
+  const r = (n >> 16) & 255;
+  const g = (n >> 8) & 255;
+  const b = n & 255;
+  return 0.299 * r + 0.587 * g + 0.114 * b > 200;
 }
 
 

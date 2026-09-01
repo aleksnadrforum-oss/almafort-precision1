@@ -101,6 +101,18 @@ function OrderCard() {
 
       {msg && <div className="rounded-lg border bg-background px-4 py-3 text-sm">{msg}</div>}
 
+      {/* Комментарий клиента — триггер нестандартных условий, выводим первым и только при наличии. */}
+      {typeof order.comment === "string" && order.comment.trim() !== "" && (
+        <div className="flex gap-3 rounded-md border border-amber-200 bg-amber-50 p-3 text-amber-900">
+          <MessageSquare className="mt-0.5 size-4 shrink-0" strokeWidth={1.75} />
+          <div className="min-w-0">
+            <p className="text-sm font-semibold">Комментарий клиента к заявке</p>
+            <p className="mt-1 whitespace-pre-line text-sm">{order.comment.trim()}</p>
+          </div>
+        </div>
+      )}
+
+
       <div className="grid gap-6 lg:grid-cols-[1.6fr_1fr]">
         <div className="space-y-6">
           <div className="rounded-xl border bg-background p-6">

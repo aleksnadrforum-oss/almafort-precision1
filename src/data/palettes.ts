@@ -117,6 +117,13 @@ export const TUBE_PLUG_PALETTE: Swatch[] = [{ hex: "#000000", label: "Чёрны
 
 export const BLACK_PALETTE: Swatch[] = [{ hex: "#000000", label: "Чёрный" }];
 
+/** Автокомпоненты: базовый чёрный + технический серый. */
+export const TOWBAR_PALETTE: Swatch[] = [
+  { hex: "#000000", label: "Чёрный (Базовый)" },
+  { hex: "#6b7280", label: "Серый" },
+];
+
+
 /** SKU → палитра. Данные, а не хардкод в компонентах. */
 export const SKU_PALETTES: Record<string, Swatch[]> = {
   "KAN-CAP-R": BLACK_PALETTE,

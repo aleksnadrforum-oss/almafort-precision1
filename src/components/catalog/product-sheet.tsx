@@ -641,23 +641,6 @@ export function ProductSheet({
                   )}
                 </ClientOnly>
 
-                {product.image_url && (
-                  <figure className="mt-4 overflow-hidden rounded-lg border bg-white">
-                    <img
-                      src={product.image_url}
-                      alt={`Фото изделия ${product.name}`}
-                      loading="lazy"
-                      className="mx-auto block max-h-[280px] w-full object-contain"
-                    />
-                    <figcaption className="border-t px-3 py-2 text-xs text-muted-foreground">
-                      Фото готового изделия (шар + ножка в сборе)
-                    </figcaption>
-                  </figure>
-                )}
-
-
-
-
                 <div className="mt-4">
                   <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     Цвет детали

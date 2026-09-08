@@ -126,25 +126,17 @@ function ProxyModel({
 }) {
   const mat = <meshPhysicalMaterial color={color} wireframe={wire} {...pbrProps(material)} />;
 
-  // Держатель колпачка фаркопа — шар Ø50 мм на конической ножке с фланцем
+  // Держатель колпачка фаркопа «Каршар» KR-50 — реконструкция по фото изделия:
+  // шар Ø50 мм со срезанной макушкой, плавно переходящий в прямую ножку Ø34 мм.
   if (category.includes("фарк")) {
     return (
-      <group>
-        <mesh castShadow position={[0, 0.45, 0]}>
-          <sphereGeometry args={[0.62, 48, 32]} />
-          {mat}
-        </mesh>
-        <mesh position={[0, -0.15, 0]}>
-          <cylinderGeometry args={[0.28, 0.44, 0.62, 40]} />
-          {mat}
-        </mesh>
-        <mesh position={[0, -0.52, 0]}>
-          <cylinderGeometry args={[0.6, 0.66, 0.16, 48]} />
-          {mat}
-        </mesh>
-      </group>
+      <mesh castShadow receiveShadow>
+        <latheGeometry args={[TOWBAR_PROFILE, 72]} />
+        {mat}
+      </mesh>
     );
   }
+
   if (category.includes("Колпач")) {
 
     return (

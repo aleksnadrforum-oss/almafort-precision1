@@ -67,6 +67,8 @@ export const CATEGORY_TREE: Array<{ parent: string; children: string[] }> = [
     children: ["Комплектующие для ДПК", "Для производства сэндвич-панелей"],
   },
   { parent: "Тара и упаковка", children: ["Комплектующие для канистр"] },
+  { parent: "Автокомпоненты", children: ["Комплектующие для фаркопов"] },
+
   { parent: "Профессиональные услуги", children: ["Услуги производства"] },
 ];
 

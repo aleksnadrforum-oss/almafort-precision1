@@ -162,6 +162,8 @@ export const SKU_PALETTES: Record<string, Swatch[]> = {
   "ZGV-D22": TUBE_PLUG_PALETTE,
   "ZGV-D25": TUBE_PLUG_PALETTE,
   "KREPSS-PRO": KREPSS_PALETTE,
+  "KR-50": TOWBAR_PALETTE,
+
 };
 
 /** Категория → палитра (fallback для будущих SKU без явного маппинга). */

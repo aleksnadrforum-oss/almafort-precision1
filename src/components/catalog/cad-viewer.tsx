@@ -110,9 +110,40 @@ function GltfModel({
 }
 
 /**
+ * Профиль вращения держателя KR-50 (мм → условные единицы сцены).
+ * Строится по реальным габаритам изделия: ножка Ø34×22 мм, шар Ø50 мм,
+ * срезанная макушка на высоте 63 мм, общая высота 65 мм.
+ */
+const TOWBAR_PROFILE: THREE.Vector2[] = (() => {
+  const S = 0.0248; // масштаб мм → сцена (шар ≈ 1.24 ед. в диаметре)
+  const H = 65; // общая высота, мм
+  const R = 25; // радиус шара, мм
+  const rSkirt = 17; // радиус ножки, мм
+  const hSkirt = 22; // высота ножки, мм
+  const yc = hSkirt + Math.sqrt(R * R - rSkirt * rSkirt); // центр шара, мм
+  const yFlat = 63; // высота среза макушки, мм
+  const pts: THREE.Vector2[] = [
+    new THREE.Vector2(0, 0),
+    new THREE.Vector2(rSkirt, 0),
+    new THREE.Vector2(rSkirt, hSkirt),
+  ];
+  const a0 = Math.asin((hSkirt - yc) / R);
+  const a1 = Math.asin((yFlat - yc) / R);
+  const STEPS = 40;
+  for (let i = 1; i <= STEPS; i += 1) {
+    const a = a0 + ((a1 - a0) * i) / STEPS;
+    pts.push(new THREE.Vector2(R * Math.cos(a), yc + R * Math.sin(a)));
+  }
+  pts.push(new THREE.Vector2(0, yFlat));
+  // Центрируем по высоте и переводим в единицы сцены.
+  return pts.map((p) => new THREE.Vector2(p.x * S, (p.y - H / 2) * S));
+})();
+
+/**
  * Параметрический прокси-меш: используется, пока в S3 нет Draco-модели артикула.
  * Геометрия строится по категории, поэтому вьювер всегда показывает узел, а не пустой холст.
  */
+
 function ProxyModel({
   category,
   wire,
@@ -126,25 +157,17 @@ function ProxyModel({
 }) {
   const mat = <meshPhysicalMaterial color={color} wireframe={wire} {...pbrProps(material)} />;
 
-  // Держатель колпачка фаркопа — шар Ø50 мм на конической ножке с фланцем
+  // Держатель колпачка фаркопа «Каршар» KR-50 — реконструкция по фото изделия:
+  // шар Ø50 мм со срезанной макушкой, плавно переходящий в прямую ножку Ø34 мм.
   if (category.includes("фарк")) {
     return (
-      <group>
-        <mesh castShadow position={[0, 0.45, 0]}>
-          <sphereGeometry args={[0.62, 48, 32]} />
-          {mat}
-        </mesh>
-        <mesh position={[0, -0.15, 0]}>
-          <cylinderGeometry args={[0.28, 0.44, 0.62, 40]} />
-          {mat}
-        </mesh>
-        <mesh position={[0, -0.52, 0]}>
-          <cylinderGeometry args={[0.6, 0.66, 0.16, 48]} />
-          {mat}
-        </mesh>
-      </group>
+      <mesh castShadow receiveShadow>
+        <latheGeometry args={[TOWBAR_PROFILE, 72]} />
+        {mat}
+      </mesh>
     );
   }
+
   if (category.includes("Колпач")) {
 
     return (

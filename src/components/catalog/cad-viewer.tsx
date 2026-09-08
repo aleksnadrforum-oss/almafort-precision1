@@ -126,7 +126,27 @@ function ProxyModel({
 }) {
   const mat = <meshPhysicalMaterial color={color} wireframe={wire} {...pbrProps(material)} />;
 
+  // Держатель колпачка фаркопа — шар Ø50 мм на конической ножке с фланцем
+  if (category.includes("фарк")) {
+    return (
+      <group>
+        <mesh castShadow position={[0, 0.45, 0]}>
+          <sphereGeometry args={[0.62, 48, 32]} />
+          {mat}
+        </mesh>
+        <mesh position={[0, -0.15, 0]}>
+          <cylinderGeometry args={[0.28, 0.44, 0.62, 40]} />
+          {mat}
+        </mesh>
+        <mesh position={[0, -0.52, 0]}>
+          <cylinderGeometry args={[0.6, 0.66, 0.16, 48]} />
+          {mat}
+        </mesh>
+      </group>
+    );
+  }
   if (category.includes("Колпач")) {
+
     return (
       <group>
         <mesh castShadow>

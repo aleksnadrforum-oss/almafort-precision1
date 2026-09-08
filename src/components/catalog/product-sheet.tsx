@@ -14,7 +14,9 @@ import {
   SUPPORT_PALETTE,
   METAL_FRAME_SUPPORT_PALETTE,
   TUBE_PLUG_PALETTE,
+  TOWBAR_PALETTE,
   BLACK_PALETTE,
+
   baseColorForProduct as baseColorFromData,
   paletteForProduct as paletteFromData,
   type Swatch,
@@ -220,8 +222,19 @@ const TETRAHEDRON_PROFILE: PartProfile = {
   palette: BLACK_PALETTE,
 };
 
+/** Держатель колпачка фаркопа «Каршар» — автоаксессуар, матовый ударопрочный пластик. */
+const TOWBAR_HOLDER_PROFILE: PartProfile = {
+  colorLabel: "Чёрный (Базовый)",
+  material: { roughness: 0.55, metalness: 0.0 },
+  description:
+    "Функциональный парковочный шар для фиксации защитного колпачка фаркопа на раме легкового прицепа. Решает проблему хранения смазанного колпачка после расцепки автомобиля и прицепа, предотвращая загрязнение рук и багажного отделения. Изделие монтируется на дышло прицепа в любом удобном положении (вертикально или горизонтально). Предусмотрено скрытое сквозное отверстие под саморез со сверлом. После установки крепёжный узел закрывается аккуратной декоративной заглушкой. Держатель изготавливается из высокопрочного модифицированного полимера, устойчивого к дорожным реагентам, автомобильным смазкам, сильным вибрациям и перепадам температур.",
+  palette: TOWBAR_PALETTE,
+};
+
 const SKU_PROFILES: Record<string, PartProfile> = {
+  "KR-50": TOWBAR_HOLDER_PROFILE,
   "KAN-CAP-R": CANISTER_CAP_PROFILE,
+
   "TG-080": TETRAHEDRON_PROFILE,
   "TG-100": TETRAHEDRON_PROFILE,
   "TG-150": TETRAHEDRON_PROFILE,

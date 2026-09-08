@@ -14,7 +14,9 @@ import {
   SUPPORT_PALETTE,
   METAL_FRAME_SUPPORT_PALETTE,
   TUBE_PLUG_PALETTE,
+  TOWBAR_PALETTE,
   BLACK_PALETTE,
+
   baseColorForProduct as baseColorFromData,
   paletteForProduct as paletteFromData,
   type Swatch,

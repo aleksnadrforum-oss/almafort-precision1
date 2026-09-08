@@ -110,9 +110,40 @@ function GltfModel({
 }
 
 /**
+ * Профиль вращения держателя KR-50 (мм → условные единицы сцены).
+ * Строится по реальным габаритам изделия: ножка Ø34×22 мм, шар Ø50 мм,
+ * срезанная макушка на высоте 63 мм, общая высота 65 мм.
+ */
+const TOWBAR_PROFILE: THREE.Vector2[] = (() => {
+  const S = 0.0248; // масштаб мм → сцена (шар ≈ 1.24 ед. в диаметре)
+  const H = 65; // общая высота, мм
+  const R = 25; // радиус шара, мм
+  const rSkirt = 17; // радиус ножки, мм
+  const hSkirt = 22; // высота ножки, мм
+  const yc = hSkirt + Math.sqrt(R * R - rSkirt * rSkirt); // центр шара, мм
+  const yFlat = 63; // высота среза макушки, мм
+  const pts: THREE.Vector2[] = [
+    new THREE.Vector2(0, 0),
+    new THREE.Vector2(rSkirt, 0),
+    new THREE.Vector2(rSkirt, hSkirt),
+  ];
+  const a0 = Math.asin((hSkirt - yc) / R);
+  const a1 = Math.asin((yFlat - yc) / R);
+  const STEPS = 40;
+  for (let i = 1; i <= STEPS; i += 1) {
+    const a = a0 + ((a1 - a0) * i) / STEPS;
+    pts.push(new THREE.Vector2(R * Math.cos(a), yc + R * Math.sin(a)));
+  }
+  pts.push(new THREE.Vector2(0, yFlat));
+  // Центрируем по высоте и переводим в единицы сцены.
+  return pts.map((p) => new THREE.Vector2(p.x * S, (p.y - H / 2) * S));
+})();
+
+/**
  * Параметрический прокси-меш: используется, пока в S3 нет Draco-модели артикула.
  * Геометрия строится по категории, поэтому вьювер всегда показывает узел, а не пустой холст.
  */
+
 function ProxyModel({
   category,
   wire,

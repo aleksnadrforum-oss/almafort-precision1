@@ -381,6 +381,11 @@ const SKU_SPEC_ROWS: Record<string, [string, string][]> = {
   ],
 };
 
+/** Реальные фотографии товаров (файлы в public/products). */
+const SKU_IMAGES: Record<string, string> = {
+  "KR-50": "/products/kr-50.jpg",
+};
+
 export const PRODUCTS: Product[] = raw.map(
   ([sku, name, parent, category, dims, color, price, qty, weight, volume, tier1, tier2]) => {
     const spec = SKU_SPECS[sku];
@@ -412,7 +417,7 @@ export const PRODUCTS: Product[] = raw.map(
     price5000: discount(price, TIER2_DISCOUNT),
     tier1Qty: tier1 ?? DEFAULT_TIER1,
     tier2Qty: tier2 ?? DEFAULT_TIER2,
-    image_url: null,
+    image_url: SKU_IMAGES[sku] ?? null,
     engineering_assets: {
       // Draco-сжатая модель появляется здесь, как только 3D-generalist выкладывает её в S3.
       model_glb_url: null,

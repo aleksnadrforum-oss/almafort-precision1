@@ -382,6 +382,11 @@ const SKU_SPEC_ROWS: Record<string, [string, string][]> = {
 };
 
 /** Реальные фотографии товаров (файлы в public/products). */
+/** Настоящие GLB-модели, сконвертированные из STEP заказчика (public/cad/). */
+const SKU_GLB: Record<string, string> = {
+  "ZGV-25x25": "/cad/ZGV-25x25.glb",
+};
+
 const SKU_IMAGES: Record<string, string> = {
   "KR-50": "/products/kr-50.jpg",
 };

@@ -106,8 +106,10 @@ function GltfModel({
     });
     return s;
   }, [scene, wire, color, material]);
-  // STEP-модели строятся в системе Z-up, а сцена — Y-up: ставим деталь вертикально.
-  return <primitive object={cloned} rotation={[-Math.PI / 2, 0, 0]} />;
+  // STEP-модели строятся в системе Z-up, а сцена — Y-up. Деталь смоделирована
+  // шляпой вниз (z=0 — широкий фланец), поэтому дополнительно переворачиваем:
+  // rotation +90° по X ставит шляпу наверх.
+  return <primitive object={cloned} rotation={[Math.PI / 2, 0, 0]} />;
 }
 
 /**

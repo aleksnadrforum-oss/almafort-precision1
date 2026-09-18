@@ -109,22 +109,8 @@ function GltfModel({
   // STEP-модели строятся в системе Z-up, а сцена — Y-up. Деталь смоделирована
   // шляпой вниз (z=0 — широкий фланец), поэтому дополнительно переворачиваем:
   // rotation +90° по X ставит шляпу наверх. Поднимаем чуть выше центра экрана.
-  // Масштаб нормализуем: самый длинный габарит детали приводим к ~25 ед. сцены,
-  // чтобы крупные артикулы (40×60 и больше) не вылезали за кадр.
-  const scale = useMemo(() => {
-    const box = new THREE.Box3().setFromObject(cloned);
-    const size = box.getSize(new THREE.Vector3());
-    const maxDim = Math.max(size.x, size.y, size.z);
-    return maxDim > 0 ? 25 / maxDim : 1;
-  }, [cloned]);
-  return (
-    <primitive
-      object={cloned}
-      rotation={[Math.PI / 2, 0, 0]}
-      scale={scale}
-      position={[0, 0.22, 0]}
-    />
-  );
+  // Масштаб 0.05 (мм → ед. сцены) запечён в GLB при конвертации.
+  return <primitive object={cloned} rotation={[Math.PI / 2, 0, 0]} position={[0, 0.22, 0]} />;
 }
 
 /**

@@ -419,8 +419,8 @@ export const PRODUCTS: Product[] = raw.map(
     tier2Qty: tier2 ?? DEFAULT_TIER2,
     image_url: SKU_IMAGES[sku] ?? null,
     engineering_assets: {
-      // Draco-сжатая модель появляется здесь, как только 3D-generalist выкладывает её в S3.
-      model_glb_url: null,
+      // Настоящие модели лежат в public/cad/<SKU>.glb (конвертация из STEP заказчика).
+      model_glb_url: SKU_GLB[sku] ?? null,
       model_step_url: `/api/public/cad/${sku}/step`,
       model_dwg_url: `/api/public/cad/${sku}/dwg`,
       passport_pdf_url: `/api/public/cad/${sku}/pdf`,

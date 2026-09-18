@@ -65,6 +65,24 @@ export const Route = createFileRoute("/api/public/cad/$")({
 
         const fileName = `ALMAFORT_${product.sku}_${product.name.replace(/[^\p{L}\p{N}]+/gu, "_")}.${ext}`;
 
+        // Настоящий файл из public/cad/<SKU>.<ext> — приоритет над S3 и заглушками.
+        try {
+          const { readFile } = await import("node:fs/promises");
+          const { join } = await import("node:path");
+          const local = await readFile(join(process.cwd(), "public", "cad", `${product.sku}.${ext}`));
+          return new Response(new Uint8Array(local), {
+            status: 200,
+            headers: {
+              "Content-Type": MIME[ext],
+              "Content-Disposition": `attachment; filename="ALMAFORT_${product.sku}.${ext}"; filename*=UTF-8''${encodeURIComponent(fileName)}`,
+              "Cache-Control": "public, max-age=3600",
+              "Access-Control-Allow-Origin": "*",
+            },
+          });
+        } catch {
+          /* локального файла нет — идём дальше */
+        }
+
         // Боевой путь: файл лежит в S3 (almafort-cad-assets) с Content-Disposition
         // в метаданных объекта — просто редиректим браузер на объект.
         const bucket = process.env["S3_CAD_BUCKET"] ?? process.env["S3_BUCKET"];

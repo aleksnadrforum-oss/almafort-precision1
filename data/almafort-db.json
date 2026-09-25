@@ -199,7 +199,7 @@
     {
       "id": "fbf6c744-4069-4a56-83b3-86c803ea1774",
       "created_at": "2026-08-22T14:34:50.592Z",
-      "updated_at": "2026-09-25T10:49:12.691Z",
+      "updated_at": "2026-09-25T10:55:31.016Z",
       "user_id": "7602a0fc-f63d-4482-9aa3-c50b6e3a7677",
       "lines": [
         {
@@ -233,6 +233,10 @@
         {
           "sku": "TG-100",
           "quantity": 1
+        },
+        {
+          "sku": "ZGV-25x25",
+          "quantity": 1000
         }
       ]
     },
@@ -817,109 +821,109 @@
     {
       "id": "837c201f-0910-4c8b-82f2-945ccdbc4001",
       "created_at": "2026-09-01T06:49:42.030Z",
-      "updated_at": "2026-09-01T06:49:42.030Z",
+      "updated_at": "2026-09-25T10:51:44.353Z",
       "hold_id": "HOLD-MTIB4NM6",
       "sku": "ZGD-EV",
       "quantity": 50,
       "organization_id": "7701234567",
       "locked_by": null,
-      "status": "active",
+      "status": "expired",
       "expires_at": "2026-09-04T06:49:42.030Z"
     },
     {
       "id": "f8b3f382-2d6b-4b91-b61c-1f36485f966b",
       "created_at": "2026-09-01T07:19:54.999Z",
-      "updated_at": "2026-09-01T07:19:54.999Z",
+      "updated_at": "2026-09-25T10:51:44.355Z",
       "hold_id": "HOLD-MTIC7IIF",
       "sku": "ZGV-20x40",
       "quantity": 100,
       "organization_id": "5555555555",
       "locked_by": "7602a0fc-f63d-4482-9aa3-c50b6e3a7677",
-      "status": "active",
+      "status": "expired",
       "expires_at": "2026-09-04T07:19:54.999Z"
     },
     {
       "id": "fded7680-7187-4f18-a47b-f5aede3d967c",
       "created_at": "2026-09-01T07:19:55.004Z",
-      "updated_at": "2026-09-01T07:19:55.004Z",
+      "updated_at": "2026-09-25T10:51:44.358Z",
       "hold_id": "HOLD-MTIC7IIF",
       "sku": "ZGD-EX",
       "quantity": 10000,
       "organization_id": "5555555555",
       "locked_by": "7602a0fc-f63d-4482-9aa3-c50b6e3a7677",
-      "status": "active",
+      "status": "expired",
       "expires_at": "2026-09-04T07:19:54.999Z"
     },
     {
       "id": "125e7728-15f1-4b90-97a4-97b9faaa2637",
       "created_at": "2026-09-01T07:19:55.009Z",
-      "updated_at": "2026-09-01T07:19:55.009Z",
+      "updated_at": "2026-09-25T10:51:44.362Z",
       "hold_id": "HOLD-MTIC7IIF",
       "sku": "ZGD-EV",
       "quantity": 5000,
       "organization_id": "5555555555",
       "locked_by": "7602a0fc-f63d-4482-9aa3-c50b6e3a7677",
-      "status": "active",
+      "status": "expired",
       "expires_at": "2026-09-04T07:19:54.999Z"
     },
     {
       "id": "9de61e44-0f8e-42eb-8f48-68cb274558f9",
       "created_at": "2026-09-01T07:19:55.011Z",
-      "updated_at": "2026-09-01T07:19:55.011Z",
+      "updated_at": "2026-09-25T10:51:44.364Z",
       "hold_id": "HOLD-MTIC7IIF",
       "sku": "ZGD-EV",
       "quantity": 5000,
       "organization_id": "5555555555",
       "locked_by": "7602a0fc-f63d-4482-9aa3-c50b6e3a7677",
-      "status": "active",
+      "status": "expired",
       "expires_at": "2026-09-04T07:19:54.999Z"
     },
     {
       "id": "9fe4e5f4-d965-49b6-922a-c3e7d1854652",
       "created_at": "2026-09-01T07:19:55.022Z",
-      "updated_at": "2026-09-01T07:19:55.022Z",
+      "updated_at": "2026-09-25T10:51:44.369Z",
       "hold_id": "HOLD-MTIC7IIF",
       "sku": "ZGD-EV",
       "quantity": 10000,
       "organization_id": "5555555555",
       "locked_by": "7602a0fc-f63d-4482-9aa3-c50b6e3a7677",
-      "status": "active",
+      "status": "expired",
       "expires_at": "2026-09-04T07:19:54.999Z"
     },
     {
       "id": "ece28416-07c4-45b2-acef-dc1fbb245871",
       "created_at": "2026-09-01T07:19:55.024Z",
-      "updated_at": "2026-09-01T07:19:55.024Z",
+      "updated_at": "2026-09-25T10:51:44.373Z",
       "hold_id": "HOLD-MTIC7IIF",
       "sku": "ZGD-EV",
       "quantity": 15000,
       "organization_id": "5555555555",
       "locked_by": "7602a0fc-f63d-4482-9aa3-c50b6e3a7677",
-      "status": "active",
+      "status": "expired",
       "expires_at": "2026-09-04T07:19:54.999Z"
     },
     {
       "id": "88e11500-a293-4760-82cb-e34f83785c47",
       "created_at": "2026-09-01T07:19:55.025Z",
-      "updated_at": "2026-09-01T07:19:55.025Z",
+      "updated_at": "2026-09-25T10:51:44.377Z",
       "hold_id": "HOLD-MTIC7IIF",
       "sku": "ZGD-EV",
       "quantity": 15000,
       "organization_id": "5555555555",
       "locked_by": "7602a0fc-f63d-4482-9aa3-c50b6e3a7677",
-      "status": "active",
+      "status": "expired",
       "expires_at": "2026-09-04T07:19:54.999Z"
     },
     {
       "id": "ad586b79-947f-48c8-ae54-8e25d19112b4",
       "created_at": "2026-09-01T07:19:55.027Z",
-      "updated_at": "2026-09-01T07:19:55.027Z",
+      "updated_at": "2026-09-25T10:51:44.379Z",
       "hold_id": "HOLD-MTIC7IIF",
       "sku": "OP-H50",
       "quantity": 500,
       "organization_id": "5555555555",
       "locked_by": "7602a0fc-f63d-4482-9aa3-c50b6e3a7677",
-      "status": "active",
+      "status": "expired",
       "expires_at": "2026-09-04T07:19:54.999Z"
     }
   ],

@@ -5,6 +5,7 @@ type Ext = "step" | "dwg" | "pdf" | "glb" | "sldprt";
 
 /** Понятные имена скачиваемых файлов по артикулу. */
 const NICE_NAME: Record<string, string> = {
+  "OP-H20": "Opora-mebelnaya-h20",
   "OP-H35": "Opora-mebelnaya-h35",
   "OP-H50": "Opora-mebelnaya-h50",
 };

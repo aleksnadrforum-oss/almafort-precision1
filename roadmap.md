@@ -1,3 +1,4 @@
 - [x] Починить dist-check: генерировать dist/client/index.html после сборки
 - [x] Подключить и проверить реальные GLB, STEP и SLDPRT для OP-H50
 - [x] Подключить и проверить реальные GLB, STEP и SLDPRT для OP-H35
+- [ ] Подключить и проверить реальные GLB, STEP и SLDPRT для OP-H20

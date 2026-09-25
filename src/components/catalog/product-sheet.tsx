@@ -748,7 +748,7 @@ export function ProductSheet({
                     <a
                       key={fmt}
                       href={href}
-                      download
+                      download={`${product.sku}.${fmt}`}
                       onClick={() => trackCadDownload(product.sku, fmt)}
                       className="flex items-center gap-3 rounded-sm border border-border px-4 py-3 text-sm font-medium text-foreground transition-colors hover:border-primary hover:text-primary"
                     >

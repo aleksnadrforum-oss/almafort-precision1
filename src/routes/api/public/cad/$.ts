@@ -74,7 +74,7 @@ export const Route = createFileRoute("/api/public/cad/$")({
             status: 200,
             headers: {
               "Content-Type": MIME[ext],
-              "Content-Disposition": `attachment; filename="ALMAFORT_${product.sku}.${ext}"; filename*=UTF-8''${encodeURIComponent(fileName)}`,
+              "Content-Disposition": `attachment; filename="${product.sku}.${ext}"`,
               "Cache-Control": "public, max-age=3600",
               "Access-Control-Allow-Origin": "*",
             },

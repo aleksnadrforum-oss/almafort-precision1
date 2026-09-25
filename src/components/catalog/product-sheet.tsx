@@ -751,7 +751,7 @@ export function ProductSheet({
                     <a
                       key={fmt}
                       href={href}
-                      download={`${product.sku === "OP-H15" ? "Opora-mebelnaya-h15" : product.sku === "OP-H20" ? "Opora-mebelnaya-h20" : product.sku === "OP-H35" ? "Opora-mebelnaya-h35" : product.sku === "OP-H50" ? "Opora-mebelnaya-h50" : product.sku}.${fmt}`}
+                      download={`${product.sku === "KR-50" ? "Derzhatel-kolpachka-Karshar-KR-50" : product.sku === "OP-H15" ? "Opora-mebelnaya-h15" : product.sku === "OP-H20" ? "Opora-mebelnaya-h20" : product.sku === "OP-H35" ? "Opora-mebelnaya-h35" : product.sku === "OP-H50" ? "Opora-mebelnaya-h50" : product.sku}.${fmt}`}
                       onClick={() => trackCadDownload(product.sku, fmt)}
                       className="flex items-center gap-3 rounded-sm border border-border px-4 py-3 text-sm font-medium text-foreground transition-colors hover:border-primary hover:text-primary"
                     >

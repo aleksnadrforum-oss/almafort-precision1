@@ -799,7 +799,7 @@ export function ProductSheet({
                         { key: "zip-step", fmt: "step", label: "Скачать все STEP (ZIP)", hint: "М8 · глухая · 104 · шайба", Icon: Layers, href: "/cad/KREPSS-PRO.zip", name: "KREPSS-PRO-STEP.zip" },
                         { key: "zip-sldprt", fmt: "sldprt", label: "Исходники SLDPRT (ZIP)", hint: "М8 · глухая · шайба", Icon: Layers, href: "/cad/KREPSS-PRO-SLDPRT.zip", name: "KREPSS-PRO-SLDPRT.zip" },
                       );
-                      if (v.sldprt) rows.push({ key: "v-sldprt", fmt: "sldprt", label: `Скачать модель SLDPRT · ${v.label}`, hint: "SolidWorks", Icon: Layers, href: `/cad/KREPSS-${v.id}.sldprt`, name: `KREPSS-${v.id}.sldprt` });
+                      if (v.sldprt) rows.splice(1, 0, { key: "v-sldprt", fmt: "sldprt", label: `Скачать модель SLDPRT · ${v.label}`, hint: "SolidWorks", Icon: Layers, href: `/cad/KREPSS-${v.id}.sldprt`, name: `KREPSS-${v.id}.sldprt` });
                     } else {
                       rows.push({ key: "step", fmt: "step", label: "Скачать модель STEP", hint: "Твердотельная 3D", Icon: Layers, href: product.engineering_assets.model_step_url, name: `${base}.step` });
                     }

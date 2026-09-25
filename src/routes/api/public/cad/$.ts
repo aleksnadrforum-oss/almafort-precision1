@@ -4,7 +4,10 @@ import { PRODUCTS } from "@/data/catalog";
 type Ext = "step" | "dwg" | "pdf" | "glb" | "sldprt";
 
 /** Понятные имена скачиваемых файлов по артикулу. */
-const NICE_NAME: Record<string, string> = { "OP-H50": "Opora-mebelnaya-h50" };
+const NICE_NAME: Record<string, string> = {
+  "OP-H35": "Opora-mebelnaya-h35",
+  "OP-H50": "Opora-mebelnaya-h50",
+};
 
 const MIME: Record<Ext, string> = {
   step: "model/step",

@@ -76,6 +76,13 @@ type PartProfile = {
 };
 
 /** Заглушки с реальными STL: мм-масштаб сцены и индивидуальные лимиты зума. */
+/** Исполнения КРЕПСС: GLB/STEP в public/cad/KREPSS-<id>.*; у «М8 104» нет SLDPRT. */
+const KREPSS_VARIANTS = [
+  { id: "M8", label: "М8", sldprt: true },
+  { id: "M8-gluhaya", label: "М8 глухая", sldprt: true },
+  { id: "M8-104", label: "М8 104", sldprt: false },
+] as const;
+
 const PLUG_MM: Record<string, { min: number; max: number }> = {
   "ZGV-40x60": { min: 1.8, max: 6 },
   "ZGV-25x25": { min: 1.0, max: 3.8 },
@@ -392,6 +399,8 @@ export function ProductSheet({
 }) {
   const [city, setCity] = useState<CityValue>({ city: "Москва", fiasId: null });
   const [batch, setBatch] = useState(1000);
+  const isKrepss = product?.sku === "KREPSS-PRO";
+  const [krepssVariant, setKrepssVariant] = useState(0);
   const [quotes, setQuotes] = useState<ShippingQuote[]>([]);
   const [calcState, setCalcState] = useState<"idle" | "loading" | "ready" | "failed">("idle");
   const assets = useAssetGroups();
@@ -633,10 +642,41 @@ export function ProductSheet({
 
             <div className="grid gap-8 lg:grid-cols-2">
               <div>
+                {isKrepss && (
+                  <div className="mb-3">
+                    <div role="radiogroup" aria-label="Исполнение" className="flex flex-wrap gap-2">
+                      {KREPSS_VARIANTS.map((v, i) => (
+                        <button
+                          key={v.id}
+                          type="button"
+                          role="radio"
+                          aria-checked={i === krepssVariant}
+                          onClick={() => setKrepssVariant(i)}
+                          className={`rounded-sm border px-3 py-1.5 text-sm font-medium transition-colors ${
+                            i === krepssVariant
+                              ? "border-primary bg-primary text-primary-foreground"
+                              : "border-border text-foreground hover:border-primary"
+                          }`}
+                        >
+                          {v.label}
+                        </button>
+                      ))}
+                    </div>
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      Разнесённый демонстрационный вид: корпус и шайба показаны отдельно, без
+                      точного взаимного положения. Шпилька в комплект не входит.
+                    </p>
+                  </div>
+                )}
                 <ClientOnly fallback={<CadViewerPlaceholder />}>
                   {CadViewer ? (
                     <CadViewer
-                      glbUrl={product.engineering_assets.model_glb_url}
+                      key={isKrepss ? KREPSS_VARIANTS[krepssVariant]!.id : product.sku}
+                      glbUrl={
+                        isKrepss
+                          ? `/cad/KREPSS-${KREPSS_VARIANTS[krepssVariant]!.id}.glb`
+                          : product.engineering_assets.model_glb_url
+                      }
                       category={product.category}
                       color={partColor}
                       material={
@@ -748,23 +788,34 @@ export function ProductSheet({
                   <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     CAD-ассеты для проектировщика · без регистрации
                   </p>
-                  {(
-                    [
-                      ["step", "Скачать модель STEP", "Твердотельная 3D", Layers, product.engineering_assets.model_step_url],
-                      ["dwg", "Скачать чертёж DWG", "AutoCAD 2D", Ruler, product.engineering_assets.model_dwg_url],
-                      ["pdf", "Технический паспорт PDF", "Схема, ГОСТы, допуски", FileText, product.engineering_assets.passport_pdf_url],
-                      ...(PLUG_MM[product.sku]
-                        ? ([["stl", "Скачать модель STL", "Полигональная сетка", Layers, `/cad/${product.sku}.stl`]] as const)
-                        : []),
-                      ...(["OP-H15", "OP-H20", "OP-H35", "OP-H50"].includes(product.sku)
-                        ? ([["sldprt", "Скачать модель SLDPRT", "SolidWorks", Layers, `/api/public/cad/${product.sku}/sldprt`]] as const)
-                        : []),
-                    ] as const
-                  ).map(([fmt, label, hint, Icon, href]) => (
+                  {(() => {
+                    type Row = { key: string; fmt: "step" | "dwg" | "pdf" | "stl" | "sldprt"; label: string; hint: string; Icon: typeof Layers; href: string; name: string };
+                    const base = PLUG_MM[product.sku] ? `Zaglushka-${product.sku.slice(4)}` : product.sku === "KR-50" ? "Derzhatel-kolpachka-Karshar-KR-50" : product.sku === "OP-H15" ? "Opora-mebelnaya-h15" : product.sku === "OP-H20" ? "Opora-mebelnaya-h20" : product.sku === "OP-H35" ? "Opora-mebelnaya-h35" : product.sku === "OP-H50" ? "Opora-mebelnaya-h50" : product.sku;
+                    const rows: Row[] = [];
+                    if (isKrepss) {
+                      const v = KREPSS_VARIANTS[krepssVariant]!;
+                      rows.push(
+                        { key: "zip-step", fmt: "step", label: "Скачать все STEP (ZIP)", hint: "М8 · глухая · 104 · шайба", Icon: Layers, href: "/cad/KREPSS-PRO.zip", name: "KREPSS-PRO-STEP.zip" },
+                        { key: "zip-sldprt", fmt: "sldprt", label: "Исходники SLDPRT (ZIP)", hint: "М8 · глухая · шайба", Icon: Layers, href: "/cad/KREPSS-PRO-SLDPRT.zip", name: "KREPSS-PRO-SLDPRT.zip" },
+                        { key: "v-step", fmt: "step", label: `STEP исполнения «${v.label}»`, hint: "Твердотельная 3D", Icon: Layers, href: `/cad/KREPSS-${v.id}.step`, name: `KREPSS-${v.id}.step` },
+                      );
+                      if (v.sldprt) rows.push({ key: "v-sldprt", fmt: "sldprt", label: `SLDPRT исполнения «${v.label}»`, hint: "SolidWorks", Icon: Layers, href: `/cad/KREPSS-${v.id}.sldprt`, name: `KREPSS-${v.id}.sldprt` });
+                      rows.push({ key: "sh-step", fmt: "step", label: "STEP шайбы", hint: "Твердотельная 3D", Icon: Layers, href: "/cad/KREPSS-shayba.step", name: "KREPSS-shayba.step" });
+                    } else {
+                      rows.push({ key: "step", fmt: "step", label: "Скачать модель STEP", hint: "Твердотельная 3D", Icon: Layers, href: product.engineering_assets.model_step_url, name: `${base}.step` });
+                    }
+                    rows.push(
+                      { key: "dwg", fmt: "dwg", label: "Скачать чертёж DWG", hint: "AutoCAD 2D", Icon: Ruler, href: product.engineering_assets.model_dwg_url, name: `${base}.dwg` },
+                      { key: "pdf", fmt: "pdf", label: "Технический паспорт PDF", hint: "Схема, ГОСТы, допуски", Icon: FileText, href: product.engineering_assets.passport_pdf_url, name: `${base}.pdf` },
+                    );
+                    if (PLUG_MM[product.sku]) rows.push({ key: "stl", fmt: "stl", label: "Скачать модель STL", hint: "Полигональная сетка", Icon: Layers, href: `/cad/${product.sku}.stl`, name: `${base}.stl` });
+                    if (["OP-H15", "OP-H20", "OP-H35", "OP-H50"].includes(product.sku)) rows.push({ key: "sldprt", fmt: "sldprt", label: "Скачать модель SLDPRT", hint: "SolidWorks", Icon: Layers, href: `/api/public/cad/${product.sku}/sldprt`, name: `${base}.sldprt` });
+                    return rows;
+                  })().map(({ key, fmt, label, hint, Icon, href, name }) => (
                     <a
-                      key={fmt}
+                      key={key}
                       href={href}
-                      download={`${PLUG_MM[product.sku] ? `Zaglushka-${product.sku.slice(4)}` : product.sku === "KR-50" ? "Derzhatel-kolpachka-Karshar-KR-50" : product.sku === "OP-H15" ? "Opora-mebelnaya-h15" : product.sku === "OP-H20" ? "Opora-mebelnaya-h20" : product.sku === "OP-H35" ? "Opora-mebelnaya-h35" : product.sku === "OP-H50" ? "Opora-mebelnaya-h50" : product.sku}.${fmt}`}
+                      download={name}
                       onClick={() => trackCadDownload(product.sku, fmt)}
                       className="flex items-center gap-3 rounded-sm border border-border px-4 py-3 text-sm font-medium text-foreground transition-colors hover:border-primary hover:text-primary"
                     >

@@ -111,7 +111,7 @@ function GltfModel({
     // переносим центр Bounding Box в начало координат — вращение без «восьмёрки».
     const box = new THREE.Box3().setFromObject(s);
     const size = box.getSize(new THREE.Vector3());
-    const k = 1.7 / Math.max(size.x, size.y, size.z, 1e-6);
+    const k = 1.5 / Math.max(size.x, size.y, size.z, 1e-6);
     const c = box.getCenter(new THREE.Vector3());
     const wrap = new THREE.Group();
     s.position.sub(c);

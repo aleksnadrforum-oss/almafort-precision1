@@ -94,9 +94,9 @@ function GltfModel({
       if (m.isMesh && m.material && !Array.isArray(m.material)) {
         // Базовые материалы из GLB заменяем на физически корректный пластик.
         const src = m.material as unknown as { map?: Texture | null; aoMap?: Texture | null };
-        // Wireframe: неосвещённые линии строго в цвете детали (белая деталь — белая сетка).
+        // Wireframe: контрастные чёрные линии на белом фоне холста.
         const mat = wire
-          ? new THREE.MeshBasicMaterial({ color: new THREE.Color(color), wireframe: true })
+          ? new THREE.MeshBasicMaterial({ color: new THREE.Color("#000000"), wireframe: true })
           : new THREE.MeshPhysicalMaterial({
           color: new THREE.Color(color),
           wireframe: wire,
@@ -127,6 +127,16 @@ function GltfModel({
     wrap.scale.setScalar(k);
     return wrap;
   }, [scene, wire, color, material, mmScale]);
+  // Освобождаем материалы предыдущего меша (геометрия общая с кэшем useGLTF).
+  useEffect(
+    () => () => {
+      cloned.traverse((o) => {
+        const m = o as Mesh;
+        if (m.isMesh && m.material && !Array.isArray(m.material)) (m.material as THREE.Material).dispose();
+      });
+    },
+    [cloned],
+  );
   return <primitive object={cloned} />;
 }
 
@@ -177,7 +187,7 @@ function ProxyModel({
   material: PartMaterial;
 }) {
   const mat = wire ? (
-    <meshBasicMaterial color={color} wireframe />
+    <meshBasicMaterial color="#000000" wireframe />
   ) : (
     <meshPhysicalMaterial color={color} {...pbrProps(material)} />
   );
@@ -385,13 +395,13 @@ export function CadViewer({
 
   return (
     <div
-      className={`relative h-64 overflow-hidden rounded-lg transition-colors ${
-        wire && new THREE.Color(color).getHSL({ h: 0, s: 0, l: 0 }).l > 0.7 ? "bg-foreground" : "bg-surface"
+      className={`relative h-64 overflow-hidden rounded-lg ${
+        wire ? "bg-background" : "bg-surface"
       } sm:h-72 lg:h-[380px] ${
         grabbing ? "cursor-grabbing" : "cursor-grab"
       }`}
       // Жест вращения не должен прокручивать страницу под пальцем
-      style={{ touchAction: "none" }}
+      style={{ touchAction: "none", ...(wire ? { backgroundColor: "#ffffff" } : {}) }}
       onPointerUp={() => setGrabbing(false)}
       onPointerLeave={() => setGrabbing(false)}
     >

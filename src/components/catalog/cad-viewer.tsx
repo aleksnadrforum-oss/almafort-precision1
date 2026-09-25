@@ -401,7 +401,7 @@ export function CadViewer({
         grabbing ? "cursor-grabbing" : "cursor-grab"
       }`}
       // Жест вращения не должен прокручивать страницу под пальцем
-      style={{ touchAction: "none" }}
+      style={{ touchAction: "none", ...(wire ? { backgroundColor: "#ffffff" } : {}) }}
       onPointerUp={() => setGrabbing(false)}
       onPointerLeave={() => setGrabbing(false)}
     >

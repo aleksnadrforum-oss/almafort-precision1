@@ -387,6 +387,7 @@ const SKU_GLB: Record<string, string> = {
   "ZGV-25x25": "/cad/ZGV-25x25.glb",
   "ZGV-40x60": "/cad/ZGV-40x60.glb",
   "KR-50": "/cad/KR-50.glb",
+  "OP-H20": "/cad/OP-H20.glb",
   "OP-H35": "/cad/OP-H35.glb",
   "OP-H50": "/cad/OP-H50.glb",
 };

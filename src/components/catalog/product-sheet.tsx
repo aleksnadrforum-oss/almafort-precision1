@@ -81,6 +81,7 @@ const KREPSS_VARIANTS = [
   { id: "M8", label: "М8", sldprt: true },
   { id: "M8-gluhaya", label: "М8 глухая", sldprt: true },
   { id: "M8-104", label: "М8 104", sldprt: false },
+  { id: "shayba", label: "Шайба", sldprt: true },
 ] as const;
 
 const PLUG_MM: Record<string, { min: number; max: number }> = {
@@ -663,8 +664,7 @@ export function ProductSheet({
                       ))}
                     </div>
                     <p className="mt-2 text-xs text-muted-foreground">
-                      Разнесённый демонстрационный вид: корпус и шайба показаны отдельно, без
-                      точного взаимного положения. Шпилька в комплект не входит.
+                      Каждая деталь показана отдельно. Шпилька в комплект не входит.
                     </p>
                   </div>
                 )}
@@ -795,12 +795,11 @@ export function ProductSheet({
                     if (isKrepss) {
                       const v = KREPSS_VARIANTS[krepssVariant]!;
                       rows.push(
+                        { key: "v-step", fmt: "step", label: `Скачать модель STEP · ${v.label}`, hint: "Твердотельная 3D", Icon: Layers, href: `/cad/KREPSS-${v.id}.step`, name: `KREPSS-${v.id}.step` },
                         { key: "zip-step", fmt: "step", label: "Скачать все STEP (ZIP)", hint: "М8 · глухая · 104 · шайба", Icon: Layers, href: "/cad/KREPSS-PRO.zip", name: "KREPSS-PRO-STEP.zip" },
                         { key: "zip-sldprt", fmt: "sldprt", label: "Исходники SLDPRT (ZIP)", hint: "М8 · глухая · шайба", Icon: Layers, href: "/cad/KREPSS-PRO-SLDPRT.zip", name: "KREPSS-PRO-SLDPRT.zip" },
-                        { key: "v-step", fmt: "step", label: `STEP исполнения «${v.label}»`, hint: "Твердотельная 3D", Icon: Layers, href: `/cad/KREPSS-${v.id}.step`, name: `KREPSS-${v.id}.step` },
                       );
-                      if (v.sldprt) rows.push({ key: "v-sldprt", fmt: "sldprt", label: `SLDPRT исполнения «${v.label}»`, hint: "SolidWorks", Icon: Layers, href: `/cad/KREPSS-${v.id}.sldprt`, name: `KREPSS-${v.id}.sldprt` });
-                      rows.push({ key: "sh-step", fmt: "step", label: "STEP шайбы", hint: "Твердотельная 3D", Icon: Layers, href: "/cad/KREPSS-shayba.step", name: "KREPSS-shayba.step" });
+                      if (v.sldprt) rows.splice(1, 0, { key: "v-sldprt", fmt: "sldprt", label: `Скачать модель SLDPRT · ${v.label}`, hint: "SolidWorks", Icon: Layers, href: `/cad/KREPSS-${v.id}.sldprt`, name: `KREPSS-${v.id}.sldprt` });
                     } else {
                       rows.push({ key: "step", fmt: "step", label: "Скачать модель STEP", hint: "Твердотельная 3D", Icon: Layers, href: product.engineering_assets.model_step_url, name: `${base}.step` });
                     }

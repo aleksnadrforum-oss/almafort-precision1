@@ -94,7 +94,10 @@ function GltfModel({
       if (m.isMesh && m.material && !Array.isArray(m.material)) {
         // Базовые материалы из GLB заменяем на физически корректный пластик.
         const src = m.material as unknown as { map?: Texture | null; aoMap?: Texture | null };
-        const mat = new THREE.MeshPhysicalMaterial({
+        // Wireframe: неосвещённые линии строго в цвете детали (белая деталь — белая сетка).
+        const mat = wire
+          ? new THREE.MeshBasicMaterial({ color: new THREE.Color(color), wireframe: true })
+          : new THREE.MeshPhysicalMaterial({
           color: new THREE.Color(color),
           wireframe: wire,
           ...pbrProps(material),
@@ -173,7 +176,11 @@ function ProxyModel({
   color: string;
   material: PartMaterial;
 }) {
-  const mat = <meshPhysicalMaterial color={color} wireframe={wire} {...pbrProps(material)} />;
+  const mat = wire ? (
+    <meshBasicMaterial color={color} wireframe />
+  ) : (
+    <meshPhysicalMaterial color={color} {...pbrProps(material)} />
+  );
 
   // Держатель колпачка фаркопа «Каршар» KR-50 — реконструкция по фото изделия:
   // шар Ø50 мм со срезанной макушкой, плавно переходящий в прямую ножку Ø34 мм.
@@ -378,7 +385,9 @@ export function CadViewer({
 
   return (
     <div
-      className={`relative h-64 overflow-hidden rounded-lg bg-surface sm:h-72 lg:h-[380px] ${
+      className={`relative h-64 overflow-hidden rounded-lg transition-colors ${
+        wire && new THREE.Color(color).getHSL({ h: 0, s: 0, l: 0 }).l > 0.7 ? "bg-foreground" : "bg-surface"
+      } sm:h-72 lg:h-[380px] ${
         grabbing ? "cursor-grabbing" : "cursor-grab"
       }`}
       // Жест вращения не должен прокручивать страницу под пальцем

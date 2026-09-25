@@ -63,6 +63,7 @@ type CadViewerProps = {
   category: string;
   color?: string;
   material?: PartMaterial;
+  zoom?: { min: number; max: number };
 };
 
 
@@ -72,6 +73,12 @@ type PartProfile = {
   description: string;
   palette?: Swatch[];
   disclaimer?: string;
+};
+
+/** Заглушки с реальными STL: мм-масштаб сцены и индивидуальные лимиты зума. */
+const PLUG_MM: Record<string, { min: number; max: number }> = {
+  "ZGV-40x60": { min: 1.8, max: 6 },
+  "ZGV-25x25": { min: 1.0, max: 3.8 },
 };
 
 const DOVETAIL_PROFILE: PartProfile = {
@@ -632,7 +639,10 @@ export function ProductSheet({
                       glbUrl={product.engineering_assets.model_glb_url}
                       category={product.category}
                       color={partColor}
-                      material={partMaterial}
+                      material={
+                        PLUG_MM[product.sku] ? { ...partMaterial, roughness: 0.8, metalness: 0.1 } : partMaterial
+                      }
+                      {...(PLUG_MM[product.sku] ? { zoom: PLUG_MM[product.sku] } : {})}
                     />
                   ) : cad3dFailed ? (
                     <CadStaticFallback product={product} />
@@ -743,6 +753,9 @@ export function ProductSheet({
                       ["step", "Скачать модель STEP", "Твердотельная 3D", Layers, product.engineering_assets.model_step_url],
                       ["dwg", "Скачать чертёж DWG", "AutoCAD 2D", Ruler, product.engineering_assets.model_dwg_url],
                       ["pdf", "Технический паспорт PDF", "Схема, ГОСТы, допуски", FileText, product.engineering_assets.passport_pdf_url],
+                      ...(PLUG_MM[product.sku]
+                        ? ([["stl", "Скачать модель STL", "Полигональная сетка", Layers, `/cad/${product.sku}.stl`]] as const)
+                        : []),
                       ...(["OP-H15", "OP-H20", "OP-H35", "OP-H50"].includes(product.sku)
                         ? ([["sldprt", "Скачать модель SLDPRT", "SolidWorks", Layers, `/api/public/cad/${product.sku}/sldprt`]] as const)
                         : []),
@@ -751,7 +764,7 @@ export function ProductSheet({
                     <a
                       key={fmt}
                       href={href}
-                      download={`${product.sku === "KR-50" ? "Derzhatel-kolpachka-Karshar-KR-50" : product.sku === "OP-H15" ? "Opora-mebelnaya-h15" : product.sku === "OP-H20" ? "Opora-mebelnaya-h20" : product.sku === "OP-H35" ? "Opora-mebelnaya-h35" : product.sku === "OP-H50" ? "Opora-mebelnaya-h50" : product.sku}.${fmt}`}
+                      download={`${PLUG_MM[product.sku] ? `Zaglushka-${product.sku.slice(4)}` : product.sku === "KR-50" ? "Derzhatel-kolpachka-Karshar-KR-50" : product.sku === "OP-H15" ? "Opora-mebelnaya-h15" : product.sku === "OP-H20" ? "Opora-mebelnaya-h20" : product.sku === "OP-H35" ? "Opora-mebelnaya-h35" : product.sku === "OP-H50" ? "Opora-mebelnaya-h50" : product.sku}.${fmt}`}
                       onClick={() => trackCadDownload(product.sku, fmt)}
                       className="flex items-center gap-3 rounded-sm border border-border px-4 py-3 text-sm font-medium text-foreground transition-colors hover:border-primary hover:text-primary"
                     >

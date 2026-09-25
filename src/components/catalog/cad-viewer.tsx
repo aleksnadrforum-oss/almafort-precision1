@@ -78,11 +78,13 @@ function GltfModel({
   wire,
   color,
   material,
+  mmScale,
 }: {
   url: string;
   wire: boolean;
   color: string;
   material: PartMaterial;
+  mmScale?: boolean;
 }) {
   const { scene } = useGLTF(url, true, undefined, attachDraco as never);
   const cloned = useMemo(() => {
@@ -96,6 +98,7 @@ function GltfModel({
           color: new THREE.Color(color),
           wireframe: wire,
           ...pbrProps(material),
+          ...(material.metalness > 0 && mmScale ? { metalness: material.metalness } : {}),
           ...(src.map ? { map: src.map } : {}),
           ...(src.aoMap ? { aoMap: src.aoMap, aoMapIntensity: 1 } : {}),
         });
@@ -111,14 +114,16 @@ function GltfModel({
     // переносим центр Bounding Box в начало координат — вращение без «восьмёрки».
     const box = new THREE.Box3().setFromObject(s);
     const size = box.getSize(new THREE.Vector3());
-    const k = 1.5 / Math.max(size.x, size.y, size.z, 1e-6);
+    // mmScale: единый масштаб 1 мм = 0.025 ед. (GLB хранится ×0.05) — 40×60 и 25×25
+    // соотносятся по реальным габаритам; иначе — fit по наибольшей оси.
+    const k = mmScale ? 0.5 : 1.5 / Math.max(size.x, size.y, size.z, 1e-6);
     const c = box.getCenter(new THREE.Vector3());
     const wrap = new THREE.Group();
     s.position.sub(c);
     wrap.add(s);
     wrap.scale.setScalar(k);
     return wrap;
-  }, [scene, wire, color, material]);
+  }, [scene, wire, color, material, mmScale]);
   return <primitive object={cloned} />;
 }
 
@@ -325,11 +330,14 @@ export function CadViewer({
   category,
   color = DEFAULT_PART_COLOR,
   material = PLASTIC,
+  zoom,
 }: {
   glbUrl: string | null;
   category: string;
   color?: string;
   material?: PartMaterial;
+  /** Индивидуальные лимиты OrbitControls; при наличии модель в реальном мм-масштабе. */
+  zoom?: { min: number; max: number };
 }) {
   const [wire, setWire] = useState(false);
   const [auto, setAuto] = useState(true);
@@ -404,7 +412,7 @@ export function CadViewer({
           <Center>
             <Spin enabled={auto}>
               {glbUrl ? (
-                <GltfModel url={glbUrl} wire={wire} color={color} material={material} />
+                <GltfModel url={glbUrl} wire={wire} color={color} material={material} mmScale={!!zoom} />
               ) : (
                 <ProxyModel category={category} wire={wire} color={color} material={material} />
               )}
@@ -429,8 +437,8 @@ export function CadViewer({
         </Suspense>
         <OrbitControls
           enablePan={false}
-          minDistance={2}
-          maxDistance={7}
+          minDistance={zoom?.min ?? 2}
+          maxDistance={zoom?.max ?? 7}
           enableDamping
           dampingFactor={0.08}
           // Один палец — вращение, два пальца — pinch-to-zoom

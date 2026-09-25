@@ -10,6 +10,8 @@ const NICE_NAME: Record<string, string> = {
   "OP-H20": "Opora-mebelnaya-h20",
   "OP-H35": "Opora-mebelnaya-h35",
   "OP-H50": "Opora-mebelnaya-h50",
+  "ZGV-25x25": "Zaglushka-25x25",
+  "ZGV-40x60": "Zaglushka-40x60",
 };
 
 const MIME: Record<Ext, string> = {

@@ -1,13 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PRODUCTS } from "@/data/catalog";
 
-type Ext = "step" | "dwg" | "pdf" | "glb";
+type Ext = "step" | "dwg" | "pdf" | "glb" | "sldprt";
+
+/** Понятные имена скачиваемых файлов по артикулу. */
+const NICE_NAME: Record<string, string> = { "OP-H50": "Opora-mebelnaya-h50" };
 
 const MIME: Record<Ext, string> = {
   step: "model/step",
   dwg: "image/vnd.dwg",
   pdf: "application/pdf",
   glb: "model/gltf-binary",
+  sldprt: "application/octet-stream",
 };
 
 /** Минимальный валидный PDF — заглушка паспорта, пока в S3 нет боевого файла. */
@@ -74,7 +78,7 @@ export const Route = createFileRoute("/api/public/cad/$")({
             status: 200,
             headers: {
               "Content-Type": MIME[ext],
-              "Content-Disposition": `attachment; filename="${product.sku}.${ext}"`,
+              "Content-Disposition": `attachment; filename="${NICE_NAME[product.sku] ?? product.sku}.${ext}"`,
               "Cache-Control": "public, max-age=3600",
               "Access-Control-Allow-Origin": "*",
             },
@@ -96,7 +100,7 @@ export const Route = createFileRoute("/api/public/cad/$")({
 
         // Фолбэк без сконфигурированного S3: отдаём корректно именованную заглушку,
         // чтобы UX скачивания работал уже сейчас.
-        if (ext === "glb") return new Response("Model not uploaded", { status: 404 });
+        if (ext === "glb" || ext === "sldprt") return new Response("Model not uploaded", { status: 404 });
         const body =
           ext === "pdf"
             ? stubPdf(`ALMAFORT ${product.sku} — ${product.name}`)

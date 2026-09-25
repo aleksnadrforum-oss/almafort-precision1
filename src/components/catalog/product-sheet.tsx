@@ -743,12 +743,15 @@ export function ProductSheet({
                       ["step", "Скачать модель STEP", "Твердотельная 3D", Layers, product.engineering_assets.model_step_url],
                       ["dwg", "Скачать чертёж DWG", "AutoCAD 2D", Ruler, product.engineering_assets.model_dwg_url],
                       ["pdf", "Технический паспорт PDF", "Схема, ГОСТы, допуски", FileText, product.engineering_assets.passport_pdf_url],
+                      ...(product.sku === "OP-H50"
+                        ? ([["sldprt", "Скачать модель SLDPRT", "SolidWorks", Layers, `/api/public/cad/${product.sku}/sldprt`]] as const)
+                        : []),
                     ] as const
                   ).map(([fmt, label, hint, Icon, href]) => (
                     <a
                       key={fmt}
                       href={href}
-                      download={`${product.sku}.${fmt}`}
+                      download={`${product.sku === "OP-H50" ? "Opora-mebelnaya-h50" : product.sku}.${fmt}`}
                       onClick={() => trackCadDownload(product.sku, fmt)}
                       className="flex items-center gap-3 rounded-sm border border-border px-4 py-3 text-sm font-medium text-foreground transition-colors hover:border-primary hover:text-primary"
                     >

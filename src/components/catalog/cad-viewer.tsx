@@ -104,13 +104,22 @@ function GltfModel({
         m.receiveShadow = true;
       }
     });
-    return s;
+    // STEP-модели Z-up и смоделированы шляпой вниз: +90° по X ставит шляпу наверх.
+    s.rotation.set(Math.PI / 2, 0, 0);
+    s.updateMatrixWorld(true);
+    // Fit to screen: нормализуем по наибольшей оси (60 мм у 60×40) и
+    // переносим центр Bounding Box в начало координат — вращение без «восьмёрки».
+    const box = new THREE.Box3().setFromObject(s);
+    const size = box.getSize(new THREE.Vector3());
+    const k = 1.7 / Math.max(size.x, size.y, size.z, 1e-6);
+    const c = box.getCenter(new THREE.Vector3());
+    const wrap = new THREE.Group();
+    s.position.sub(c);
+    wrap.add(s);
+    wrap.scale.setScalar(k);
+    return wrap;
   }, [scene, wire, color, material]);
-  // STEP-модели строятся в системе Z-up, а сцена — Y-up. Деталь смоделирована
-  // шляпой вниз (z=0 — широкий фланец), поэтому дополнительно переворачиваем:
-  // rotation +90° по X ставит шляпу наверх. Поднимаем чуть выше центра экрана.
-  // Масштаб 0.05 (мм → ед. сцены) запечён в GLB при конвертации.
-  return <primitive object={cloned} rotation={[Math.PI / 2, 0, 0]} position={[0, 0.22, 0]} />;
+  return <primitive object={cloned} />;
 }
 
 /**

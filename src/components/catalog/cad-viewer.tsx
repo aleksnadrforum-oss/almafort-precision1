@@ -79,12 +79,14 @@ function GltfModel({
   color,
   material,
   mmScale,
+  rotation,
 }: {
   url: string;
   wire: boolean;
   color: string;
   material: PartMaterial;
   mmScale?: boolean;
+  rotation: readonly [number, number, number];
 }) {
   const { scene } = useGLTF(url, true, undefined, attachDraco as never);
   const cloned = useMemo(() => {
@@ -110,8 +112,9 @@ function GltfModel({
         m.receiveShadow = true;
       }
     });
-    // STEP-модели Z-up и смоделированы шляпой вниз: +90° по X ставит шляпу наверх.
-    s.rotation.set(Math.PI / 2, 0, 0);
+    // CAD-модели Z-up, Three.js Y-up. Ориентация задаётся для конкретного
+    // артикула: у КРЕПСС +Z направлен к шляпке, поэтому нужен -90° по X.
+    s.rotation.set(...rotation);
     s.updateMatrixWorld(true);
     // Fit to screen: нормализуем по наибольшей оси (60 мм у 40×60) и
     // переносим центр Bounding Box в начало координат — вращение без «восьмёрки».
@@ -126,7 +129,7 @@ function GltfModel({
     wrap.add(s);
     wrap.scale.setScalar(k);
     return wrap;
-  }, [scene, wire, color, material, mmScale]);
+  }, [scene, wire, color, material, mmScale, rotation]);
   // Освобождаем материалы предыдущего меша (геометрия общая с кэшем useGLTF).
   useEffect(
     () => () => {
@@ -348,6 +351,7 @@ export function CadViewer({
   color = DEFAULT_PART_COLOR,
   material = PLASTIC,
   zoom,
+  modelRotation = [Math.PI / 2, 0, 0],
 }: {
   glbUrl: string | null;
   category: string;
@@ -355,6 +359,8 @@ export function CadViewer({
   material?: PartMaterial;
   /** Индивидуальные лимиты OrbitControls; при наличии модель в реальном мм-масштабе. */
   zoom?: { min: number; max: number };
+  /** Коррекция локальных CAD-осей в систему Three.js (Y-up). */
+  modelRotation?: readonly [number, number, number];
 }) {
   const [wire, setWire] = useState(false);
   const [auto, setAuto] = useState(true);
@@ -431,7 +437,14 @@ export function CadViewer({
           <Center>
             <Spin enabled={auto}>
               {glbUrl ? (
-                <GltfModel url={glbUrl} wire={wire} color={color} material={material} mmScale={!!zoom} />
+                <GltfModel
+                  url={glbUrl}
+                  wire={wire}
+                  color={color}
+                  material={material}
+                  mmScale={!!zoom}
+                  rotation={modelRotation}
+                />
               ) : (
                 <ProxyModel category={category} wire={wire} color={color} material={material} />
               )}

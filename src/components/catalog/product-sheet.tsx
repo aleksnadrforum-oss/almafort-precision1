@@ -64,6 +64,7 @@ type CadViewerProps = {
   color?: string;
   material?: PartMaterial;
   zoom?: { min: number; max: number };
+  modelRotation?: readonly [number, number, number];
 };
 
 
@@ -682,6 +683,9 @@ export function ProductSheet({
                       material={
                         PLUG_MM[product.sku] ? { ...partMaterial, roughness: 0.8, metalness: 0.1 } : partMaterial
                       }
+                      {...(isKrepss && KREPSS_VARIANTS[krepssVariant]!.id !== "shayba"
+                        ? { modelRotation: [-Math.PI / 2, 0, 0] as const }
+                        : {})}
                       {...(PLUG_MM[product.sku] ? { zoom: PLUG_MM[product.sku] } : {})}
                     />
                   ) : cad3dFailed ? (

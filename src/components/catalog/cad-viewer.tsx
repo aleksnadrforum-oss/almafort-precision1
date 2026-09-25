@@ -107,7 +107,7 @@ function GltfModel({
     // STEP-модели Z-up и смоделированы шляпой вниз: +90° по X ставит шляпу наверх.
     s.rotation.set(Math.PI / 2, 0, 0);
     s.updateMatrixWorld(true);
-    // Fit to screen: нормализуем по наибольшей оси (60 мм у 60×40) и
+    // Fit to screen: нормализуем по наибольшей оси (60 мм у 40×60) и
     // переносим центр Bounding Box в начало координат — вращение без «восьмёрки».
     const box = new THREE.Box3().setFromObject(s);
     const size = box.getSize(new THREE.Vector3());

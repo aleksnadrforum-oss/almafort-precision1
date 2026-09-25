@@ -64,6 +64,7 @@ type CadViewerProps = {
   color?: string;
   material?: PartMaterial;
   zoom?: { min: number; max: number };
+  modelRotation?: readonly [number, number, number];
 };
 
 
@@ -78,10 +79,10 @@ type PartProfile = {
 /** Заглушки с реальными STL: мм-масштаб сцены и индивидуальные лимиты зума. */
 /** Исполнения КРЕПСС: GLB/STEP в public/cad/KREPSS-<id>.*; у «М8 104» нет SLDPRT. */
 const KREPSS_VARIANTS = [
-  { id: "M8", label: "М8", sldprt: true },
-  { id: "M8-gluhaya", label: "М8 глухая", sldprt: true },
-  { id: "M8-104", label: "М8 104", sldprt: false },
-  { id: "shayba", label: "Шайба", sldprt: true },
+  { id: "M8", label: "М8", sldprt: true, rotationX: Math.PI / 2 },
+  { id: "M8-gluhaya", label: "М8 глухая", sldprt: true, rotationX: Math.PI / 2 },
+  { id: "M8-104", label: "М8 104", sldprt: false, rotationX: -Math.PI / 2 },
+  { id: "shayba", label: "Шайба", sldprt: true, rotationX: Math.PI / 2 },
 ] as const;
 
 const PLUG_MM: Record<string, { min: number; max: number }> = {
@@ -682,6 +683,9 @@ export function ProductSheet({
                       material={
                         PLUG_MM[product.sku] ? { ...partMaterial, roughness: 0.8, metalness: 0.1 } : partMaterial
                       }
+                      {...(isKrepss
+                        ? { modelRotation: [KREPSS_VARIANTS[krepssVariant]!.rotationX, 0, 0] as const }
+                        : {})}
                       {...(PLUG_MM[product.sku] ? { zoom: PLUG_MM[product.sku] } : {})}
                     />
                   ) : cad3dFailed ? (

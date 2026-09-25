@@ -63,6 +63,7 @@ type CadViewerProps = {
   category: string;
   color?: string;
   material?: PartMaterial;
+  zoom?: { min: number; max: number };
 };
 
 

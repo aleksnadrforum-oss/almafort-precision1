@@ -23,7 +23,7 @@ export function reachGoal(goal: string, params?: Record<string, unknown>) {
   }
 }
 
-export function trackCadDownload(sku: string, format: "step" | "dwg" | "pdf" | "glb") {
+export function trackCadDownload(sku: string, format: "step" | "dwg" | "pdf" | "glb" | "sldprt") {
   reachGoal("cad_download", { sku, format });
   reachGoal(`cad_download_${format}`, { sku });
 }

@@ -642,7 +642,7 @@ export function ProductSheet({
                       material={
                         PLUG_MM[product.sku] ? { ...partMaterial, roughness: 0.8, metalness: 0.1 } : partMaterial
                       }
-                      zoom={PLUG_MM[product.sku]}
+                      {...(PLUG_MM[product.sku] ? { zoom: PLUG_MM[product.sku] } : {})}
                     />
                   ) : cad3dFailed ? (
                     <CadStaticFallback product={product} />

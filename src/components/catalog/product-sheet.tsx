@@ -81,6 +81,7 @@ const KREPSS_VARIANTS = [
   { id: "M8", label: "М8", sldprt: true },
   { id: "M8-gluhaya", label: "М8 глухая", sldprt: true },
   { id: "M8-104", label: "М8 104", sldprt: false },
+  { id: "shayba", label: "Шайба", sldprt: true },
 ] as const;
 
 const PLUG_MM: Record<string, { min: number; max: number }> = {

@@ -399,7 +399,7 @@ export function ProductSheet({
 }) {
   const [city, setCity] = useState<CityValue>({ city: "Москва", fiasId: null });
   const [batch, setBatch] = useState(1000);
-  const isKrepss = product.sku === "KREPSS-PRO";
+  const isKrepss = product?.sku === "KREPSS-PRO";
   const [krepssVariant, setKrepssVariant] = useState(0);
   const [quotes, setQuotes] = useState<ShippingQuote[]>([]);
   const [calcState, setCalcState] = useState<"idle" | "loading" | "ready" | "failed">("idle");

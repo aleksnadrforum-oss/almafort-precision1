@@ -1,4 +1,5 @@
 import { visualFeaturesFor } from "@/data/visual-features";
+import plug20Model from "@/assets/cad/zaglushka-20x20.glb.asset.json";
 
 export type Stock = { qty: number; lead?: string };
 
@@ -384,6 +385,7 @@ const SKU_SPEC_ROWS: Record<string, [string, string][]> = {
 /** Реальные фотографии товаров (файлы в public/products). */
 /** Настоящие GLB-модели, сконвертированные из STEP заказчика (public/cad/). */
 const SKU_GLB: Record<string, string> = {
+  "ZGV-20x20": plug20Model.url,
   "ZGV-25x25": "/cad/ZGV-25x25.glb",
   "ZGV-40x60": "/cad/ZGV-40x60.glb",
   "KR-50": "/cad/KR-50.glb",

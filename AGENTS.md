@@ -8,3 +8,5 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- New uploaded CAD media uses asset pointers in `src/assets/cad`; browser viewers receive Draco GLB only, while original CAD files are download links, keeping binaries out of source control.

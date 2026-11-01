@@ -1,4 +1,6 @@
 import { toast } from "sonner";
+import plug20Stl from "@/assets/cad/zaglushka-20x20.stl.asset.json";
+import plug20Sldprt from "@/assets/cad/zaglushka-20x20.sldprt.asset.json";
 import {
   DOVETAIL_PALETTE,
   DOVETAIL_CAP_PALETTE,
@@ -86,6 +88,7 @@ const KREPSS_VARIANTS = [
 ] as const;
 
 const PLUG_MM: Record<string, { min: number; max: number }> = {
+  "ZGV-20x20": { min: 0.85, max: 3.4 },
   "ZGV-40x60": { min: 1.8, max: 6 },
   "ZGV-25x25": { min: 1.0, max: 3.8 },
 };
@@ -796,6 +799,12 @@ export function ProductSheet({
                     type Row = { key: string; fmt: "step" | "dwg" | "pdf" | "stl" | "sldprt"; label: string; hint: string; Icon: typeof Layers; href: string; name: string };
                     const base = PLUG_MM[product.sku] ? `Zaglushka-${product.sku.slice(4)}` : product.sku === "KR-50" ? "Derzhatel-kolpachka-Karshar-KR-50" : product.sku === "OP-H15" ? "Opora-mebelnaya-h15" : product.sku === "OP-H20" ? "Opora-mebelnaya-h20" : product.sku === "OP-H35" ? "Opora-mebelnaya-h35" : product.sku === "OP-H50" ? "Opora-mebelnaya-h50" : product.sku;
                     const rows: Row[] = [];
+                    if (product.sku === "ZGV-20x20") {
+                      return [
+                        { key: "stl", fmt: "stl", label: "Скачать модель STL", hint: "Полигональная сетка", Icon: Layers, href: plug20Stl.url, name: "Zaglushka-20x20.stl" },
+                        { key: "sldprt", fmt: "sldprt", label: "Скачать модель SLDPRT", hint: "SolidWorks", Icon: Layers, href: plug20Sldprt.url, name: "Zaglushka-20x20.sldprt" },
+                      ] satisfies Row[];
+                    }
                     if (isKrepss) {
                       const v = KREPSS_VARIANTS[krepssVariant]!;
                       rows.push(
